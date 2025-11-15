@@ -4,11 +4,11 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 
 ## Folders
 
-| Path            | Purpose                                                                                                            |
-|-----------------|--------------------------------------------------------------------------------------------------------------------|
-| `src/`          | Java source tree. `src/main/java/contactapp` contains application code; `src/test/java/contactapp` contains tests. |
-| `requirements/` | Assignment requirements in full text and checklist form.                                                           |
-| `docs/`         | Project documentation (overview, notes, and navigation index).                                                     |
+| Path                               | Purpose                                                                                                                      |
+|------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| [`src/`](../src)                   | Java source tree. <br/>`src/main/java/contactapp` contains application code; <br/>`src/test/java/contactapp` contains tests. |
+| [`requirements/`](../requirements) | Assignment requirements in full text and checklist form.                                                                     |
+| [`docs/`](../docs)                 | Project documentation (overview, notes, and navigation index).                                                               |
 
 ## Key Files
 
@@ -27,8 +27,8 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 
 ## Requirements & Notes
 
-| Path                                     | Description                                  |
-|------------------------------------------|----------------------------------------------|
-| `requirements/requirements.md`           | Full assignment requirements                 |
-| `requirements/requirements_checklist.md` | Checklist view of requirements for tracking. |
-| `docs/index.md`                          | Documentation index and navigation entry.    |
+| Path                                                                                  | Description                                  |
+|---------------------------------------------------------------------------------------|----------------------------------------------|
+| [`requirements/requirements.md`](../requirements/requirements.md)                     | Full assignment requirements.                |
+| [`requirements/requirements_checklist.md`](../requirements/requirements_checklist.md) | Checklist view of requirements for tracking. |
+| [`docs/index.md`](index.md)                                                           | Documentation index and navigation entry.    |

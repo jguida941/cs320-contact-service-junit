@@ -2,26 +2,26 @@
 
 ## Contact Class
 
-- [ ] contactId is required
-- [ ] contactId is not null
-- [ ] contactId length <= 10
-- [ ] contactId is not updatable after construction
+- [x] contactId is required (2025-11-14)
+- [x] contactId is not null (2025-11-14)
+- [x] contactId length <= 10 (2025-11-14)
+- [x] contactId is not updatable after construction (2025-11-14)
 
-- [ ] firstName is required
-- [ ] firstName is not null
-- [ ] firstName length <= 10
+- [x] firstName is required (2025-11-14)
+- [x] firstName is not null (2025-11-14)
+- [x] firstName length <= 10 (2025-11-14)
 
-- [ ] lastName is required
-- [ ] lastName is not null
-- [ ] lastName length <= 10
+- [x] lastName is required (2025-11-14)
+- [x] lastName is not null (2025-11-14)
+- [x] lastName length <= 10 (2025-11-14)
 
-- [ ] phone is required
-- [ ] phone is not null
-- [ ] phone length == 10
+- [x] phone is required (2025-11-14)
+- [x] phone is not null (2025-11-14)
+- [x] phone length == 10 (2025-11-14)
 
-- [ ] address is required
-- [ ] address is not null
-- [ ] address length <= 30
+- [x] address is required (2025-11-14)
+- [x] address is not null (2025-11-14)
+- [x] address length <= 30 (2025-11-14)
 
 ## ContactService
 
@@ -35,9 +35,9 @@
 
 ## Tests
 
-- [ ] Tests cover valid Contact creation
-- [ ] Tests cover invalid contactId (null and >10)
-- [ ] Tests cover invalid firstName, lastName, phone, address
+- [x] Tests cover valid Contact creation (2025-11-14)
+- [x] Tests cover invalid contactId (null and >10) (2025-11-14)
+- [x] Tests cover invalid firstName, lastName, phone, address (2025-11-14)
 - [ ] Tests cover adding a contact
 - [ ] Tests cover rejecting duplicate contactId
 - [ ] Tests cover deleting a contact

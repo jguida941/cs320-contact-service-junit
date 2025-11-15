@@ -18,23 +18,23 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 1. ✅ Add static analysis (Checkstyle via Maven plugin). Fail the build on violations.
 2. ✅ Add JaCoCo coverage reporting with a minimum threshold (e.g., 80%). Fail when coverage drops.
 3. ✅ Upload test and coverage reports as workflow artifacts for easy download.
-4. ☐ Reintroduce SpotBugs once it’s stable in the local environment (currently blocked by the local Java/SpotBugs launcher issue).
+4. ☐ (Deferred) Reintroduce SpotBugs once it’s stable in the local environment (blocked by the local Java/SpotBugs launcher issue).
 
 ## Phase 4 – Cross-Version Confidence
 1. ✅ Expand the job matrix to JDK 17 and JDK 21 on Ubuntu.
-2. ☐ (Optional) Add a Windows runner to ensure developer parity across OSes.
+2. ✅ (Optional) Add a Windows runner to ensure developer parity across OSes.
 
 ## Phase 5 – Release Automation
 1. ✅ On tagged releases (`v*`), run `mvn package` and upload the JAR as a release artifact using `actions/upload-artifact`.
-2. ☐ Publish release notes automatically from the tag’s body (optional).
+2. ✅ Publish release notes automatically from the tag’s body (optional).
 
 ## Phase 6 – Security & Maintenance
 1. ✅ Enable Dependabot for Maven dependency updates once Maven is in place.
-2. ✅ Add CodeQL analysis for Java to scan for security issues (workflow provided by GitHub).
-3. ☐ Configure branch protection so `main` requires the CI workflow to pass before merging.
+2. ✅ Add CodeQL analysis for Java to scan for security issues (workflow provided by GitHub). (Note: the SARIF upload requires Code Scanning to be enabled; for a private repo you may need to make it public or enable GitHub Advanced Security for alerts to appear.)
+3. ☐ Configure branch protection so `main` requires the CI workflow to pass before merging. (Manual GitHub setting: Settings → Branches → Add rule, require “Java CI” and “CodeQL” checks.)
 
 ## Phase 7 – Advanced Enhancements
-1. ☐ Integrate OWASP Dependency Check (or similar) to scan third-party jars for CVEs.
+1. ✅ Integrate OWASP Dependency Check (or similar) to scan third-party jars for CVEs.
 2. ☐ Experiment with parallel test execution (split suites across multiple runners and merge results).
 3. ☐ Add container-based testing (build a Docker image and run tests inside it to mirror prod environments).
 4. ☐ Introduce mutation testing (e.g., PITest) to prove the unit tests detect injected defects.

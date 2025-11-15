@@ -18,6 +18,7 @@
         <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
         <spotbugs.maven.plugin.version>4.7.3.5</spotbugs.maven.plugin.version>
         <jacoco.version>0.8.11</jacoco.version>
+        <dependency.check.version>9.1.0</dependency.check.version>
     </properties>
 
     <dependencies>
@@ -102,6 +103,22 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${dependency.check.version}</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failBuildOnCVSS>7.0</failBuildOnCVSS>
+                </configuration>
             </plugin>
         </plugins>
     </build>

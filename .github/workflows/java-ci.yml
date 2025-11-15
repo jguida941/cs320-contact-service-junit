@@ -195,21 +195,20 @@ jobs:
         shell: bash
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-          # Set MAVEN_OPTS to allow PITest minion process to attach
-          MAVEN_OPTS: "--enable-native-access=ALL-UNNAMED -Djdk.attach.allowAttachSelf=true"
         run: |
-          # Display MAVEN_OPTS for debugging
-          echo "::notice::MAVEN_OPTS=${MAVEN_OPTS}"
+          # Set MAVEN_OPTS inline with the command for PITest to work properly
+          MAVEN_OPTS_VALUE="--enable-native-access=ALL-UNNAMED -Djdk.attach.allowAttachSelf=true"
+          echo "::notice::MAVEN_OPTS=${MAVEN_OPTS_VALUE}"
 
           if [ -z "${NVD_API_KEY:-}" ]; then
             echo "::warning::NVD_API_KEY not set; skipping Dependency-Check for mutation run"
-            CMD="mvn -B -Ddependency-check.skip=true -Dpit.skip=false verify"
+            CMD="MAVEN_OPTS=\"${MAVEN_OPTS_VALUE}\" mvn -B -Ddependency-check.skip=true -Dpit.skip=false verify"
           else
             echo "::notice::Running mutation tests with NVD API Key (self-hosted runner)"
-            CMD="mvn -B -DnvdApiKey=\"${NVD_API_KEY}\" -DnvdApiDelay=5000 -Ddependency-check.skip=true -Dpit.skip=false verify"
+            CMD="MAVEN_OPTS=\"${MAVEN_OPTS_VALUE}\" mvn -B -DnvdApiKey=\"${NVD_API_KEY}\" -DnvdApiDelay=5000 -Ddependency-check.skip=true -Dpit.skip=false verify"
           fi
 
           if ! eval "$CMD"; then
             echo "::warning::Mutation run failed, retrying with quality gates skipped"
-            mvn -B -Ddependency-check.skip=true -Dpit.skip=true verify
+            MAVEN_OPTS="${MAVEN_OPTS_VALUE}" mvn -B -Ddependency-check.skip=true -Dpit.skip=true verify
           fi

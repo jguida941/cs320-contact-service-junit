@@ -108,8 +108,14 @@ throw new IllegalArgumentException("firstName length must be between 1 and 10");
 - We throw `IllegalArgumentException` (unchecked) because invalid input is a caller bug and should crash fast.
 
 ### Propagation Flow
-```
-Client -> ContactService -> Validation -> IllegalArgumentException -> Client handles/fails fast
+```mermaid
+graph TD
+    A[Client request] --> B[ContactService]
+    B --> C[Validation]
+    C --> D{valid?}
+    D -->|no| E[IllegalArgumentException]
+    E --> F[Client handles/fails fast]
+    D -->|yes| G[State assignment]
 ```
 - Fail-fast means invalid state never reaches persistence/logs, and callers/tests can react immediately.
 
@@ -187,14 +193,19 @@ Each layer runs automatically in CI, so local `mvn verify` mirrors the hosted pi
 
 ### CI/CD Flow Diagram
 ```mermaid
-graph LR
-    A[Push or PR] --> B[Matrix build]
-    B --> C[Quality gates]
-    C --> D{Dep Check or PITest fail?}
-    D -->|yes| E[Retry with skips]
-    D -->|no| F[Artifacts + release]
-    F --> G[Self-hosted mutation job]
-    G --> H[Release notes / publish]
+graph TD
+    A[Push or PR]
+    B[Matrix build]
+    C[Quality gates]
+    D{Dep Check or PITest fail?}
+    E[Retry with skips]
+    F[Artifacts + release]
+    G[Self-hosted mutation job]
+    H[Release notes / publish]
+
+    A --> B --> C --> D
+    D -->|yes| E --> C
+    D -->|no| F --> G --> H
 ```
 
 ## Self-Hosted Mutation Runner Setup

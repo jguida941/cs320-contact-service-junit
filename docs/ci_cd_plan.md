@@ -35,9 +35,9 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 
 ## Phase 7 – Advanced Enhancements
 1. ✅ Integrate OWASP Dependency Check (or similar) to scan third-party jars for CVEs.
-2. ☐ Experiment with parallel test execution (split suites across multiple runners and merge results).
-3. ☐ Add container-based testing (build a Docker image and run tests inside it to mirror prod environments).
-4. ☐ Introduce mutation testing (e.g., PITest) to prove the unit tests detect injected defects.
-5. ☐ Revisit workflow documentation in `README.md` once enhancements land and include the build badge.
+2. ✅ Experiment with parallel test execution (Surefire now runs tests in parallel classes).
+3. ✅ Add container-based testing (Dockerized Maven run mirrors prod environment).
+4. ✅ Introduce mutation testing (PITest) to prove the unit tests detect injected defects.
+5. ✅ Revisit workflow documentation in `README.md` once enhancements land and include the build badge.
 
 Keep this plan updated as each phase lands. When a task completes, replace the checkbox with ✅ and add links to PRs or workflow runs for traceability. Once all phases are complete, summarize the final workflow in `README.md`.

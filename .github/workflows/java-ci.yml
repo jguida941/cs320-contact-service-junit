@@ -41,20 +41,29 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Build, test, and verify quality gates
-        run: mvn -B verify
+        shell: bash
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [ -z "${NVD_API_KEY:-}" ]; then
+            echo "NVD_API_KEY not set; skipping Dependency-Check"
+            mvn -B -Ddependency-check.skip=true verify
+          else
+            mvn -B verify
+          fi
 
       - name: Upload surefire reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports-jdk${{ matrix.java-version }}
+          name: surefire-reports-${{ runner.os }}-jdk${{ matrix.java-version }}
           path: target/surefire-reports
 
       - name: Upload quality reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: quality-reports-jdk${{ matrix.java-version }}
+          name: quality-reports-${{ runner.os }}-jdk${{ matrix.java-version }}
           path: |
             target/site
             target/checkstyle-result.xml
@@ -110,3 +119,19 @@ jobs:
         with:
           name: release-jar
           path: target/*.jar
+
+  container-test:
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Maven verify inside container
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [ -z "${NVD_API_KEY:-}" ]; then
+            echo "NVD_API_KEY not set; skipping Dependency-Check in container"
+            docker run --rm -v "${{ github.workspace }}":/workspace -w /workspace maven:3.9.9-eclipse-temurin-17 mvn -B -Ddependency-check.skip=true verify
+          else
+            docker run --rm -e NVD_API_KEY="$NVD_API_KEY" -v "${{ github.workspace }}":/workspace -w /workspace maven:3.9.9-eclipse-temurin-17 mvn -B verify
+          fi

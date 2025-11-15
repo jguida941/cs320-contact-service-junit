@@ -165,3 +165,29 @@ jobs:
             echo "Re-running inside container with quality gates skipped"
             docker run --rm -v "${{ github.workspace }}":/workspace -w /workspace maven:3.9.9-eclipse-temurin-17 mvn -B -Ddependency-check.skip=true -Dpit.skip=true verify
           fi
+
+  mutation-test:
+    needs: build-test
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: selfhosted-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            selfhosted-maven-
+
+      - name: Run PITest on self-hosted runner
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          mvn -B -DnvdApiKey="${NVD_API_KEY}" -DnvdApiDelay=5000 -Ddependency-check.skip=true -Dpit.skip=false verify

@@ -9,8 +9,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-// JUnit 5 assertions for exceptions, etc.
-
 /**
  * Tests the Contact class.
  * Verifies:

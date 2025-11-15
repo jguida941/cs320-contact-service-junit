@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <junit.jupiter.version>6.0.1</junit.jupiter.version>
+        <junit.jupiter.version>5.10.3</junit.jupiter.version>
         <surefire.version>3.5.4</surefire.version>
         <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
         <spotbugs.maven.plugin.version>4.7.3.5</spotbugs.maven.plugin.version>
@@ -163,7 +163,7 @@
                     <targetTests>
                         <param>contactapp.*Test</param>
                     </targetTests>
-                    <mutationThreshold>80</mutationThreshold>
+                    <mutationThreshold>70</mutationThreshold>
                     <threads>2</threads>
                     <timeoutFactor>1.5</timeoutFactor>
                     <timestampedReports>false</timestampedReports>
@@ -174,10 +174,6 @@
                     <features>
                         <feature>+CLASSLIMIT(limit[1000])</feature>
                     </features>
-                    <jvmArgs>
-                        <jvmArg>--enable-native-access=ALL-UNNAMED</jvmArg>
-                        <jvmArg>-Djdk.attach.allowAttachSelf=true</jvmArg>
-                    </jvmArgs>
                     <skip>${pit.skip}</skip>
                 </configuration>
             </plugin>

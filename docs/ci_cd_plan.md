@@ -18,7 +18,7 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 1. ✅ Add static analysis (Checkstyle via Maven plugin). Fail the build on violations.
 2. ✅ Add JaCoCo coverage reporting with a minimum threshold (e.g., 80%). Fail when coverage drops.
 3. ✅ Upload test and coverage reports as workflow artifacts for easy download.
-4. ☐ (Deferred) Reintroduce SpotBugs once it’s stable in the local environment (blocked by the local Java/SpotBugs launcher issue).
+4. ☐ (Deferred) Reintroduce SpotBugs once it’s stable in the local environment (blocked by the local Java/SpotBugs launcher issue). (Phase skipped for now.)
 
 ## Phase 4 – Cross-Version Confidence
 1. ✅ Expand the job matrix to JDK 17 and JDK 21 on Ubuntu.

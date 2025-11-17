@@ -133,6 +133,7 @@
                     </suppressionFiles>
                     <failOnError>false</failOnError>
                     <skip>${dependency.check.skip}</skip>
+                    <skipTestScope>false</skipTestScope>
                     <formats>HTML,JSON</formats>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>

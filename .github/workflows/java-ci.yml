@@ -40,13 +40,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Cache Dependency-Check database
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: ${{ runner.os }}-depcheck-${{ hashFiles('pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-depcheck-
+      - name: Purge Dependency-Check database cache
+        shell: bash
+        run: |
+          DATA_DIR="$HOME/.m2/repository/org/owasp/dependency-check-data"
+          if [ -d "$DATA_DIR" ]; then
+            echo "Removing stale Dependency-Check cache at $DATA_DIR"
+            rm -rf "$DATA_DIR"
+          else
+            echo "No cached Dependency-Check database found"
+          fi
 
       - name: Debug NVD API key presence
         shell: bash

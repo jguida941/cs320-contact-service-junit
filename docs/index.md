@@ -23,6 +23,7 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 | [`pom.xml`](../pom.xml)                                                                                   | Maven project file defining dependencies and plugins.       |
 | [`config/checkstyle/checkstyle.xml`](../config/checkstyle/checkstyle.xml)                                 | Custom Checkstyle rules enforced in CI.                     |
 | [`config/owasp-suppressions.xml`](../config/owasp-suppressions.xml)                                       | Placeholder suppression list for OWASP Dependency-Check.    |
+| [`scripts/ci_metrics_summary.py`](../scripts/ci_metrics_summary.py)                                       | Prints the QA metrics table (tests/coverage/mutations/dependencies) in GitHub Actions. |
 | [`.github/workflows`](../.github/workflows)                                                               | GitHub Actions pipelines (CI, release packaging, CodeQL).   |
 
 ## Requirements & Notes

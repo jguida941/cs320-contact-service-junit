@@ -37,6 +37,7 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 | [`pom.xml`](pom.xml)                                                                           | Maven build file (dependencies, plugins, compiler config).          |
 | [`config/checkstyle`](config/checkstyle)                                                       | Checkstyle configuration used by Maven/CI quality gates.            |
 | [`config/owasp-suppressions.xml`](config/owasp-suppressions.xml)                               | Placeholder suppression list for OWASP Dependency-Check.            |
+| [`scripts/ci_metrics_summary.py`](scripts/ci_metrics_summary.py)                               | Helper that parses JaCoCo/PITest/Dependency-Check reports and posts the QA summary table in CI. |
 | [`.github/workflows`](.github/workflows)                                                       | CI/CD pipelines (tests, quality gates, release packaging, CodeQL).  |
 
 ## Design Decisions & Highlights

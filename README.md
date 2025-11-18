@@ -77,6 +77,7 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 | update    | O(1)    | O(n)  | O(1)  |
 | delete    | O(1)    | O(n)  | O(1)  |
 - This strategy meets the course requirements while documenting the upgrade path (DAO, repository pattern, etc.).
+<br>
 
 ## [Contact.java](src/main/java/contactapp/Contact.java) / [ContactTest.java](src/test/java/contactapp/ContactTest.java)
 
@@ -173,7 +174,7 @@ void testInvalidContactId(String id, String expectedMessage) {
 - `ValidationTest.validateLengthAcceptsBoundaryValues` proves 1/10-char names and 30-char addresses remain valid.
 - `ValidationTest.validateLengthRejectsBlankStrings` and `ValidationTest.validateLengthRejectsNull` ensure blanks/nulls fail before length math is evaluated.
 - `ValidationTest.validateNumeric10RejectsBlankStrings` and `ValidationTest.validateNumeric10RejectsNull` ensure the phone validator raises the expected messages before regex/length checks.
-
+<br>
 
 ## [ContactService.java](src/main/java/contactapp/ContactService.java) / [ContactServiceTest.java](src/test/java/contactapp/ContactServiceTest.java)
 
@@ -244,6 +245,7 @@ graph TD
 - `testDeleteContactBlankIdThrows` shows ID validation runs even on deletes, surfacing the standard “contactId must not be null or blank” message.
 - `testUpdateContact` verifies every mutable field changes via setter delegation.
 - `testUpdateMissingContactReturnsFalse` covers the “not found” branch so callers can rely on the boolean result.
+<br>
 
 ## [Task.java](src/main/java/taskapp/Task.java) / [TaskTest.java](src/test/java/taskapp/TaskTest.java)
 
@@ -282,6 +284,7 @@ graph TD
 
 ### Scenario Coverage
 - _Placeholder: TODO
+<br>
 
 ## [TaskService.java](src/main/java/taskapp/TaskService.java) / [TaskServiceTest.java](src/test/java/taskapp/TaskServiceTest.java)
 
@@ -325,21 +328,7 @@ graph TD
 
 ### Scenario Coverage
 - _PlaceHolder:TODO
-
-### Testing Pyramid
-```mermaid
-graph TD
-    A[Static analysis] --> B[Unit tests]
-    B --> C[Service tests]
-    C --> D[Integration tests]
-    D --> E[Mutation tests]
-```
-### Mutation Testing & Quality Gates
-- PITest runs inside `mvn verify`, so the new service tests contribute directly to the enforced mutation score.
-- The GitHub Actions matrix uses the same suite, ensuring duplicate/add/delete/update scenarios stay green across OS/JDK combinations.
-- GitHub Actions still executes `{ubuntu-latest, windows-latest} × {Java 17, Java 21}` with `MAVEN_OPTS="--enable-native-access=ALL-UNNAMED -Djdk.attach.allowAttachSelf=true"`, so mutation coverage is enforced everywhere.
-- The optional self-hosted lane remains available for long mutation sessions or extra capacity; see the dedicated section below.
-
+<br>
 
 ## Static Analysis & Quality Gates
 
@@ -354,7 +343,22 @@ graph TD
 
 Each layer runs automatically in CI, so local `mvn verify` mirrors the hosted pipelines.
 
-### Checkstyle Rule Set
+## Mutation Testing & Quality Gates
+- PITest runs inside `mvn verify`, so the new service tests contribute directly to the enforced mutation score.
+- The GitHub Actions matrix uses the same suite, ensuring duplicate/add/delete/update scenarios stay green across OS/JDK combinations.
+- GitHub Actions still executes `{ubuntu-latest, windows-latest} × {Java 17, Java 21}` with `MAVEN_OPTS="--enable-native-access=ALL-UNNAMED -Djdk.attach.allowAttachSelf=true"`, so mutation coverage is enforced everywhere.
+- The optional self-hosted lane remains available for long mutation sessions or extra capacity; see the dedicated section below.
+
+## Testing Pyramid
+```mermaid
+graph TD
+    A[Static analysis] --> B[Unit tests]
+    B --> C[Service tests]
+    C --> D[Integration tests]
+    D --> E[Mutation tests]
+```
+
+## Checkstyle Rule Set
 | Check Group | Focus |
 |-------------|-------|
 | `ImportOrder`, `AvoidStarImport`, `RedundantImport` | Enforce ordered/separated imports, no wildcards, and no duplicates. |
@@ -368,7 +372,12 @@ Each layer runs automatically in CI, so local `mvn verify` mirrors the hosted pi
 | `SimplifyBooleanExpression`, `SimplifyBooleanReturn`, `OneStatementPerLine` | Reduce complex boolean logic and keep one statement per line. |
 | `FinalParameters`, `FinalLocalVariable` | Encourage immutability for parameters and locals when possible. |
 
-### SpotBugs Commands
+
+## SpotBugs
+<img width="1037" height="767" alt="Screenshot 2025-11-18 at 4 16 06 PM" src="https://github.com/user-attachments/assets/419bd8e1-9974-4db2-ad3a-0f83a9c014db" />
+
+
+## SpotBugs Commands
 ```bash
 # Run SpotBugs as part of the normal build
 mvn -Ddependency-check.skip=true verify
@@ -384,7 +393,7 @@ mvn spotbugs:gui
 ```
 > CI already runs SpotBugs inside `mvn verify`; these commands help when iterating locally.
 
-### Sonatype OSS Index (optional)
+## Sonatype OSS Index (optional)
 Dependency-Check also pings the Sonatype OSS Index service. When requests are anonymous the analyzer often rate-limits, which is why CI prints warnings like “An error occurred while analyzing … (Sonatype OSS Index Analyzer)”. To receive full results:
 1. Create a free account at [ossindex.sonatype.org](https://ossindex.sonatype.org/) and generate an API token.
 2. Add the credentials to your Maven `settings.xml`:
@@ -447,14 +456,8 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 - Concurrency guards prevent overlapping scans on the same ref, and `paths-ignore` ensures doc-only/image-only changes do not queue CodeQL unnecessarily.
 - Triggers: pushes/PRs to `main` or `master` (respecting the filters), a weekly scheduled scan (`cron: 0 3 * * 0`), and optional manual dispatch.
 
-## QA Summary
-Each GitHub Actions matrix job writes a QA table (tests, coverage, mutation score, Dependency-Check status) to the run summary. Open any workflow’s “Summary” tab and look for the “QA Metrics” table for the latest numbers.
 
-<img width="1116" height="853" alt="Screenshot 2025-11-18 at 3 37 18 AM" src="https://github.com/user-attachments/assets/9ae307a2-9c6e-4514-9311-4f8c9c468a90" />
-
-
-
-### CI/CD Flow Diagram
+## CI/CD Flow Diagram
 ```mermaid
 graph TD
     A[Push or PR]
@@ -471,6 +474,12 @@ graph TD
     D --> E --> B
     D --> F --> G --> H
 ```
+
+## QA Summary
+Each GitHub Actions matrix job writes a QA table (tests, coverage, mutation score, Dependency-Check status) to the run summary. Open any workflow’s “Summary” tab and look for the “QA Metrics” table for the latest numbers.
+
+<img width="1116" height="853" alt="Screenshot 2025-11-18 at 3 37 18 AM" src="https://github.com/user-attachments/assets/9ae307a2-9c6e-4514-9311-4f8c9c468a90" />
+
 
 ## Self-Hosted Mutation Runner Setup
 - Register a runner per GitHub's instructions (Settings -> Actions -> Runners -> New self-hosted runner). Choose macOS/Linux + architecture.

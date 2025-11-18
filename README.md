@@ -210,10 +210,12 @@ graph TD
 - `@BeforeEach` clears the singleton’s backing map so tests remain isolated even though the service is shared.
 
 ### Scenario Coverage
+- `testGetInstance` ensures the singleton accessor always returns a concrete service before any CRUD logic runs.
 - `testAddContact` proves the happy path and that the map contains the stored entry.
 - `testAddDuplicateContactFails` confirms the boolean contract for duplicates and that the original object remains untouched.
 - `testAddContactNullThrows` hits the defensive null guard so callers see a clear `IllegalArgumentException` instead of an NPE.
 - `testDeleteContact` exercises removal plus assertion that the key disappears.
+- `testDeleteContactBlankIdThrows` shows ID validation runs even on deletes, surfacing the standard “contactId must not be null or blank” message.
 - `testUpdateContact` verifies every mutable field changes via setter delegation.
 - `testUpdateMissingContactReturnsFalse` covers the “not found” branch so callers can rely on the boolean result.
 

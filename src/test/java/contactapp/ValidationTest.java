@@ -33,11 +33,29 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
                 .hasMessage("firstName must not be null or blank");
     }
 
+    // Null inputs must also fail length validation immediately
+    @Test
+    void validateLengthRejectsNull() {
+        assertThatThrownBy(() ->
+                Validation.validateLength(null, "firstName", 1, 10))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("firstName must not be null or blank");
+    }
+
     // Phone number validator must detect blank string before digit/length checks
     @Test
     void validateNumeric10RejectsBlankStrings() {
         assertThatThrownBy(() ->
                 Validation.validateNumeric10("          ", "phone"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("phone must not be null or blank");
+    }
+
+    // Null phone input should trigger the same blank check before regex/length logic
+    @Test
+    void validateNumeric10RejectsNull() {
+        assertThatThrownBy(() ->
+                Validation.validateNumeric10(null, "phone"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("phone must not be null or blank");
     }

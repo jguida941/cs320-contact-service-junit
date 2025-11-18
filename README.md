@@ -222,7 +222,9 @@ graph TD
 - `testUpdateMissingContactReturnsFalse` covers the “not found” branch so callers can rely on the boolean result.
 - `ValidationTest.validateLengthAcceptsBoundaryValues` proves 1/10-char names and 30-char addresses are accepted so boundary mutations fail.
 - `ValidationTest.validateLengthRejectsBlankStrings` confirms helper-level blank checks fire even when the caller passes valid lengths.
+- `ValidationTest.validateLengthRejectsNull` shows null inputs fail before any length math runs.
 - `ValidationTest.validateNumeric10RejectsBlankStrings` ensures the phone validator refuses whitespace before digit/length checks.
+- `ValidationTest.validateNumeric10RejectsNull` asserts null phone numbers are rejected by the helper before regex checks.
 
 ### Assertion Patterns
 - AssertJ collections helpers (`containsEntry`, `doesNotContainEntry`) keep the CRUD expectations concise.

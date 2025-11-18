@@ -29,6 +29,8 @@ All notable changes to this project will be documented here. Follow the
   warnings during `javac`.
 - Added `ValidationTest` to assert boundary acceptance and blank rejection in
   helper methods, giving PIT visibility into those behaviors.
+- Extended `ValidationTest` with explicit null-path checks so the helper’s
+  `validateNotBlank` logic triggers before length/numeric math.
 - Expanded service tests to cover singleton reuse, missing delete branch, and a
   last-name change during updates so mutation testing can kill the remaining
   ContactService mutants.

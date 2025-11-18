@@ -162,7 +162,7 @@ void testInvalidContactId(String id, String expectedMessage) {
 
 ### Service Snapshot
 - **Singleton access** – `getInstance()` exposes one shared service so every caller sees the same `ConcurrentHashMap` backing store.
-- **Atomic uniqueness guard** – `addContact` rejects null inputs up front and relies on `ConcurrentHashMap#putIfAbsent` so duplicate IDs never overwrite state.
+- **Atomic uniqueness guard** – `addContact` rejects null inputs up front and calls `ConcurrentHashMap.putIfAbsent(...)` directly so duplicate IDs never overwrite state even under concurrent access.
 - **Shared validation** – `deleteContact` uses `Validation.validateNotBlank` for IDs and `updateContact` delegates to the `Contact` setters, guaranteeing the constructor’s length/null/phone rules apply to updates too.
 
 ## Validation & Error Handling

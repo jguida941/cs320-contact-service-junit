@@ -246,13 +246,14 @@ graph TD
     A[Push or PR]
     B[Matrix build]
     C[Quality gates]
+    I[Post QA summary + Codecov upload]
     D{Dep Check or PITest fail?}
     E[Retry with skips]
     F[Artifacts + release]
     G[Self-hosted mutation job]
     H[Release notes / publish]
 
-    A --> B --> C --> D
+    A --> B --> C --> I --> D
     D --> E --> B
     D --> F --> G --> H
 ```

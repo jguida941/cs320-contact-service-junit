@@ -28,6 +28,8 @@ All notable changes to this project will be documented here. Follow the
   (simple success/failure signaling for this milestone).
 - Updated README caching section to explain that Dependency-Check caches are
   intentionally purged each run (only Maven artifacts remain cached).
+- CI flow diagram now includes the QA summary/Codecov step so the visual matches
+  the workflow description.
 
 ### Security
 - Bumped `org.pitest:pitest-maven` to `1.21.1` and `org.pitest:pitest-junit5-plugin`

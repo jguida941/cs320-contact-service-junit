@@ -1,6 +1,7 @@
 # CS320 Milestone 1 - Contact Service
 [![Java CI](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/java-ci.yml/badge.svg)](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/java-ci.yml)
 [![CodeQL](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/codeql.yml/badge.svg)](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/codeql.yml)
+[![Codecov](https://codecov.io/gh/jguida941/cs320-contact-service-junit/branch/master/graph/badge.svg)](https://codecov.io/gh/jguida941/cs320-contact-service-junit)
 
 Small Java project for the CS320 Contact Service milestone. The work breaks down into two pieces:
 1. Build the `Contact` and `ContactService` classes exactly as described in the requirements.
@@ -218,6 +219,14 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 ### Release Automation
 - Successful workflows publish build artifacts, and the release workflow packages release notes so we can trace which commit delivered which binary.
 - The `release-artifacts` job is intentionally gated with `if: github.event_name == 'release' && github.event.action == 'published'`, so you will see it marked as “skipped” on normal pushes or pull requests. It only runs when a GitHub release/tag is published.
+
+### Coverage Publishing (Codecov)
+- After JaCoCo generates `target/site/jacoco/jacoco.xml`, the workflow uploads it to [Codecov](https://codecov.io/gh/jguida941/cs320-contact-service-junit) so the coverage badge stays current.
+- Setup steps (once per repository):
+  1. Sign in to Codecov with GitHub and add this repo.
+  2. Generate a repository token in Codecov and save it as the GitHub secret `CODECOV_TOKEN`.
+  3. Re-run the workflow; each matrix job uploads coverage with a `flags` label (`os-jdk`).
+- The badge at the top of this README pulls from the default `master` branch; adjust the URL if you maintain long-lived release branches.
 
 ### CI/CD Flow Diagram
 ```mermaid

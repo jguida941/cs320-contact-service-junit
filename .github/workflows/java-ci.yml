@@ -110,6 +110,14 @@ jobs:
             target/checkstyle-result.xml
             target/dependency-check-report.html
 
+      - name: Upload coverage to Codecov
+        if: ${{ always() && secrets.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v4
+        with:
+          files: target/site/jacoco/jacoco.xml
+          flags: ${{ matrix.os }}-jdk${{ matrix.java-version }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Publish QA summary
         if: always()
         env:

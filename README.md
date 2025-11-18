@@ -215,6 +215,7 @@ graph TD
 - `testAddContact` proves the happy path and that the map contains the stored entry.
 - `testAddDuplicateContactFails` confirms the boolean contract for duplicates and that the original object remains untouched.
 - `testAddContactNullThrows` hits the defensive null guard so callers see a clear `IllegalArgumentException` instead of an NPE.
+- `testConstructorTrimsStoredValues` verifies the constructor strips leading/trailing spaces from ids, names, and addresses before persisting them.
 - `testDeleteContact` exercises removal plus assertion that the key disappears.
 - `testDeleteMissingContactReturnsFalse` covers the branch where no contact exists for the given id.
 - `testDeleteContactBlankIdThrows` shows ID validation runs even on deletes, surfacing the standard “contactId must not be null or blank” message.

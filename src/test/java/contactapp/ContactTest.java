@@ -58,6 +58,23 @@ public class ContactTest {
                 .hasFieldOrPropertyWithValue("address", "1234 Taro Street");
     }
 
+    // Constructor should trim leading/trailing whitespace for all stored fields
+    @Test
+    void testConstructorTrimsStoredValues() {
+        Contact contact = new Contact(
+                " 100 ",
+                "  Alice ",
+                "  Smith  ",
+                "1234567890",
+                " 742 Evergreen Terrace  "
+        );
+
+        assertThat(contact.getContactId()).isEqualTo("100");
+        assertThat(contact.getFirstName()).isEqualTo("Alice");
+        assertThat(contact.getLastName()).isEqualTo("Smith");
+        assertThat(contact.getAddress()).isEqualTo("742 Evergreen Terrace");
+    }
+
     // CsvSource provides multiple sets of invalid input values for the test below
     // Each line is one test case (contactId, firstName, lastName, phone, address)
     @CsvSource(
@@ -79,6 +96,7 @@ public class ContactTest {
                     , "1, firstName, '', 1234567890, '7622 Main Street', 'lastName must not be null or blank'"
                     , "1, firstName, null, 1234567890, '7622 Main Street', 'lastName must not be null or blank'"
                     , "1, firstName, 'TooLongLastName', 1234567890, '7622 Main Street', 'lastName length must be between 1 and 10'"
+                    , "1, ' firstNameWithSpaces ', lastName, 1234567890, '7622 Main Street', 'firstName length must be between 1 and 10'"
 
                     // phone validation
                     , "1, firstName, lastName, ' ' , '7622 Main Street', 'phone must not be null or blank'"

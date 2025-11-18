@@ -33,7 +33,7 @@ public class Contact {
 
         // Use Validation utility for constructor field checks
         Validation.validateLength(contactId, "contactId", 1, 10);
-        this.contactId = contactId;
+        this.contactId = contactId.trim(); // normalize identifier for map keys
 
         // Reuse setter validation for the mutable fields
         setFirstName(firstName);
@@ -80,6 +80,6 @@ public class Contact {
 
     public void setAddress(String address) {
         Validation.validateLength(address, "address", 1, 30);
-        this.address = address.trim();
-    }
+        this.address = address.trim(); 
+}
 }

@@ -38,7 +38,7 @@ public final class Validation {
      */
     public static void validateLength(String input, String label, int minLength, int maxLength) {
         validateNotBlank(input, label);
-        int length = input.length();
+        int length = input.trim().length();
         if (length < minLength || length > maxLength) {
             throw new IllegalArgumentException(
                     label + " length must be between " + minLength + " and " + maxLength);

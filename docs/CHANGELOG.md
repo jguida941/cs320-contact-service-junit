@@ -36,6 +36,8 @@ All notable changes to this project will be documented here. Follow the
   equivalent PIT mutants and enabling a 100% mutation score).
 - Contact setters now trim first/last names and addresses after validation to
   avoid persisting accidental leading/trailing whitespace.
+- Contact IDs are now trimmed on construction, and `Validation.validateLength`
+  measures trimmed length so validation matches the data actually stored.
 - Expanded service tests to cover singleton reuse, missing delete branch, and a
   last-name change during updates so mutation testing can kill the remaining
   ContactService mutants.

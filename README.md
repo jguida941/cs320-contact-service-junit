@@ -309,3 +309,17 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 ## Reporting Backlog
 - Attach richer visual artifacts (HTML dashboards or charts) that combine the JaCoCo/PITest/Dependency-Check data already posted in the run summary.
 - Track progress for these items in `docs/CI-CD/ci_cd_plan.md` as they land so improvements to observability stay visible.
+
+## Sample QA Summary
+Every matrix job now renders a GitHub Actions summary similar to the snippet below so you can review health without opening each artifact:
+
+```
+| Metric | Result | Details |
+| --- | --- | --- |
+| Tests | 30 passing | Total runtime 0.11s |
+| Line coverage (JaCoCo) | 100.0% ████████████████████ | 44 / 44 lines covered |
+| Mutation score (PITest) | 72.4% ██████████████░░░░░░ | 21 killed, 8 survived out of 29 mutations |
+| Dependency-Check | _not run_ | Report missing (probably skipped when `NVD_API_KEY` was not provided). |
+```
+
+Check the Run Summary panel in any workflow run to see the latest numbers, including when a gate is skipped (e.g., Dependency-Check when the NVD API key is absent).

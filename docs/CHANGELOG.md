@@ -9,6 +9,8 @@ All notable changes to this project will be documented here. Follow the
   fully authenticated when desired.
 - Introduced `scripts/ci_metrics_summary.py` and a GitHub Actions summary step
   so each matrix run publishes tests/coverage/mutation/dependency metrics.
+- Added a "Sample QA Summary" section to `README.md` showing what the Actions
+  summary table looks like for a representative run.
 
 ### Changed
 - Updated `README.md` and `docs/index.md` to match the new `docs/requirements`

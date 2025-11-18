@@ -131,25 +131,37 @@ graph TD
 
 ## Testing Strategy
 
-### Approach & TDD
-- Each validator rule started as a failing test, then the implementation was written until the suite passed.
-- `ContactTest` serves as the living specification covering both the success path and every invalid scenario.
+### ContactTest (domain layer)
+- **Approach & TDD** – Every rule began as a failing test. Because constructors delegate to setters, the validation pipeline shown earlier is exercised for both creation and updates.
+- **Parameterized coverage** – `@ParameterizedTest + @CsvSource` enumerate invalid IDs, names, phones, and addresses so the suite captures every edge case without duplicating boilerplate. Assertions use `assertThatThrownBy(...).hasMessage(...)` to lock in the label-driven messages.
+    ```java
+    @ParameterizedTest
+    @CsvSource({
+        "'', 'contactId must not be null or blank'",
+        "' ', 'contactId must not be null or blank'",
+        "'12345678901', 'contactId length must be between 1 and 10'"
+    })
+    void testInvalidContactId(String id, String expectedMessage) {
+        assertThatThrownBy(() -> new Contact(id, "first", "last", "1234567890", "123 Main St"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage(expectedMessage);
+    }
+    ```
+- **Happy path** – `testSuccessfulCreation` and `testValidSetters` leverage AssertJ’s `hasFieldOrPropertyWithValue` to ensure valid data hydrates and updates correctly.
 
-### Parameterized Coverage
-- `@ParameterizedTest` + `@CsvSource` enumerate the invalid IDs, names, phones, and addresses so we don’t duplicate boilerplate tests.
-```java
-@ParameterizedTest
-@CsvSource({
-    "'', 'contactId must not be null or blank'",
-    "' ', 'contactId must not be null or blank'",
-    "'12345678901', 'contactId length must be between 1 and 10'"
-})
-void testInvalidContactId(String id, String expectedMessage) {
-    assertThatThrownBy(() -> new Contact(id, "first", "last", "1234567890", "123 Main St"))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(expectedMessage);
-}
-```
+### ContactServiceTest (service layer)
+- **Singleton + storage** – Verifies `ContactService.getInstance()` is a singleton and that the backing `HashMap<String, Contact>` mutates only when operations succeed.
+- **Boolean API** – `addContact` returns `true` on initial insert and `false` on duplicates; `deleteContact`/`updateContact` return `true` only when the `contactId` exists. Setter validation still throws on bad input so domain rules remain centralized.
+    ```java
+    @Test
+    void addRejectsDuplicateIds() {
+        ContactService service = ContactService.getInstance();
+        Contact contact = new Contact("id-1","first","last","1234567890","10 Main St");
+        assertThat(service.addContact(contact)).isTrue();
+        assertThat(service.addContact(contact)).isFalse();
+    }
+    ```
+- **Why** – Booleans keep milestone tests straightforward while documenting how callers would detect success/failure without needing custom exceptions.
 
 ### Assertion Patterns
 - AssertJ’s `hasFieldOrPropertyWithValue` validates the happy path in one fluent statement.
@@ -264,8 +276,8 @@ graph TD
   - Go to your repository on GitHub
   - Navigate to Settings -> Actions -> Runners -> New self-hosted runner
   - Select your OS (macOS for Mac, Linux for Linux) and architecture (x64 for Intel, arm64 for Apple Silicon)
-  - Follow GitHub's provided commands to download and configure the runner. 
-  
+  - Follow GitHub's provided commands to download and configure the runner.
+
   For macOS:
   ```bash
   # Create runner directory
@@ -296,9 +308,9 @@ graph TD
   ```
 Leave `./run.sh` running so the `mutation-test` job can execute on your machine. When you're done, press Ctrl+C to stop the runner.
 
-> **Workflow toggle:** the `mutation-test` job only runs when the repository variable `RUN_SELF_HOSTED` is set to `true`.  
-> - Default (variable unset/false): the job is skipped so GitHub-hosted runners finish cleanly even if your machine is offline.  
-> - When you want to run mutation tests: start the runner and set `Settings → Secrets and variables → Actions → Variables → RUN_SELF_HOSTED = true`, then re-run the workflow.  
+> **Workflow toggle:** the `mutation-test` job only runs when the repository variable `RUN_SELF_HOSTED` is set to `true`.
+> - Default (variable unset/false): the job is skipped so GitHub-hosted runners finish cleanly even if your machine is offline.
+> - When you want to run mutation tests: start the runner and set `Settings → Secrets and variables → Actions → Variables → RUN_SELF_HOSTED = true`, then re-run the workflow.
 > - Turn the variable back to `false` (or delete it) when you shut down the runner, so future workflows don’t wait for a machine that isn’t listening.
 
 ## How to Use This Repository

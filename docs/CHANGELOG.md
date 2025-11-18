@@ -30,6 +30,9 @@ All notable changes to this project will be documented here. Follow the
   intentionally purged each run (only Maven artifacts remain cached).
 - CI flow diagram now includes the QA summary/Codecov step so the visual matches
   the workflow description.
+- Restructured the README’s testing section so `ContactTest` and
+  `ContactServiceTest` each have their own bullet list explaining scope and
+  assertions.
 
 ### Security
 - Bumped `org.pitest:pitest-maven` to `1.21.1` and `org.pitest:pitest-junit5-plugin`

@@ -218,6 +218,7 @@ graph TD
 - `testDeleteContactBlankIdThrows` shows ID validation runs even on deletes, surfacing the standard “contactId must not be null or blank” message.
 - `testUpdateContact` verifies every mutable field changes via setter delegation.
 - `testUpdateMissingContactReturnsFalse` covers the “not found” branch so callers can rely on the boolean result.
+- `ValidationTest` hits the shared helper methods directly (boundary acceptance + blank rejection) so PIT can see those behaviors even though the Contact setters already guard against blanks.
 
 ### Assertion Patterns
 - AssertJ collections helpers (`containsEntry`, `doesNotContainEntry`) keep the CRUD expectations concise.

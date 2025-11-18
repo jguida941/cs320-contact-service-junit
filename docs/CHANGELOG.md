@@ -27,6 +27,8 @@ All notable changes to this project will be documented here. Follow the
 - Maven Compiler now uses `<release>17</release>` via `maven.compiler.release`
   to align with the module system and eliminate repeated “system modules path”
   warnings during `javac`.
+- Added `ValidationTest` to assert boundary acceptance and blank rejection in
+  helper methods, giving PIT visibility into those behaviors.
 - Fixed the Java CI workflow so `dependency-check.skip` uses the correct
   hyphenated property, Codecov upload keys off `secrets.CODECOV_TOKEN`, and
   quality-report artifacts no longer fail the job when reports are absent.

@@ -367,6 +367,22 @@ Each layer runs automatically in CI, so local `mvn verify` mirrors the hosted pi
 | `SimplifyBooleanExpression`, `SimplifyBooleanReturn`, `OneStatementPerLine` | Reduce complex boolean logic and keep one statement per line. |
 | `FinalParameters`, `FinalLocalVariable` | Encourage immutability for parameters and locals when possible. |
 
+### SpotBugs Commands
+```bash
+# Run SpotBugs as part of the normal build
+mvn -Ddependency-check.skip=true verify
+
+# Fail fast on SpotBugs findings during local iterations
+mvn spotbugs:check
+
+# Generate the HTML report at target/spotbugs.html
+mvn spotbugs:spotbugs
+
+# Open the SpotBugs GUI to inspect findings interactively
+mvn spotbugs:gui
+```
+> CI already runs SpotBugs inside `mvn verify`; these commands help when iterating locally.
+
 ### Sonatype OSS Index (optional)
 Dependency-Check also pings the Sonatype OSS Index service. When requests are anonymous the analyzer often rate-limits, which is why CI prints warnings like “An error occurred while analyzing … (Sonatype OSS Index Analyzer)”. To receive full results:
 1. Create a free account at [ossindex.sonatype.org](https://ossindex.sonatype.org/) and generate an API token.

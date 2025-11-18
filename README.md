@@ -80,6 +80,11 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 
 ## [Contact.java](src/main/java/contactapp/Contact.java) / [ContactTest.java](src/test/java/contactapp/ContactTest.java)
 
+### Service Snapshot
+- `Contact` acts as the immutable ID holder with mutable first/last name, phone, and address fields.
+- Constructor delegates to setters so validation stays centralized and consistent for both creation and updates.
+- Validation trims IDs/names/addresses before storing them, guaranteeing normalized state once objects are created.
+
 ## Validation & Error Handling
 
 ### Validation Pipeline
@@ -262,10 +267,7 @@ graph TD
 
 ### Propagation Flow
 ```mermaid
-graph TD
-    A[Task ctor/setter] --> B{valid?}
-    B -->|yes| C[State stored]
-    B -->|no| D[IllegalArgumentException]
+
 ```
 - _Placeholder: explain how task validation failures bubble up to callers/tests._
 
@@ -275,7 +277,10 @@ graph TD
 - _Placeholder: outline the TDD workflow for TaskTest once implemented._
 
 ### Assertion Patterns
-- _Placeholder: list the AssertJ / JUnit idioms that will back TaskTest (field assertions, message checks, etc.)._
+- _Placeholder: list the AssertJ / JUnit idioms that will back TaskTest (field assertions, message checks, etc.).
+
+### Scenario Coverage
+- _Placeholder: TODO
 
 ## [TaskService.java](src/main/java/taskapp/TaskService.java) / [TaskServiceTest.java](src/test/java/taskapp/TaskServiceTest.java)
 
@@ -316,6 +321,9 @@ graph TD
 
 ### Assertion Patterns
 - _Placeholder: describe the assertions that will check task map contents, boolean results, and thrown messages._
+
+### Scenario Coverage
+- _PlaceHolder:TODO
 
 ### Testing Pyramid
 ```mermaid

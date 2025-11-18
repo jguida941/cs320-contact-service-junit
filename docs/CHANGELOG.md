@@ -20,6 +20,8 @@ All notable changes to this project will be documented here. Follow the
 - CodeQL workflow now pins Temurin JDK 17, caches Maven deps, enforces
   concurrency/path filters, and runs the `+security-and-quality` query pack via
   CodeQL autobuild for broader coverage.
+- Java CI’s Codecov upload now reads the token from the job env to remain
+  parseable for forked PRs where the `secrets` context is unavailable.
 - Fixed the Java CI workflow so `dependency-check.skip` uses the correct
   hyphenated property, Codecov upload keys off `secrets.CODECOV_TOKEN`, and
   quality-report artifacts no longer fail the job when reports are absent.

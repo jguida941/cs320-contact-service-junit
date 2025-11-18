@@ -423,7 +423,7 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 ### Quality Gate Behavior
 - Each matrix job executes the full suite (tests, JaCoCo, Checkstyle, SpotBugs, Dependency-Check, PITest).
 - Checkstyle enforces formatting/import/indentation rules while SpotBugs scans bytecode for bug patterns and fails the build on findings.
-- SpotBugs runs when the build JVM is Java 22 or lower; a profile automatically skips it on newer JDKs until upstream ASM support lands.
+- SpotBugs runs as part of every `mvn verify` run on the supported JDKs (currently 17, 21, and 25 in CI) and fails the build on findings
 - If Dependency-Check or PITest flakes because of environment constraints, the workflow retries with `-Ddependency-check.skip=true` or `-Dpit.skip=true` so contributors stay unblocked but warnings remain visible.
 - Python 3.12 is provisioned via `actions/setup-python@v5` so `scripts/ci_metrics_summary.py` runs consistently on both Ubuntu and Windows runners.
 - Mutation coverage now relies on GitHub-hosted runners by default; the self-hosted lane is opt-in and only fires when the repository variable `RUN_SELF_HOSTED` is set.

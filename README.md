@@ -319,6 +319,7 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 ## Reporting Backlog
 - Attach richer visual artifacts (HTML dashboards or charts) that combine the JaCoCo/PITest/Dependency-Check data already posted in the run summary.
 - Track progress for these items in `docs/CI-CD/ci_cd_plan.md` as they land so improvements to observability stay visible.
+- Consider enhanced `Contact` ergonomics (constructor JavaDoc describing validation exceptions, plus `toString/equals/hashCode` for better logging and collection handling once `ContactService` stores contacts in maps/sets).
 
 ## Sample QA Summary
 Every matrix job now renders a GitHub Actions summary similar to the snippet below so you can review health without opening each artifact:

@@ -13,6 +13,12 @@ package contactapp;
  */
 
 public class Contact {
+    private static final int MIN_LENGTH = 1;
+    private static final int ID_MAX_LENGTH = 10;
+    private static final int NAME_MAX_LENGTH = 10;
+    private static final int ADDRESS_MAX_LENGTH = 30;
+    private static final int PHONE_LENGTH = 10;
+
     private final String contactId;
     private String firstName;
     private String lastName;
@@ -25,15 +31,15 @@ public class Contact {
      * @throws IllegalArgumentException if any field violates the Contact constraints
      */
     public Contact(
-            String contactId,
-            String firstName,
-            String lastName,
-            String phone,
-            String address) {
+            final String contactId,
+            final String firstName,
+            final String lastName,
+            final String phone,
+            final String address) {
 
         // Use Validation utility for constructor field checks
-        Validation.validateLength(contactId, "contactId", 1, 10);
-        this.contactId = contactId.trim(); // normalize identifier for map keys
+        Validation.validateLength(contactId, "contactId", MIN_LENGTH, ID_MAX_LENGTH);
+        this.contactId = contactId.trim(); // normalize ID by trimming whitespace
 
         // Reuse setter validation for the mutable fields
         setFirstName(firstName);
@@ -64,22 +70,23 @@ public class Contact {
     }
 
     // Setters
-    public void setFirstName(String firstName) {
-        Validation.validateLength(firstName, "firstName", 1, 10);
+    public void setFirstName(final String firstName) {
+        Validation.validateLength(firstName, "firstName", MIN_LENGTH, NAME_MAX_LENGTH);
         this.firstName = firstName.trim(); // trim once after validation
     }
 
-    public void setLastName(String lastName) {
-        Validation.validateLength(lastName, "lastName", 1, 10);
-        this.lastName = lastName.trim();
+    public void setLastName(final String lastName) {
+        Validation.validateLength(lastName, "lastName", MIN_LENGTH, NAME_MAX_LENGTH);
+        this.lastName = lastName.trim(); // trim once after validation
     }
-    public void setPhone(String phone) {
-        Validation.validateNumeric10(phone, "phone");
+
+    public void setPhone(final String phone) {
+        Validation.validateNumeric10(phone, "phone", PHONE_LENGTH);
         this.phone = phone;
     }
 
-    public void setAddress(String address) {
-        Validation.validateLength(address, "address", 1, 30);
-        this.address = address.trim(); 
-}
+    public void setAddress(final String address) {
+        Validation.validateLength(address, "address", MIN_LENGTH, ADDRESS_MAX_LENGTH);
+        this.address = address.trim(); // trim once after validation
+    }
 }

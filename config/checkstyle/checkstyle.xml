@@ -3,11 +3,75 @@
         "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
         "https://checkstyle.org/dtds/configuration_1_3.dtd">
 <module name="Checker">
+    <property name="charset" value="UTF-8"/>
+
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <module name="LineLength">
+        <property name="max" value="120"/>
+        <property name="ignorePattern" value="^package|^import"/>
+    </module>
+
+    <module name="NewlineAtEndOfFile"/>
+
     <module name="TreeWalker">
+        <module name="PackageDeclaration"/>
+        <module name="AvoidStarImport"/>
+        <module name="RedundantImport"/>
+        <module name="ImportOrder">
+            <property name="ordered" value="true"/>
+            <property name="separated" value="true"/>
+            <property name="sortStaticImportsAlphabetically" value="true"/>
+        </module>
+
+        <module name="NeedBraces"/>
+        <module name="LeftCurly"/>
+        <module name="RightCurly"/>
+        <module name="EmptyBlock">
+            <property name="option" value="TEXT"/>
+        </module>
+
         <module name="WhitespaceAround"/>
         <module name="WhitespaceAfter"/>
-        <module name="NeedBraces"/>
-        <module name="AvoidStarImport"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="NoWhitespaceAfter"/>
+        <module name="SingleSpaceSeparator"/>
+        <module name="ParenPad"/>
+
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="braceAdjustment" value="0"/>
+            <property name="caseIndent" value="4"/>
+            <property name="lineWrappingIndentation" value="8"/>
+        </module>
+
         <module name="ModifierOrder"/>
+        <module name="RedundantModifier"/>
+
+        <module name="MethodLength">
+            <property name="max" value="80"/>
+        </module>
+        <module name="MethodParamPad"/>
+        <module name="MethodName"/>
+        <module name="ParameterName"/>
+        <module name="LocalVariableName"/>
+        <module name="MemberName"/>
+        <module name="HiddenField">
+            <property name="ignoreConstructorParameter" value="true"/>
+            <property name="ignoreSetter" value="true"/>
+        </module>
+
+        <module name="MagicNumber">
+            <property name="ignoreNumbers" value="-1,0,1"/>
+        </module>
+
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+        <module name="OneStatementPerLine"/>
+        <module name="FinalParameters"/>
+        <module name="FinalLocalVariable"/>
     </module>
+
 </module>

@@ -64,7 +64,7 @@ public final class ContactService {
      * @return {@code true} if the contact was added, {@code false} if the id already exists
      * @throws IllegalArgumentException if {@code contact} is {@code null}
      */
-    public boolean addContact(Contact contact) {
+    public boolean addContact(final Contact contact) {
         if (contact == null) {
             throw new IllegalArgumentException("contact must not be null");
         }
@@ -78,7 +78,7 @@ public final class ContactService {
      * @return true if a contact was removed, false if no contact existed
      * @throws IllegalArgumentException if contactId is null or blank
      */
-    public boolean deleteContact(String contactId) {
+    public boolean deleteContact(final String contactId) {
         Validation.validateNotBlank(contactId, "contactId");
         return database.remove(contactId) != null;
     }
@@ -96,12 +96,12 @@ public final class ContactService {
      * @throws IllegalArgumentException if any new field value is invalid (from Contact setters)
      */
     public boolean updateContact(
-            String contactId,
-            String firstName,
-            String lastName,
-            String phone,
-            String address) {
-        Contact contact = database.get(contactId);
+            final String contactId,
+            final String firstName,
+            final String lastName,
+            final String phone,
+            final String address) {
+        final Contact contact = database.get(contactId);
         if (contact == null) {
             return false;
         }

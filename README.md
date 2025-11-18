@@ -346,12 +346,26 @@ graph TD
 |---------------------|----------------------------|--------------------------------------------------------------------------------------|
 | Coverage            | **JaCoCo**                 | Line/branch coverage enforcement during `mvn verify`.                                |
 | Mutation            | **PITest**                 | Ensures assertions catch injected faults; threshold currently 70%.                   |
-| Style & complexity  | **Checkstyle**             | Formatting, naming, and `CyclomaticComplexity` caps.                                 |
-| Bug patterns        | **SpotBugs** *(planned)*   | TODO: wire plugin + CI step; currently documented for upcoming bug-pattern scanning. |
+| Style & complexity  | **Checkstyle**             | Formatting, naming, indentation, import ordering, and boolean simplification.        |
+| Bug patterns        | **SpotBugs**               | Bytecode bug-pattern scanning via `spotbugs-maven-plugin` (fails build on findings). |
 | Dependency security | **OWASP Dependency-Check** | CVE scanning backed by `NVD_API_KEY` with optional skip fallback.                    |
 | Semantic security   | **CodeQL**                 | Detects SQLi/XSS/path-traversal patterns in a separate workflow.                     |
 
 Each layer runs automatically in CI, so local `mvn verify` mirrors the hosted pipelines.
+
+### Checkstyle Rule Set
+| Check Group | Focus |
+|-------------|-------|
+| `ImportOrder`, `AvoidStarImport`, `RedundantImport` | Enforce ordered/separated imports, no wildcards, and no duplicates. |
+| `NeedBraces`, `LeftCurly`, `RightCurly`, `EmptyBlock` | Require braces and consistent brace placement; flag empty blocks. |
+| `WhitespaceAround`, `WhitespaceAfter`, `NoWhitespaceBefore`, `NoWhitespaceAfter`, `SingleSpaceSeparator`, `ParenPad` | Enforce consistent spacing around tokens and parentheses. |
+| `Indentation`, `LineLength`, `FileTabCharacter`, `NewlineAtEndOfFile` | Align indentation, cap lines at 120 chars, disallow tabs, ensure trailing newline. |
+| `ModifierOrder`, `RedundantModifier` | Keep modifier order canonical and drop redundant keywords. |
+| `MethodLength`, `MethodParamPad`, `MethodName`, `ParameterName`, `LocalVariableName`, `MemberName` | Bound method size and enforce naming/padding conventions. |
+| `HiddenField` | Prevent locals/parameters from shadowing fields (except constructors/setters). |
+| `MagicNumber` | Flags unwanted literals (excluding -1, 0, 1) to encourage constants. |
+| `SimplifyBooleanExpression`, `SimplifyBooleanReturn`, `OneStatementPerLine` | Reduce complex boolean logic and keep one statement per line. |
+| `FinalParameters`, `FinalLocalVariable` | Encourage immutability for parameters and locals when possible. |
 
 ### Sonatype OSS Index (optional)
 Dependency-Check also pings the Sonatype OSS Index service. When requests are anonymous the analyzer often rate-limits, which is why CI prints warnings like “An error occurred while analyzing … (Sonatype OSS Index Analyzer)”. To receive full results:
@@ -382,6 +396,8 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 
 ### Quality Gate Behavior
 - Each matrix job executes the full suite (tests, JaCoCo, Checkstyle, SpotBugs, Dependency-Check, PITest).
+- Checkstyle enforces formatting/import/indentation rules while SpotBugs scans bytecode for bug patterns and fails the build on findings.
+- SpotBugs runs when the build JVM is Java 22 or lower; a profile automatically skips it on newer JDKs until upstream ASM support lands.
 - If Dependency-Check or PITest flakes because of environment constraints, the workflow retries with `-Ddependency-check.skip=true` or `-Dpit.skip=true` so contributors stay unblocked but warnings remain visible.
 - Python 3.12 is provisioned via `actions/setup-python@v5` so `scripts/ci_metrics_summary.py` runs consistently on both Ubuntu and Windows runners.
 - Mutation coverage now relies on GitHub-hosted runners by default; the self-hosted lane is opt-in and only fires when the repository variable `RUN_SELF_HOSTED` is set.

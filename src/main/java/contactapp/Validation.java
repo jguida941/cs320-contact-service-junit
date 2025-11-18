@@ -20,7 +20,7 @@ public final class Validation {
      * @param label logical name of the field, used in exception messages
      * @throws IllegalArgumentException if input is null, empty, or blank
      */
-    public static void validateNotBlank(String input, String label) {
+    public static void validateNotBlank(final String input, final String label) {
         if (input == null || input.isBlank()) {
             throw new IllegalArgumentException(label + " must not be null or blank");
         }
@@ -36,12 +36,18 @@ public final class Validation {
      * @param maxLength inclusive maximum length
      * @throws IllegalArgumentException if input is null/blank or outside [minLength, maxLength]
      */
-    public static void validateLength(String input, String label, int minLength, int maxLength) {
+    public static void validateLength(
+            final String input,
+            final String label,
+            final int minLength,
+            final int maxLength) {
         validateNotBlank(input, label);
-        int length = input.trim().length();
+        final int length = input.trim().length();
         if (length < minLength || length > maxLength) {
-            throw new IllegalArgumentException(
-                    label + " length must be between " + minLength + " and " + maxLength);
+            final String message = String.format(
+                    "%s length must be between %d and %d",
+                    label, minLength, maxLength);
+            throw new IllegalArgumentException(message);
         }
     }
 
@@ -53,13 +59,13 @@ public final class Validation {
      * @param label logical name of the field, used in exception messages
      * @throws IllegalArgumentException if input is null/blank, contains non-digits, or is not length 10
      */
-    public static void validateNumeric10(String input, String label) {
+    public static void validateNumeric10(final String input, final String label, final int requiredLength) {
         validateNotBlank(input, label);
         if (!input.matches("\\d+")) {
             throw new IllegalArgumentException(label + " must only contain digits 0-9");
         }
-        if (input.length() != 10) {
-            throw new IllegalArgumentException(label + " must be exactly 10 digits");
+        if (input.length() != requiredLength) {
+            throw new IllegalArgumentException(label + " must be exactly " + requiredLength + " digits");
         }
     }
 }

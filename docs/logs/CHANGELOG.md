@@ -38,6 +38,9 @@ All notable changes to this project will be documented here. Follow the
   avoid persisting accidental leading/trailing whitespace.
 - Contact IDs are now trimmed on construction, and `Validation.validateLength`
   measures trimmed length so validation matches the data actually stored.
+- Expanded Checkstyle configuration (imports, indentation, line length, braces, etc.)
+  and wired `spotbugs-maven-plugin` (auto-skipped on JDK 23+) so bug patterns fail
+  `mvn verify`.
 - Expanded service tests to cover singleton reuse, missing delete branch, and a
   last-name change during updates so mutation testing can kill the remaining
   ContactService mutants.

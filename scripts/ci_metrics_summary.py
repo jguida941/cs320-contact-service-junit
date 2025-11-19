@@ -339,7 +339,7 @@ def main() -> int:
             format_row(
                 "Tests",
                 f"{tests['tests']} executed",
-                f"Runtime {tests['time']}s — failures: {tests['failures']}, errors: {tests['errors']}, skipped: {tests['skipped']}",
+                f"Total runtime {tests['time']}s; failures: {tests['failures']}, errors: {tests['errors']}, skipped: {tests['skipped']}",
             )
         )
     else:
@@ -347,7 +347,7 @@ def main() -> int:
 
     jacoco = load_jacoco()
     if jacoco:
-        coverage_text = f"{jacoco['pct']}% {bar(jacoco['pct'])}"
+        coverage_text = f"{jacoco['pct']}%".ljust(8) + bar(jacoco['pct'])
         detail = f"{jacoco['covered']} / {jacoco['total']} lines covered"
         summary_lines.append(format_row("Line coverage (JaCoCo)", coverage_text, detail))
     else:
@@ -357,7 +357,7 @@ def main() -> int:
     if pit:
         detail = f"{pit['killed']} killed, {pit['survived']} survived out of {pit['total']} mutations"
         summary_lines.append(
-            format_row("Mutation score (PITest)", f"{pit['pct']}% {bar(pit['pct'])}", detail)
+            format_row("Mutation score (PITest)", f"{pit['pct']}%".ljust(8) + bar(pit['pct']), detail)
         )
     else:
         summary_lines.append(
@@ -368,8 +368,7 @@ def main() -> int:
     if dep:
         detail = (
             f"{dep['vulnerable_dependencies']} dependencies with issues "
-            f"({dep['vulnerabilities']} vulnerabilities) out of {dep['dependencies']} scanned. "
-            f"<br>{severity_summary(dep['severity'])}"
+            f"({dep['vulnerabilities']} vulnerabilities) out of {dep['dependencies']} scanned."
         )
         summary_lines.append(format_row("Dependency-Check", "scan complete", detail))
     else:

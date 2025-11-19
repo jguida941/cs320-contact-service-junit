@@ -113,6 +113,13 @@ jobs:
           npm ci
           npm run build
 
+      - name: Publish QA summary
+        if: always()
+        env:
+          MATRIX_OS: ${{ matrix.os }}
+          MATRIX_JAVA: ${{ matrix.java-version }}
+        run: python scripts/ci_metrics_summary.py
+
       - name: Upload surefire reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -139,13 +146,6 @@ jobs:
           files: target/site/jacoco/jacoco.xml
           flags: ${{ matrix.os }}-jdk${{ matrix.java-version }}
           token: ${{ env.CODECOV_TOKEN }}
-
-      - name: Publish QA summary
-        if: always()
-        env:
-          MATRIX_OS: ${{ matrix.os }}
-          MATRIX_JAVA: ${{ matrix.java-version }}
-        run: python scripts/ci_metrics_summary.py
 
   release-artifacts:
     needs: build-test

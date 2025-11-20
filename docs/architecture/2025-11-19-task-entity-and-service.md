@@ -54,6 +54,7 @@ Key points:
 - Expand `TaskTest` with:
   - Happy-path construction, trimming behavior, setter updates, bulk update.
   - Negative cases for every constraint (null, blank, over-length) mirroring Contact tests.
+  - Parameterized invalid update cases that prove `update(...)` is atomic and leaves prior state intact on validation failure.
 - Build `TaskServiceTest` to verify add/delete/update flows, uniqueness enforcement, and exception propagation; use `clearAllTasks()` in lifecycle hooks.
 - Run unit tests plus coverage/mutation tooling (e.g., JaCoCo, PIT) to meet thresholds; document results.
 - Execute Checkstyle, SpotBugs, CodeQL, and Dependency Check; resolve or document findings.

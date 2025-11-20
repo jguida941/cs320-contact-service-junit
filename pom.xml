@@ -19,7 +19,7 @@
         <jacoco.version>0.8.14</jacoco.version>
         <dependency.check.version>12.1.9</dependency.check.version>
         <dependency.check.skip>false</dependency.check.skip>
-        <nvd.api.delay>5000</nvd.api.delay>
+        <nvdApiDelay>8000</nvdApiDelay>
         <pitest.version>1.22.0</pitest.version>
         <pit.skip>false</pit.skip>
         <spotbugs.skip>false</spotbugs.skip>
@@ -152,7 +152,7 @@
                 <configuration>
                     <failBuildOnCVSS>7.0</failBuildOnCVSS>
                     <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
-                    <nvdApiDelay>8000</nvdApiDelay>
+                    <nvdApiDelay>${nvdApiDelay}</nvdApiDelay>
                     <dataDirectory>${project.basedir}/.owasp-cache</dataDirectory>
                     <nvdValidForHours>168</nvdValidForHours>
                     <suppressionFiles>

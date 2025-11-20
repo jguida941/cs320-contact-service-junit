@@ -1,8 +1,12 @@
 package contactapp;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,9 +16,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *
  * Covers:
  *  - trimming and successful construction
- *  - update semantics (atomic replacement of fields)
+ *  - update semantics (atomic replacement of fields and unchanged state on validation failure)
  *  - setter behavior for valid values
- *  - validation of taskId, name, and description in both constructor and setters
+ *  - validation of taskId, name, and description in constructor, setters, and update(...)
  */
 public class TaskTest {
 
@@ -109,5 +113,50 @@ public class TaskTest {
         assertThatThrownBy(() -> task.setDescription(invalidDescription))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(expectedMessage);
+    }
+
+    /**
+     * Data for update(...) inputs we expect to fail.
+     * Added to cover a gap: update validation/atomicity was untested, so a regression could slip in.
+     *
+     * Each Arguments.of(name, description, message) row feeds one run of
+     * testUpdateRejectsInvalidValuesAtomically.
+     */
+    private static Stream<Arguments> invalidUpdateInputs() {
+        return Stream.of(
+                Arguments.of(" ", "Valid description", "name must not be null or blank"),
+                Arguments.of("", "Valid description", "name must not be null or blank"),
+                Arguments.of(null, "Valid description", "name must not be null or blank"),
+                Arguments.of("This name is definitely too long", "Valid description", "name length must be between 1 and 20"),
+                Arguments.of("Valid", " ", "description must not be null or blank"),
+                Arguments.of("Valid", "", "description must not be null or blank"),
+                Arguments.of("Valid", null, "description must not be null or blank"),
+                Arguments.of("Valid", "This description is intentionally made way too long to exceed the fifty character limit set", "description length must be between 1 and 50")
+        );
+    }
+
+    /**
+     * update(...) must:
+     *  - reject invalid name/description with the correct error message
+     *  - leave the existing Task state unchanged when validation fails
+     *
+     * This test uses invalidUpdateInputs() as a data source so each invalid
+     * combination (bad name, bad description, or both) runs as its own case.
+     */
+    @ParameterizedTest
+    @MethodSource("invalidUpdateInputs")
+    void testUpdateRejectsInvalidValuesAtomically(
+            String newName,
+            String newDescription,
+            String expectedMessage) {
+        Task task = new Task("100", "Draft plan", "Outline initial work");
+
+        assertThatThrownBy(() -> task.update(newName, newDescription))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(expectedMessage);
+
+        assertThat(task)
+                .hasFieldOrPropertyWithValue("name", "Draft plan")
+                .hasFieldOrPropertyWithValue("description", "Outline initial work");
     }
 }

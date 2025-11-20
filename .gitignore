@@ -33,3 +33,5 @@ bin/
 .DS_Store
 # OWASP Dependency Check cache
 .owasp-cache/
+# Local interview notes
+interview.md

@@ -12,7 +12,7 @@ Related: src/test/java/contactapp, docs/design-notes/notes/test-design-notes.md,
 
 ## Decision
 - Maintain separate test classes per layer:
-  - `*Test` for domain objects (constructor/setters/update trimming rules).
+  - `*Test` for domain objects (constructor/setters/update trimming rules, invalid update atomicity).
   - `ValidationTest` for helper boundaries.
   - `*ServiceTest` for singleton/service behavior (CRUD, trimming, boolean contracts, reset helpers like `clearAll*`).
 - Use AssertJ and JUnit 5 parameterized tests (`@CsvSource`) for expressive assertions and compact invalid-case coverage.

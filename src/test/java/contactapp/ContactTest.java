@@ -1,11 +1,13 @@
 package contactapp;
 
-// JUnit 5 core test annotations
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
-// AssertJ for object field checks
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -155,5 +157,37 @@ public class ContactTest {
         assertThatThrownBy(() -> contact.setFirstName(invalidFirstName))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(expectedMessage);
+    }
+
+    // Test data for update(...) that should fail validation and leave state unchanged
+    private static Stream<Arguments> invalidUpdateValues() {
+        return Stream.of(
+                Arguments.of(" ", "lastName", "1234567890", "7622 Main Street", "firstName must not be null or blank"),
+                Arguments.of("firstName", " ", "1234567890", "7622 Main Street", "lastName must not be null or blank"),
+                Arguments.of("firstName", "lastName", "12345abcde", "7622 Main Street", "phone must only contain digits 0-9"),
+                Arguments.of("firstName", "lastName", "1234567890", " ", "address must not be null or blank")
+        );
+    }
+
+    // update(...) should reject invalid values and keep the original contact fields intact (atomicity)
+    @ParameterizedTest
+    @MethodSource("invalidUpdateValues")
+    void testUpdateRejectsInvalidValuesAtomically(
+            String newFirst,
+            String newLast,
+            String newPhone,
+            String newAddress,
+            String expectedMessage) {
+        Contact contact = new Contact("1", "firstName", "lastName", "1234567890", "7622 Main Street");
+
+        assertThatThrownBy(() -> contact.update(newFirst, newLast, newPhone, newAddress))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(expectedMessage);
+
+        assertThat(contact)
+                .hasFieldOrPropertyWithValue("firstName", "firstName")
+                .hasFieldOrPropertyWithValue("lastName", "lastName")
+                .hasFieldOrPropertyWithValue("phone", "1234567890")
+                .hasFieldOrPropertyWithValue("address", "7622 Main Street");
     }
 }

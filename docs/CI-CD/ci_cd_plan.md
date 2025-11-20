@@ -42,6 +42,7 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 4. ✅ Introduce mutation testing (PITest) to prove the unit tests detect injected defects.
 5. ✅ Revisit workflow documentation in `README.md` once enhancements land and include the build badge.
 6. ✅ Publish per-run QA summaries in the GitHub Actions job summary (tests, JaCoCo, PITest, Dependency-Check) via `scripts/ci_metrics_summary.py`.
+7. ✅ Normalize CI flags so Dependency-Check skip/delay settings (`dependency.check.skip`, `nvdApiDelay`) match the Maven configuration and avoid hanging runs when secrets are absent.
 
 Keep this plan updated as each phase lands. When a task completes, we replace the checkbox with ✅ and add links to PRs or workflow runs for traceability.
 Once all phases are complete, we summarize the final workflow in `README.md`.

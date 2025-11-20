@@ -5,10 +5,10 @@
 File: docs/design-notes/notes/test-design-notes.md
 
 ## Why the tests are split
-- `ContactTest` covers the `Contact` class (constructor, setters, update helper) so we know the object enforces all rules.
+- `ContactTest` covers the `Contact` class (constructor, setters, update helper) so we know the object enforces all rules, including invalid update atomicity.
 - `ValidationTest` isolates the helper methods to verify boundary cases (min/max lengths, blank inputs) without creating an entire `Contact`.
 - `ContactServiceTest` focuses on the service API (add/delete/update behavior, singleton reset).
-- `TaskTest`/`TaskServiceTest` are empty placeholders until Task requirements are implemented in a later milestone, but they keep the folder structure ready.
+- `TaskTest`/`TaskServiceTest` mirror the Contact coverage now that Task is implemented: constructor trimming, invalid inputs (including update atomicity), singleton behavior, and CRUD flows.
 
 ## Why AssertJ and parameterized tests
 - AssertJ (`assertThat`, `assertThatThrownBy`) reads like plain English: `assertThat(contact.getFirstName()).isEqualTo("Alice")` is easy to follow and can chain multiple checks.

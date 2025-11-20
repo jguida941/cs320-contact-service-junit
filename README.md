@@ -42,7 +42,7 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 | [`src/main/java/contactapp/TaskService.java`](src/main/java/contactapp/TaskService.java)                             | Task service API (add/delete/update) mirroring the `ContactService` patterns.                   |
 | [`src/main/java/contactapp/Validation.java`](src/main/java/contactapp/Validation.java)                               | Centralized validation helpers (not blank, length, numeric checks).                             |
 | [`src/test/java/contactapp/ContactTest.java`](src/test/java/contactapp/ContactTest.java)                             | Unit tests for the `Contact` class (valid + invalid scenarios).                                 |
-| [`src/test/java/contactapp/TaskTest.java`](src/test/java/contactapp/TaskTest.java)                                   | Unit tests for the `Task` class (trimming + invalid cases).                                     |
+| [`src/test/java/contactapp/TaskTest.java`](src/test/java/contactapp/TaskTest.java)                                   | Unit tests for the `Task` class (trimming, invalid inputs, and atomic update validation).       |
 | [`src/test/java/contactapp/TaskServiceTest.java`](src/test/java/contactapp/TaskServiceTest.java)                     | Unit tests for `TaskService` (singleton behavior and CRUD).                                     |
 | [`docs/requirements/contact-requirements/`](docs/requirements/contact-requirements/)                                 | Assignment write-up and checklist (now under `docs/`).                                          |
 | [`docs/architecture/2025-11-19-task-entity-and-service.md`](docs/architecture/2025-11-19-task-entity-and-service.md) | Task entity/service design plan with Definition of Done and phased approach.                    |
@@ -159,7 +159,7 @@ graph TD
 ### Approach & TDD
 - Each validator rule started as a failing test, then the implementation was written until the suite passed.
 - `ContactTest` serves as the living specification covering both the success path and every invalid scenario.
-- `TaskTest` and `TaskServiceTest` mirror the same workflow for the Task domain/service, reusing the shared `Validation` helper and singleton patterns.
+- `TaskTest` and `TaskServiceTest` mirror the same workflow for the Task domain/service, reusing the shared `Validation` helper and singleton patterns, and include invalid update cases to prove atomicity.
 
 ### Parameterized Coverage
 - `@ParameterizedTest` + `@CsvSource` enumerate the invalid IDs, names, phones, and addresses so we don’t duplicate boilerplate tests.
@@ -187,8 +187,10 @@ void testInvalidContactId(String id, String expectedMessage) {
 - `testConstructorTrimsStoredValues` confirms IDs, names, and addresses are normalized via `trim()`.
 - `testFailedCreation` (`@ParameterizedTest`) enumerates every invalid ID/name/phone/address combination and asserts the corresponding message.
 - `testFailedSetFirstName` (`@ParameterizedTest`) exercises the setter’s invalid inputs (blank/long/null).
+- `testUpdateRejectsInvalidValuesAtomically` proves invalid updates throw and leave the existing Contact state unchanged.
 - `ValidationTest.validateLengthAcceptsBoundaryValues` proves 1/10-char names and 30-char addresses remain valid.
 - `ValidationTest.validateLengthRejectsBlankStrings` and `ValidationTest.validateLengthRejectsNull` ensure blanks/nulls fail before length math is evaluated.
+- `ValidationTest.validateLengthRejectsTooLong` hits the max-length branch to keep upper-bound validation covered.
 - `ValidationTest.validateNumeric10RejectsBlankStrings` and `ValidationTest.validateNumeric10RejectsNull` ensure the phone validator raises the expected messages before regex/length checks.
 
 <br>
@@ -317,6 +319,7 @@ graph TD
 - Constructor stores trimmed values and rejects null/blank/too-long IDs, names, and descriptions.
 - Setters accept valid updates and reject invalid ones with the same helper-generated messages.
 - `update(...)` replaces both mutable fields atomically and never mutates on invalid input.
+- `testUpdateRejectsInvalidValuesAtomically` enumerates invalid name/description pairs and asserts the Task remains unchanged when validation fails.
 
   <br>
 
@@ -428,7 +431,7 @@ graph TD
 ## SpotBugs Commands
 ```bash
 # Run SpotBugs as part of the normal build
-mvn -Ddependency-check.skip=true verify
+mvn -Ddependency.check.skip=true verify
 
 # Fail fast on SpotBugs findings during local iterations
 mvn spotbugs:check
@@ -472,7 +475,7 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 - Each matrix job executes the full suite (tests, JaCoCo, Checkstyle, SpotBugs, Dependency-Check, PITest).
 - Checkstyle enforces formatting/import/indentation rules while SpotBugs scans bytecode for bug patterns and fails the build on findings.
 - SpotBugs runs as part of every `mvn verify` run on the supported JDKs (currently 17 and 21 in CI) and fails the build on findings.
-- If Dependency-Check or PITest flakes because of environment constraints, the workflow retries with `-Ddependency-check.skip=true` or `-Dpit.skip=true` so contributors stay unblocked but warnings remain visible.
+- Dependency-Check throttling is tuned via `nvdApiDelay` (defaults to 3500ms when an NVD API key is configured, 8000ms without a key) and honors `-Ddependency.check.skip=true` if the NVD feed is unreachable; PITest has a similar `-Dpit.skip=true` retry path so contributors stay unblocked but warnings remain visible.
 - Python 3.12 is provisioned via `actions/setup-python@v5` so `scripts/ci_metrics_summary.py` runs consistently on both Ubuntu and Windows runners.
 - Node.js 20 is provisioned via `actions/setup-node@v4` and the React dashboard under `ui/qa-dashboard/` is built every run so the artifacts contain the interactive QA console.
 - Mutation coverage now relies on GitHub-hosted runners by default; the self-hosted lane is opt-in and only fires when the repository variable `RUN_SELF_HOSTED` is set.

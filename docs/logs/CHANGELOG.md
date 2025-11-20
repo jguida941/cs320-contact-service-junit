@@ -72,7 +72,7 @@ All notable changes to this project will be documented here. Follow the
 - Expanded service tests to cover singleton reuse, missing delete branch, and a
   last-name change during updates so mutation testing can kill the remaining
   ContactService mutants.
-- Fixed the Java CI workflow so `dependency-check.skip` uses the correct
+- Fixed the Java CI workflow so `dependency.check.skip` uses the correct
   hyphenated property, Codecov upload keys off `secrets.CODECOV_TOKEN`, and
   quality-report artifacts no longer fail the job when reports are absent.
 - Updated `README.md` and `docs/index.md` to match the new `docs/requirements`
@@ -95,6 +95,7 @@ All notable changes to this project will be documented here. Follow the
   fully interactive console.
 - Added a README note explaining why the service methods return `boolean`
   (simple success/failure signaling for this milestone).
+- Clarified Task test documentation (TaskTest Javadocs, README/index, and test design notes) to call out invalid update coverage and atomicity checks.
 - Updated README caching section to explain that Dependency-Check caches are
   intentionally purged each run (only Maven artifacts remain cached).
 - CI flow diagram now includes the QA summary/Codecov step so the visual matches
@@ -105,6 +106,7 @@ All notable changes to this project will be documented here. Follow the
 - Created dedicated README sections for `ContactService` validation/testing with
   TODO placeholders so the service mirrors the structure already documented for
   `Contact`.
+- Added an over-length guard test in `ValidationTest` to cover the max-length branch and keep validation mutation/branch coverage at 100%.
 - Clarified README headings/TOC so each section explicitly references the source
   file (`Contact.java`, `ContactTest.java`, `ContactService.java`,
   `ContactServiceTest.java`).
@@ -121,13 +123,16 @@ All notable changes to this project will be documented here. Follow the
   `Contact`/`ContactTest` pair while we flesh out CRUD behavior.
 - Completed the README sections for `Task.java`/`TaskTest.java` and `TaskService.java`/`TaskServiceTest.java`, describing validation flow, error philosophy, and scenario coverage instead of TODO placeholders.
 - README now matches the implementation details: `ContactService.updateContact` references `Contact.update(...)`, `validateNumeric10` lists the `requiredLength` parameter, and SpotBugs/JDK matrix text reflects the actual `{17, 21}` CI coverage.
+- Documented the new `ValidationTest.validateLengthRejectsTooLong` scenario in README to reflect full length-check coverage.
 - README badges now use a uniform Shields.io flat-square style (GitHub Actions, Codecov, JaCoCo, PITest, SpotBugs, OWASP DC, License) with consistent colors (brightgreen for CI/coverage/mutation, blue for static analysis/license).
 - Added `TaskServiceTest.testClearAllTasksRemovesEntries` (with a note explaining it) so PIT kills the last surviving mutant that removed the internal `Map.clear()` call.
+- Captured the Contact/Task invalid-update atomicity tests in the README scenario coverage lists so users can see those guardrails.
 - `ContactService#updateContact` and `TaskService#updateTask` now validate/trim
   the incoming ids (matching the delete paths) so lookups succeed even if
   callers include whitespace, and both services now throw `IllegalArgumentException`
   for blank ids on update; new unit tests cover the trimmed-id success path and
   blank-id error case.
+- Expanded `TaskTest.invalidUpdateInputs` with empty-string and null cases to mirror constructor/setter validation, and clarified README Dependency-Check defaults (3500ms with an API key, 8000ms without).
 - Refreshed `README.md` and `index.md` to correct Task file paths (now under
   `contactapp`), link to the new architecture/ADR directories, and fix stale
   relative links left over from the original docs layout.

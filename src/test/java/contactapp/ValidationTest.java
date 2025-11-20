@@ -47,6 +47,19 @@ class ValidationTest {
                 .hasMessage("firstName must not be null or blank");
     }
 
+    /**
+     * validateLength: we already cover the "too short" branch (length < min).
+     * This test hits the other side of the condition (length > max), so JaCoCo
+     * sees the upper-bound failure path and we lock in the standard range message.
+     */
+    @Test
+    void validateLengthRejectsTooLong() {
+        assertThatThrownBy(() ->
+                Validation.validateLength("ABCDEFGHIJK", "firstName", MIN_LENGTH, NAME_MAX))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("firstName length must be between 1 and 10");
+    }
+
     // Phone number validator must detect blank string before digit/length checks
     @Test
     void validateNumeric10RejectsBlankStrings() {

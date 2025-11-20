@@ -319,16 +319,16 @@ def _count_badge(label: str, count: Optional[int], unit: str, clean_message: str
             "schemaVersion": 1,
             "label": label,
             "message": "n/a",
-            "color": "lightgray",
+            "color": "9CA3AF",  # gray-400
         }
     if count == 0:
         return {
             "schemaVersion": 1,
             "label": label,
             "message": clean_message,
-            "color": "green",
+            "color": "16A34A",  # green-600
         }
-    color = "yellow" if count <= 5 else "red"
+    color = "F59E0B" if count <= 5 else "DC2626"  # amber vs red
     return {
         "schemaVersion": 1,
         "label": label,

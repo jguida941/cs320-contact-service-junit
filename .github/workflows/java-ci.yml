@@ -126,7 +126,7 @@ jobs:
         run: python scripts/ci_metrics_summary.py
 
       - name: Commit updated badges
-        if: matrix.os == 'ubuntu-latest' && matrix.java-version == 17 && github.event_name == 'push'
+        if: matrix.os == 'ubuntu-latest' && matrix.java-version == 21 && github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

@@ -168,6 +168,21 @@ def load_surefire() -> Optional[Dict[str, float]]:
     }
 
 
+def load_spotbugs_count() -> Optional[int]:
+    """Parse SpotBugs XML report and count bug instances."""
+    for name in ("spotbugsXml.xml", "spotbugs.xml"):
+        report = TARGET / name
+        if not report.exists():
+            continue
+        try:
+            tree = ET.parse(report)
+        except ET.ParseError:
+            return None
+        root = tree.getroot()
+        return sum(1 for _ in root.iter("BugInstance"))
+    return None
+
+
 def bar(pct: float, width: int = 20) -> str:
     filled = int(round((pct / 100) * width))
     filled = max(0, min(width, filled))
@@ -297,9 +312,35 @@ def _badge_payload(label: str, percent: float) -> Dict[str, object]:
     }
 
 
+def _count_badge(label: str, count: Optional[int], unit: str, clean_message: str) -> Dict[str, object]:
+    if count is None:
+        return {
+            "schemaVersion": 1,
+            "label": label,
+            "message": "n/a",
+            "color": "lightgray",
+        }
+    if count == 0:
+        return {
+            "schemaVersion": 1,
+            "label": label,
+            "message": clean_message,
+            "color": "green",
+        }
+    color = "yellow" if count <= 5 else "red"
+    return {
+        "schemaVersion": 1,
+        "label": label,
+        "message": f"{count} {unit}",
+        "color": color,
+    }
+
+
 def maybe_update_badges(
         jacoco: Optional[Dict[str, float]],
-        pit: Optional[Dict[str, float]]) -> None:
+        pit: Optional[Dict[str, float]],
+        spotbugs_count: Optional[int],
+        dep_raw: Optional[Dict[str, object]]) -> None:
     if not _badge_enabled():
         return
     badge_dir = _badge_dir()
@@ -310,10 +351,18 @@ def maybe_update_badges(
         return
     coverage_pct = jacoco["pct"] if jacoco else 0.0
     mutation_pct = pit["pct"] if pit else 0.0
-    jacoco_path = badge_dir / "jacoco.json"
-    mutation_path = badge_dir / "mutation.json"
-    jacoco_path.write_text(json.dumps(_badge_payload("coverage", coverage_pct)), encoding="utf-8")
-    mutation_path.write_text(json.dumps(_badge_payload("mutation", mutation_pct)), encoding="utf-8")
+    dep_vulns = dep_raw["vulnerabilities"] if dep_raw else None
+
+    badge_payloads = {
+        "jacoco.json": _badge_payload("JaCoCo", coverage_pct),
+        "mutation.json": _badge_payload("PITest", mutation_pct),
+        "spotbugs.json": _count_badge("SpotBugs", spotbugs_count, "issues", "clean"),
+        "dependency.json": _count_badge("Dependency-Check", dep_vulns, "vulns", "clean"),
+    }
+
+    for filename, payload in badge_payloads.items():
+        (badge_dir / filename).write_text(json.dumps(payload), encoding="utf-8")
+
     print(f"[INFO] Updated badge JSON in {badge_dir}")
 
 
@@ -426,6 +475,7 @@ def main() -> int:
         )
 
     dep = load_dependency_check()
+    spotbugs_count = load_spotbugs_count()
     if dep:
         detail = (
             f"{dep['vulnerable_dependencies']} dependencies with issues "
@@ -461,7 +511,7 @@ def main() -> int:
         print(summary_text)
 
     write_dashboard(tests, jacoco, pit, dep)
-    maybe_update_badges(jacoco, pit)
+    maybe_update_badges(jacoco, pit, spotbugs_count, dep)
     return 0
 
 

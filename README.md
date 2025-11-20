@@ -545,7 +545,7 @@ graph TD
     F[Container verify Temurin17 Maven3.9.9]
     G{RUN_SELF_HOSTED == true?}
     H[Self-hosted mutation lane]
-    I[Release artifacts (release event only)]
+    I[Release artifacts]
 
     A --> B --> E
     B --> C

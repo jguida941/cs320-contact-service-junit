@@ -121,7 +121,7 @@ graph TD
     D --> E --> F
     E --> X
 ```
-- IDs and names take the first two steps, addresses stop after `validateLength` (1-30 chars), and phones add the numeric guard so they remain digits-only at ten characters.
+- IDs and names take the first two steps, addresses stop after `validateLength` (1-30 chars), and phones add the numeric guard so they remain digits-only at ten characters; inputs are trimmed before length checks and before storing.
 - Because the constructor routes through the setters, the exact same pipeline applies whether the object is being created or updated.
 
 ### Error Message Philosophy
@@ -222,6 +222,7 @@ graph TD
     J --> K[updated contact]
 ```
 - All entry points validate the `contactId` before touching the map so we never store blank keys.
+- IDs are trimmed before any map access (add/delete/update) so callers with surrounding whitespace behave consistently.
 - Setter delegation ensures errors surface with the same messages as the constructor (e.g., “phone must be exactly 10 digits”).
 
 ### Error Message Philosophy
@@ -349,7 +350,7 @@ graph TD
     H -->|found| I["Task.update(newName, description)"]
 ```
 - Service boundaries use the same Validation helper so error messages stay identical to the entity layer.
-- Updates delegate to `Task.update(...)`, keeping atomicity centralized.
+- Updates delegate to `Task.update(...)`, keeping atomicity centralized; `putIfAbsent` returns `false` on duplicate IDs just like the Contact service.
 
 ### Error Message Philosophy
 - Service-level guards emit just two strings (`"task must not be null"` and `"taskId must not be null or blank"`); everything else flows from the Task entity.

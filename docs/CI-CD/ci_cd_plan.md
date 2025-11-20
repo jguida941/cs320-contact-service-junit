@@ -41,4 +41,5 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 5. ✅ Revisit workflow documentation in `README.md` once enhancements land and include the build badge.
 6. ✅ Publish per-run QA summaries in the GitHub Actions job summary (tests, JaCoCo, PITest, Dependency-Check) via `scripts/ci_metrics_summary.py`.
 
-Keep this plan updated as each phase lands. When a task completes, replace the checkbox with ✅ and add links to PRs or workflow runs for traceability. Once all phases are complete, summarize the final workflow in `README.md`.
+Keep this plan updated as each phase lands. When a task completes, we replace the checkbox with ✅ and add links to PRs or workflow runs for traceability.
+Once all phases are complete, we summarize the final workflow in `README.md`.

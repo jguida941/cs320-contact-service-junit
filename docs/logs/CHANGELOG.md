@@ -15,6 +15,11 @@ All notable changes to this project will be documented here. Follow the
   backlog/sample content out of the README to keep it focused.
 - Introduced `Contact#update(...)` so multi-field updates validate every value
   before committing changes, preventing partially updated contacts.
+- Published the Task entity/service implementation plan in
+  `docs/architecture/2025-11-19-task-entity-and-service.md` and added the ADR
+  catalog (`docs/adrs/README.md`) plus ADR-0001 through ADR-0008 to capture
+  validation, storage, atomic update, CI, SpotBugs runtime, documentation, Task
+  feature choices, and the CI metrics summary script.
 
 ### Changed
 - Java CI workflow now installs Python 3.12 for every matrix leg so the QA
@@ -98,6 +103,12 @@ All notable changes to this project will be documented here. Follow the
 - Added explicit placeholders/doc comments in `ContactService.java` and
   `ContactServiceTest.java` so the service layer mirrors the structure of the
   `Contact`/`ContactTest` pair while we flesh out CRUD behavior.
+- Refreshed `README.md` and `index.md` to correct Task file paths (now under
+  `contactapp`), link to the new architecture/ADR directories, and fix stale
+  relative links left over from the original docs layout.
+- Extended `scripts/ci_metrics_summary.py` so Dependency-Check uses the shared
+  `target/` constant, PITest "detected" counts flow into summaries, and the QA
+  report now includes a dependency severity breakdown row plus ADR tracking.
 
 ### Security
 - Bumped `org.pitest:pitest-maven` to `1.21.1` and `org.pitest:pitest-junit5-plugin`

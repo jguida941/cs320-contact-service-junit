@@ -6,34 +6,39 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 
 | Path                                                                       | Purpose                                                                                                                      |
 |----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| [`src/`](../src)                                                           | Java source tree. <br/>`src/main/java/contactapp` contains application code; <br/>`src/test/java/contactapp` contains tests. |
-| [`CI-CD/`](CI-CD/)                                                         | CI/CD design notes and pipeline planning artifacts.                                                                          |
-| [`requirements/contact-requirements/`](requirements/contact-requirements/) | Contact assignment requirements (now collocated under `docs/`).                                                             |
-| [`requirements/task-requirements/`](requirements/task-requirements/)       | Task assignment requirements (task object/service specs + checklist).                                                       |
+| [`src/`](src/)                                                             | Java source tree. <br/>`src/main/java/contactapp` contains application code; <br/>`src/test/java/contactapp` contains tests. |
+| [`docs/CI-CD/`](docs/CI-CD/)                                               | CI/CD design notes and pipeline planning artifacts.                                                                          |
+| [`docs/requirements/contact-requirements/`](docs/requirements/contact-requirements/) | Contact assignment requirements (now collocated under `docs/`).                                                              |
+| [`docs/requirements/task-requirements/`](docs/requirements/task-requirements/)       | Task assignment requirements (task object/service specs + checklist).                                                        |
+| [`docs/architecture/`](docs/architecture/)                                 | Feature design briefs (e.g., Task entity/service plan with Definition of Done).                                              |
+| [`docs/adrs/`](docs/adrs/)                                                 | Architecture Decision Records index plus individual ADR files.                                                              |
 
 ## Key Files
 
 | Path                                                                                                      | Description                                                                            |
 |-----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
-| [`src/main/java/contactapp/Contact.java`](../src/main/java/contactapp/Contact.java)                       | `Contact` domain object with all field validation rules.                               |
-| [`src/main/java/contactapp/ContactService.java`](../src/main/java/contactapp/ContactService.java)         | In-memory service that adds, updates, and deletes contacts.                            |
-| [`src/main/java/contactapp/Validation.java`](../src/main/java/contactapp/Validation.java)                 | Shared helper with not-blank, length, and 10-digit checks.                             |
-| [`src/main/java/contactapp/Main.java`](../src/main/java/contactapp/Main.java)                             | Optional `main` entry point for manual checks/demos.                                   |
-| [`src/test/java/contactapp/ContactTest.java`](../src/test/java/contactapp/ContactTest.java)               | JUnit tests covering the `Contact` validation requirements.                            |
-| [`src/test/java/contactapp/ContactServiceTest.java`](../src/test/java/contactapp/ContactServiceTest.java) | JUnit tests covering add, delete, and update behavior.                                 |
-| [`pom.xml`](../pom.xml)                                                                                   | Maven project file defining dependencies and plugins.                                  |
-| [`config/checkstyle/checkstyle.xml`](../config/checkstyle/checkstyle.xml)                                 | Custom Checkstyle rules enforced in CI.                                                |
-| [`config/owasp-suppressions.xml`](../config/owasp-suppressions.xml)                                       | Placeholder suppression list for OWASP Dependency-Check.                               |
-| [`scripts/ci_metrics_summary.py`](../scripts/ci_metrics_summary.py)                                       | Prints the QA metrics table (tests/coverage/mutations/dependencies) in GitHub Actions. |
-| [`docs/logs/backlog.md`](logs/backlog.md)                                                                 | Backlog for reporting and domain enhancements.                                         |
-| [`.github/workflows`](../.github/workflows)                                                               | GitHub Actions pipelines (CI, release packaging, CodeQL).                              |
+| [`src/main/java/contactapp/Contact.java`](src/main/java/contactapp/Contact.java)                       | `Contact` domain object with all field validation rules.                               |
+| [`src/main/java/contactapp/ContactService.java`](src/main/java/contactapp/ContactService.java)         | In-memory service that adds, updates, and deletes contacts.                            |
+| [`src/main/java/contactapp/Validation.java`](src/main/java/contactapp/Validation.java)                 | Shared helper with not-blank, length, and 10-digit checks.                             |
+| [`src/main/java/contactapp/Task.java`](src/main/java/contactapp/Task.java)                             | Placeholder Task domain object following the same package as Contact.                  |
+| [`src/main/java/contactapp/TaskService.java`](src/main/java/contactapp/TaskService.java)               | Placeholder Task service matching future requirements.                                 |
+| [`src/test/java/contactapp/ContactTest.java`](src/test/java/contactapp/ContactTest.java)               | JUnit tests covering the `Contact` validation requirements.                            |
+| [`src/test/java/contactapp/ContactServiceTest.java`](src/test/java/contactapp/ContactServiceTest.java) | JUnit tests covering add, delete, and update behavior.                                 |
+| [`pom.xml`](pom.xml)                                                                                   | Maven project file defining dependencies and plugins.                                  |
+| [`config/checkstyle/checkstyle.xml`](config/checkstyle/checkstyle.xml)                                 | Custom Checkstyle rules enforced in CI.                                                |
+| [`config/owasp-suppressions.xml`](config/owasp-suppressions.xml)                                       | Placeholder suppression list for OWASP Dependency-Check.                               |
+| [`scripts/ci_metrics_summary.py`](scripts/ci_metrics_summary.py)                                       | Prints the QA metrics table (tests/coverage/mutations/dependencies) in GitHub Actions. |
+| [`docs/architecture/2025-11-19-task-entity-and-service.md`](docs/architecture/2025-11-19-task-entity-and-service.md) | Task entity/service plan with Definition of Done and phase breakdown. |
+| [`docs/adrs/README.md`](docs/adrs/README.md)                                                           | ADR index summarizing ADR-0001 through ADR-0007.                                       |
+| [`docs/logs/backlog.md`](docs/logs/backlog.md)                                                         | Backlog for reporting and domain enhancements.                                         |
+| [`.github/workflows`](.github/workflows)                                                               | GitHub Actions pipelines (CI, release packaging, CodeQL).                              |
 
 ## Requirements & Notes
 
-| Path                                                                                                                         | Description                                  |
-|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|
-| [`requirements/contact-requirements/requirements.md`](requirements/contact-requirements/requirements.md)                     | Contact assignment requirements.             |
-| [`requirements/contact-requirements/requirements_checklist.md`](requirements/contact-requirements/requirements_checklist.md) | Contact requirements checklist.              |
-| [`requirements/task-requirements/requirements.md`](requirements/task-requirements/requirements.md)                           | Task assignment requirements (task object/service). |
-| [`requirements/task-requirements/requirements_checklist.md`](requirements/task-requirements/requirements_checklist.md)       | Task requirements checklist.                 |
-| [`index.md`](index.md)                                                                                                       | Documentation index and navigation entry.    |
+| Path                                                                                                                         | Description                                         |
+|------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| [`docs/requirements/contact-requirements/requirements.md`](docs/requirements/contact-requirements/requirements.md)                     | Contact assignment requirements.                    |
+| [`docs/requirements/contact-requirements/requirements_checklist.md`](docs/requirements/contact-requirements/requirements_checklist.md) | Contact requirements checklist.                     |
+| [`docs/requirements/task-requirements/requirements.md`](docs/requirements/task-requirements/requirements.md)                           | Task assignment requirements (task object/service). |
+| [`docs/requirements/task-requirements/requirements_checklist.md`](docs/requirements/task-requirements/requirements_checklist.md)       | Task requirements checklist.                        |
+| [`index.md`](index.md)                                                                                                       | Documentation index and navigation entry.           |

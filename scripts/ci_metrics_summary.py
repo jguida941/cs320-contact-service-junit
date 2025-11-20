@@ -73,7 +73,7 @@ def load_pitest() -> Optional[Dict[str, float]]:
     mutations = list(tree.getroot().iter("mutation"))
     total = len(mutations)
     if total == 0:
-        return {"total": 0, "killed": 0, "pct": 0.0}
+        return {"total": 0, "killed": 0, "survived": 0, "detected": 0, "pct": 0.0}
 
     killed = sum(1 for m in mutations if m.attrib.get("status") == "KILLED")
     survived = sum(1 for m in mutations if m.attrib.get("status") == "SURVIVED")
@@ -99,7 +99,7 @@ SEVERITY_LABELS = {
 
 def load_dependency_check() -> Optional[Dict[str, object]]:
     """Parse Dependency-Check JSON for vulnerability counts."""
-    report = ROOT / "target" / "dependency-check-report.json"
+    report = TARGET / "dependency-check-report.json"
     if not report.exists():
         return None
     try:
@@ -214,13 +214,14 @@ def _normalize_coverage(jacoco: Optional[Dict[str, float]]) -> Dict[str, float]:
 
 def _normalize_mutation(pit: Optional[Dict[str, float]]) -> Dict[str, float]:
     if not pit:
-        return {"percent": 0.0, "killed": 0, "survived": 0, "noCoverage": 0, "total": 0}
+        return {"percent": 0.0, "killed": 0, "survived": 0, "noCoverage": 0, "detected": 0, "total": 0}
     no_coverage = max(0, pit["total"] - pit["killed"] - pit["survived"])
     return {
         "percent": pit["pct"],
         "killed": pit["killed"],
         "survived": pit["survived"],
         "noCoverage": no_coverage,
+        "detected": pit.get("detected", pit["killed"]),
         "total": pit["total"],
     }
 
@@ -254,7 +255,7 @@ def _build_console_lines(
     lines.append(f"[INFO] JaCoCo coverage: {coverage['percent']}% ({coverage['covered']}/{coverage['total']})")
     lines.append(
         f"[INFO] PITest mutation score: {mutation['percent']}% "
-        f"(killed {mutation['killed']}, survived {mutation['survived']})"
+        f"(killed {mutation['killed']}, survived {mutation['survived']}, detected {mutation['detected']})"
     )
     vuln_total = sum(dep["vulnerabilities"].values())
     if dep["vulnerableDeps"] > 0:
@@ -355,7 +356,10 @@ def main() -> int:
 
     pit = load_pitest()
     if pit:
-        detail = f"{pit['killed']} killed, {pit['survived']} survived out of {pit['total']} mutations"
+        detail = (
+            f"{pit['killed']} killed, {pit['survived']} survived, "
+            f"{pit.get('detected', pit['killed'])} detected out of {pit['total']} mutations"
+        )
         summary_lines.append(
             format_row("Mutation score (PITest)", f"{pit['pct']}%".ljust(8) + bar(pit['pct']), detail)
         )
@@ -371,6 +375,9 @@ def main() -> int:
             f"({dep['vulnerabilities']} vulnerabilities) out of {dep['dependencies']} scanned."
         )
         summary_lines.append(format_row("Dependency-Check", "scan complete", detail))
+        summary_lines.append(
+            format_row("Dependency severity", severity_summary(dep["severity"]), "")
+        )
     else:
         summary_lines.append(
             format_row(

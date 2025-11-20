@@ -32,11 +32,13 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 |------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
 | [`src/main/java/contactapp/Contact.java`](src/main/java/contactapp/Contact.java)               | Contact entity enforcing the ID/name/phone/address constraints.     |
 | [`src/main/java/contactapp/ContactService.java`](src/main/java/contactapp/ContactService.java) | Singleton service with in-memory CRUD, uniqueness checks, and validation reuse. |
-| [`src/main/java/taskapp/Task.java`](src/main/java/taskapp/Task.java) *(planned)*               | Task entity (ID/name/description) mirroring the requirements document. |
-| [`src/main/java/taskapp/TaskService.java`](src/main/java/taskapp/TaskService.java) *(planned)* | Task service API (add/delete/update) documented under task requirements. |
+| [`src/main/java/contactapp/Task.java`](src/main/java/contactapp/Task.java) *(placeholder)*               | Task entity (ID/name/description) mirroring the requirements document. |
+| [`src/main/java/contactapp/TaskService.java`](src/main/java/contactapp/TaskService.java) *(placeholder)* | Task service API (add/delete/update) documented under task requirements. |
 | [`src/main/java/contactapp/Validation.java`](src/main/java/contactapp/Validation.java)         | Centralized validation helpers (not blank, length, numeric checks). |
 | [`src/test/java/contactapp/ContactTest.java`](src/test/java/contactapp/ContactTest.java)       | Unit tests for the `Contact` class (valid + invalid scenarios).     |
 | [`docs/requirements/contact-requirements/`](docs/requirements/contact-requirements/)            | Assignment write-up and checklist from the instructor (now under `docs/`). |
+| [`docs/architecture/2025-11-19-task-entity-and-service.md`](docs/architecture/2025-11-19-task-entity-and-service.md) | Task entity/service design plan with Definition of Done and phased approach. |
+| [`docs/adrs/README.md`](docs/adrs/README.md)                                                   | Architecture Decision Record index with links to ADR-0001…ADR-0007. |
 | [`index.md`](index.md)                                                                         | Quick reference guide for the repo layout.                          |
 | [`pom.xml`](pom.xml)                                                                           | Maven build file (dependencies, plugins, compiler config).          |
 | [`config/checkstyle`](config/checkstyle)                                                       | Checkstyle configuration used by Maven/CI quality gates.            |
@@ -121,8 +123,8 @@ throw new IllegalArgumentException("firstName length must be between 1 and 10");
 - Specific, label-driven messages make debugging easier and double as documentation. Tests assert on the message text so regressions are caught immediately.
 
 ### Exception Strategy
-| Exception Type | Use Case           | Recovery? | Our Choice  |
-|----------------|--------------------|-----------|-------------|
+| Exception Type | Use Case           | Recovery? | Our Choice |
+|----------------|--------------------|-----------|------------|
 | Checked        | Recoverable issues | Maybe     | ❌          |
 | Unchecked      | Programming errors | Fix code  | ✅          | 
 
@@ -250,7 +252,7 @@ graph TD
 
 <br>
 
-## [Task.java](src/main/java/taskapp/Task.java) / [TaskTest.java](src/test/java/taskapp/TaskTest.java)
+## [Task.java](src/main/java/contactapp/Task.java) / [TaskTest.java](src/test/java/contactapp/TaskTest.java)
 
 ### Service Snapshot
 - _TODO: Document task fields, Immutability rules, and storage semantics once Task.java lands._
@@ -290,7 +292,7 @@ graph TD
 
   <br>
 
-## [TaskService.java](src/main/java/taskapp/TaskService.java) / [TaskServiceTest.java](src/test/java/taskapp/TaskServiceTest.java)
+## [TaskService.java](src/main/java/contactapp/TaskService.java) / [TaskServiceTest.java](src/test/java/contactapp/TaskServiceTest.java)
 
 ### Service Snapshot
 - _Placeholder: summarize task service responsibilities (add/delete/update, in-memory map, uniqueness guard)._
@@ -364,18 +366,18 @@ graph TD
 ```
 
 ## Checkstyle Rule Set
-| Check Group | Focus |
-|-------------|-------|
-| `ImportOrder`, `AvoidStarImport`, `RedundantImport` | Enforce ordered/separated imports, no wildcards, and no duplicates. |
-| `NeedBraces`, `LeftCurly`, `RightCurly`, `EmptyBlock` | Require braces and consistent brace placement; flag empty blocks. |
-| `WhitespaceAround`, `WhitespaceAfter`, `NoWhitespaceBefore`, `NoWhitespaceAfter`, `SingleSpaceSeparator`, `ParenPad` | Enforce consistent spacing around tokens and parentheses. |
-| `Indentation`, `LineLength`, `FileTabCharacter`, `NewlineAtEndOfFile` | Align indentation, cap lines at 120 chars, disallow tabs, ensure trailing newline. |
-| `ModifierOrder`, `RedundantModifier` | Keep modifier order canonical and drop redundant keywords. |
-| `MethodLength`, `MethodParamPad`, `MethodName`, `ParameterName`, `LocalVariableName`, `MemberName` | Bound method size and enforce naming/padding conventions. |
-| `HiddenField` | Prevent locals/parameters from shadowing fields (except constructors/setters). |
-| `MagicNumber` | Flags unwanted literals (excluding -1, 0, 1) to encourage constants. |
-| `SimplifyBooleanExpression`, `SimplifyBooleanReturn`, `OneStatementPerLine` | Reduce complex boolean logic and keep one statement per line. |
-| `FinalParameters`, `FinalLocalVariable` | Encourage immutability for parameters and locals when possible. |
+| Check Group                                                                                                          | Focus                                                                              |
+|----------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| `ImportOrder`, `AvoidStarImport`, `RedundantImport`                                                                  | Enforce ordered/separated imports, no wildcards, and no duplicates.                |
+| `NeedBraces`, `LeftCurly`, `RightCurly`, `EmptyBlock`                                                                | Require braces and consistent brace placement; flag empty blocks.                  |
+| `WhitespaceAround`, `WhitespaceAfter`, `NoWhitespaceBefore`, `NoWhitespaceAfter`, `SingleSpaceSeparator`, `ParenPad` | Enforce consistent spacing around tokens and parentheses.                          |
+| `Indentation`, `LineLength`, `FileTabCharacter`, `NewlineAtEndOfFile`                                                | Align indentation, cap lines at 120 chars, disallow tabs, ensure trailing newline. |
+| `ModifierOrder`, `RedundantModifier`                                                                                 | Keep modifier order canonical and drop redundant keywords.                         |
+| `MethodLength`, `MethodParamPad`, `MethodName`, `ParameterName`, `LocalVariableName`, `MemberName`                   | Bound method size and enforce naming/padding conventions.                          |
+| `HiddenField`                                                                                                        | Prevent locals/parameters from shadowing fields (except constructors/setters).     |
+| `MagicNumber`                                                                                                        | Flags unwanted literals (excluding -1, 0, 1) to encourage constants.               |
+| `SimplifyBooleanExpression`, `SimplifyBooleanReturn`, `OneStatementPerLine`                                          | Reduce complex boolean logic and keep one statement per line.                      |
+| `FinalParameters`, `FinalLocalVariable`                                                                              | Encourage immutability for parameters and locals when possible.                    |
 
 
 ## SpotBugs

@@ -1,0 +1,12 @@
+# Architecture Decision Records
+
+| ADR                                              | Title                           | Status   |
+|--------------------------------------------------|---------------------------------|----------|
+| [ADR-0001](ADR-0001-validation-normalization.md) | Validation Normalization Policy | Accepted |
+| [ADR-0002](ADR-0002-contact-service-storage.md)  | Contact Service Storage Model   | Accepted |
+| [ADR-0003](ADR-0003-update-atomicity.md)         | Update Atomicity Strategy       | Accepted |
+| [ADR-0004](ADR-0004-ci-gates-and-thresholds.md)  | CI Gates and Quality Thresholds | Accepted |
+| [ADR-0005](ADR-0005-spotbugs-runtime-support.md) | SpotBugs Runtime Support        | Accepted |
+| [ADR-0006](ADR-0006-docs-structure.md)           | Documentation Structure         | Accepted |
+| [ADR-0007](ADR-0007-task-entity-and-service.md)  | Task Entity and Service         | Draft    |
+| [ADR-0008](ADR-0008-ci-metrics-summary-script.md)| CI Metrics Summary Script       | Accepted |

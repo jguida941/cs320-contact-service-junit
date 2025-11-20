@@ -216,7 +216,7 @@ graph TD
     C -->|delete| H["remove(contactId)"]
     C -->|update| I[fetch existing]
     I -->|missing| F
-    I -->|found| J[Contact.update(...) reuses Validation]
+    I -->|found| J[Contact update reuses Validation]
     J --> K[updated contact]
 ```
 - All entry points validate the `contactId` before touching the map so we never store blank keys.

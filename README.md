@@ -538,11 +538,11 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 ```mermaid
 graph TD
     A[Push / PR / Release]
-    B[Matrix verify (Ubuntu/Windows, JDK 17 & 21)]
+    B[Matrix verify Ubuntu/Windows JDK17/21]
     C{Dep Check or PITest fail?}
-    D[Retry with skips (DC/PIT)]
+    D[Retry with skips]
     E[QA summary + artifacts + Codecov]
-    F[Container verify (Temurin 17 + Maven 3.9.9)]
+    F[Container verify Temurin17 Maven3.9.9]
     G{RUN_SELF_HOSTED == true?}
     H[Self-hosted mutation lane]
     I[Release artifacts (release event only)]

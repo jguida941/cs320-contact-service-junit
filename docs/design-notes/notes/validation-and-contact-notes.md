@@ -9,6 +9,10 @@ File: docs/design-notes/validation-and-contact-notes.md
 - Using a helper class means all rules are in one place which makes maintenance easier.
 - Contact constructor and setters both use the same helpers, so no risk of divergence.
 - Tests can assert exact exception messages because they are consistent.
+- **Example:** Without the helper, the constructor might trim and use `isBlank` while the setter uses `isEmpty` and forgets to trim.  
+  Passing `"   "` would fail the constructor but succeed the setter, leaving the object in a state the constructor would never allow.
+- **Example:** If the max name length changes from 10 to 20 and you only update the constructor, new contacts allow 20 chars but `setFirstName(...)` still rejects anything over 10.  
+  By keeping the limits in constants and using `Validation.validateLength(...)` everywhere, both constructor and setter automatically stay in sync.
 
 ## What the design is
 - All checks live in `contactapp.Validation`.

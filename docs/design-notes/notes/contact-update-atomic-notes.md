@@ -27,6 +27,6 @@ File: docs/design-notes/notes/contact-update-atomic-notes.md
 - `Contact#update(...)` is the atomic helper.
 - `ContactService#updateContact(...)` delegates directly to that helper instead of chaining setters.
 
-## How I would explain it quickly
+## Simple Summary
 Instead of updating each field separately and risking a half-updated contact if one value is bad, I use a single `update(...)` method that validates all the new values first and only applies them if they are all valid.
 This gives me all-or-nothing updates and keeps the service code simple.

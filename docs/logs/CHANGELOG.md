@@ -22,6 +22,9 @@ All notable changes to this project will be documented here. Follow the
   feature choices, and the CI metrics summary script.
 - Added `scripts/serve_quality_dashboard.py` (packaged with the `quality-reports-*`
   artifact) so contributors can spin up a local HTTP server to view the React QA dashboard.
+- Added personal design notes under `docs/design-notes/notes/` (CI gates, metrics script,
+  Contact entity/service behaviors, SpotBugs plan, docs structure, and test strategy) to
+  capture the reasoning behind each piece of the implementation.
 
 ### Changed
 - Java CI workflow now installs Python 3.12 for every matrix leg so the QA

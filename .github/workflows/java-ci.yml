@@ -118,6 +118,8 @@ jobs:
         env:
           MATRIX_OS: ${{ matrix.os }}
           MATRIX_JAVA: ${{ matrix.java-version }}
+          UPDATE_BADGES: "true"
+          BADGE_OUTPUT_DIR: badges
         run: python scripts/ci_metrics_summary.py
 
       - name: Upload surefire reports

@@ -187,7 +187,7 @@ void testInvalidContactId(String id, String expectedMessage) {
 - `testConstructorTrimsStoredValues` confirms IDs, names, and addresses are normalized via `trim()`.
 - `testFailedCreation` (`@ParameterizedTest`) enumerates every invalid ID/name/phone/address combination and asserts the corresponding message.
 - `testFailedSetFirstName` (`@ParameterizedTest`) exercises the setter’s invalid inputs (blank/long/null).
-- `testUpdateRejectsInvalidValuesAtomically` proves invalid updates throw and leave the existing Contact state unchanged.
+- `testUpdateRejectsInvalidValuesAtomically` (`@MethodSource`) proves invalid updates throw and leave the existing Contact state unchanged.
 - `ValidationTest.validateLengthAcceptsBoundaryValues` proves 1/10-char names and 30-char addresses remain valid.
 - `ValidationTest.validateLengthRejectsBlankStrings` and `ValidationTest.validateLengthRejectsNull` ensure blanks/nulls fail before length math is evaluated.
 - `ValidationTest.validateLengthRejectsTooLong` hits the max-length branch to keep upper-bound validation covered.
@@ -319,7 +319,7 @@ graph TD
 - Constructor stores trimmed values and rejects null/blank/too-long IDs, names, and descriptions.
 - Setters accept valid updates and reject invalid ones with the same helper-generated messages.
 - `update(...)` replaces both mutable fields atomically and never mutates on invalid input.
-- `testUpdateRejectsInvalidValuesAtomically` enumerates invalid name/description pairs and asserts the Task remains unchanged when validation fails.
+- `testUpdateRejectsInvalidValuesAtomically` (`@MethodSource`) enumerates invalid name/description pairs (blank/empty/null/over-length) and asserts the Task remains unchanged when validation fails.
 
   <br>
 

@@ -121,7 +121,7 @@ graph TD
     C{Field type}
     D[validateLength on trimmed text]
     E[trim & assign id/name/address]
-    F[validateNumeric10 (digits + length)]
+    F[validateNumeric10: digits-only + length]
     G[assign phone as provided]
     X[IllegalArgumentException]
 
@@ -292,14 +292,14 @@ graph TD
 ### Validation Pipeline
 ```mermaid
 graph TD
-    A[Constructor / setter input] --> B["validateLength(taskId, 1-10)"]
-    B -->|ok| C["trim & store taskId"]
+    A[Constructor / setter input] --> B[validateLength taskId 1-10]
+    B -->|ok| C[trim & store taskId]
     B -->|fail| X[IllegalArgumentException]
-    C --> D["validateLength(name, 1-20)"]
-    D -->|ok| E["trimmed name stored"]
+    C --> D[validateLength name 1-20]
+    D -->|ok| E[trimmed name stored]
     D -->|fail| X
-    E --> F["validateLength(description, 1-50)"]
-    F -->|ok| G["trimmed description stored"]
+    E --> F[validateLength description 1-50]
+    F -->|ok| G[trimmed description stored]
     F -->|fail| X
 ```
 - Constructor and setters call the same helper, so trimming + length checks stay in sync.

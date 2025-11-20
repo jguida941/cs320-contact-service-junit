@@ -1,11 +1,11 @@
 package contactapp;
 
 /**
- * Utility methods for validating contact fields.
+ * Utility methods for validating domain fields (Contact, Task, etc.).
  *
- * All methods throw {@link IllegalArgumentException} when a value
- * violates the contact requirements. This keeps validation logic
- * in one place so both the constructor and setters can reuse it.
+ * All methods throw {@link IllegalArgumentException} when a value violates
+ * the requirements, keeping validation logic centralized so constructors
+ * and setters stay consistent.
  */
 public final class Validation {
 

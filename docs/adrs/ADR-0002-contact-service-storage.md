@@ -15,6 +15,7 @@ Related: src/main/java/contactapp/ContactService.java, docs/logs/CHANGELOG.md
 - Back the store with `ConcurrentHashMap<String, Contact>` so put/get/remove operations are thread-safe and O(1) on average.
 - Use `database.putIfAbsent` to enforce uniqueness atomically, `database.remove` for deletes, and direct lookups for updates.
 - Expose `Map.copyOf(database)` in `getDatabase()` so tests can observe state without mutating the internal map, and provide `clearAllContacts()` for cleanup.
+- Normalize identifiers before any map operation so callers can pass whitespace-only variants (e.g., `" 123 "`) and still target the stored `"123"` entry; blank ids throw `IllegalArgumentException` consistently across add/delete/update.
 
 ## Consequences
 - The singleton API matches assignment expectations and keeps service state consistent across UI and tests.

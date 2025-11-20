@@ -1,16 +1,17 @@
 # CS320 Milestone 1 - Contact Service
-[![Java CI](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/java-ci.yml/badge.svg)](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/java-ci.yml)
-[![CodeQL](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/codeql.yml/badge.svg)](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/codeql.yml)
-[![Codecov](https://codecov.io/gh/jguida941/cs320-contact-service-junit/branch/master/graph/badge.svg)](https://codecov.io/gh/jguida941/cs320-contact-service-junit)
-[![JaCoCo](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/jacoco.json)](#qa-summary)
-[![PITest](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/mutation.json)](#qa-summary)
-[![SpotBugs](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/spotbugs.json)](#static-analysis--quality-gates)
-[![OWASP Dependency-Check](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/dependency.json)](#static-analysis--quality-gates)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Java CI](https://img.shields.io/github/actions/workflow/status/jguida941/cs320-contact-service-junit/java-ci.yml?branch=master&label=Java%20CI&style=flat-square&color=brightgreen)](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/java-ci.yml)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/jguida941/cs320-contact-service-junit/codeql.yml?branch=master&label=CodeQL&style=flat-square&color=brightgreen)](https://github.com/jguida941/cs320-contact-service-junit/actions/workflows/codeql.yml)
+[![Codecov](https://img.shields.io/codecov/c/github/jguida941/cs320-contact-service-junit/master?label=Codecov&style=flat-square&color=brightgreen)](https://codecov.io/gh/jguida941/cs320-contact-service-junit)
+[![JaCoCo](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/jacoco.json&style=flat-square)](#qa-summary)
+[![PITest](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/mutation.json&style=flat-square)](#qa-summary)
+[![SpotBugs](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/spotbugs.json&style=flat-square)](#static-analysis--quality-gates)
+[![OWASP Dependency-Check](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/dependency.json&style=flat-square)](#static-analysis--quality-gates)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-Small Java project for the CS320 Contact Service milestone. The work breaks down into two pieces:
+Small Java project for the CS320 Contact Service milestone. The work breaks down into three pieces:
 1. Build the `Contact` and `ContactService` classes exactly as described in the requirements.
 2. Prove every rule with unit tests (length limits, null checks, unique IDs, and add/update/delete behavior) using the shared `Validation` helper so exceptions surface clear messages.
+3. Mirror the same patterns for the `Task` entity/service (ID/name/description) so both domains share validation, atomic updates, and singleton storage.
 
 Everything is packaged under `contactapp`; production classes live in `src/main/java` and the JUnit tests in `src/test/java`.
 
@@ -37,10 +38,12 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 |----------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
 | [`src/main/java/contactapp/Contact.java`](src/main/java/contactapp/Contact.java)                                     | Contact entity enforcing the ID/name/phone/address constraints.                                 |
 | [`src/main/java/contactapp/ContactService.java`](src/main/java/contactapp/ContactService.java)                       | Singleton service with in-memory CRUD, uniqueness checks, and validation reuse.                 |
-| [`src/main/java/contactapp/Task.java`](src/main/java/contactapp/Task.java) *(placeholder)*                           | Task entity (ID/name/description) mirroring the requirements document.                          |
-| [`src/main/java/contactapp/TaskService.java`](src/main/java/contactapp/TaskService.java) *(placeholder)*             | Task service API (add/delete/update) documented under task requirements.                        |
+| [`src/main/java/contactapp/Task.java`](src/main/java/contactapp/Task.java)                                           | Task entity (ID/name/description) mirroring the requirements document.                          |
+| [`src/main/java/contactapp/TaskService.java`](src/main/java/contactapp/TaskService.java)                             | Task service API (add/delete/update) mirroring the Contact service patterns.                   |
 | [`src/main/java/contactapp/Validation.java`](src/main/java/contactapp/Validation.java)                               | Centralized validation helpers (not blank, length, numeric checks).                             |
 | [`src/test/java/contactapp/ContactTest.java`](src/test/java/contactapp/ContactTest.java)                             | Unit tests for the `Contact` class (valid + invalid scenarios).                                 |
+| [`src/test/java/contactapp/TaskTest.java`](src/test/java/contactapp/TaskTest.java)                                   | Unit tests for the `Task` class (trimming + invalid cases).                                     |
+| [`src/test/java/contactapp/TaskServiceTest.java`](src/test/java/contactapp/TaskServiceTest.java)                     | Unit tests for `TaskService` (singleton behavior and CRUD).                                     |
 | [`docs/requirements/contact-requirements/`](docs/requirements/contact-requirements/)                                 | Assignment write-up and checklist (now under `docs/`).                                          |
 | [`docs/architecture/2025-11-19-task-entity-and-service.md`](docs/architecture/2025-11-19-task-entity-and-service.md) | Task entity/service design plan with Definition of Done and phased approach.                    |
 | [`docs/adrs/README.md`](docs/adrs/README.md)                                                                         | Architecture Decision Record index with links to ADR-0001…ADR-0007.                             |
@@ -55,12 +58,12 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 | [`.github/workflows`](.github/workflows)                                                                             | CI/CD pipelines (tests, quality gates, release packaging, CodeQL).                              |
 
 ## Design Decisions & Highlights
-- **Immutable identifiers** - `contactId` is set once in the constructor and never mutates, which keeps HashMap keys stable and mirrors real-world record identifiers.
+- **Immutable identifiers** - `contactId` is set once in the constructor and never mutates, which keeps map keys stable and mirrors real-world record identifiers.
 - **Centralized validation** - Every constructor/setter call funnels through `Validation.validateNotBlank`, `validateLength`, and (for phones) `validateNumeric10`, so IDs, names, phones, and addresses all share one enforcement pipeline.
 - **Fail-fast IllegalArgumentException** - Invalid input is a caller bug, so we throw standard JDK exceptions with precise messages and assert on them in tests.
-- **HashMap-first storage strategy** - Milestone 1 sticks to an in-memory `HashMap<String, Contact>` (living inside the singleton `ContactService`) for predictable O(1) CRUD while leaving that service class as the seam for future persistence layers.
+- **ConcurrentHashMap storage strategy** - Milestone 1 uses an in-memory `ConcurrentHashMap<String, Contact>` (inside the singleton `ContactService`) for predictable average O(1) CRUD plus thread-safe access, while still treating the service class as the seam for future persistence layers.
 - **Boolean service API** - The service’s `add/delete/update` methods return `boolean` so callers know immediately whether the operation succeeded (`true`) or why it failed (`false` for duplicate IDs, missing IDs, etc.). That keeps the milestone interface lightweight while still letting JUnit assertions check the outcome without extra exception types.
-- **Security posture** - Input validation acts as the first defense layer; nothing touches storage/logs unless it passes the guards.
+- **Security posture** - Input validation in the domain + service layers acts as the first defense layer; nothing reaches the in-memory store unless it passes the guards.
 - **Testing depth** - Parameterized JUnit 5 tests, AssertJ assertions, JaCoCo coverage, and PITest mutation scores combine to prove the validation logic rather than just executing it.
 
 ## Architecture Overview
@@ -72,15 +75,16 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 ### Validation Layer (`Validation.java`)
 - `validateNotBlank(input, label)` - rejects null, empty, and whitespace-only fields with label-specific messages.
 - `validateLength(input, label, min, max)` - enforces 1-10 char IDs/names and 1-30 char addresses (bounds are parameters, so future changes touch one file).
-- `validateNumeric10(input, label)` - requires digits-only phone numbers with exact length.
+- `validateNumeric10(input, label, requiredLength)` - requires digits-only phone numbers with exact length (10 in this project).
 - These helpers double as both correctness logic and security filtering.
 
 ### Service Layer (`ContactService`)
-- Currently a scaffold to keep milestone scope manageable. It will host in-memory storage via a `HashMap<String, Contact>`, add/update/delete orchestration, and uniqueness checks.
-- By keeping this layer separate from the domain model, we can slot in persistence or caching without rewriting the entity/tests. The singleton wrapper ensures every caller sees the same map instance.
+- Singleton that owns an in-memory `ConcurrentHashMap<String, Contact>` keyed by `contactId`.
+- Provides add/update/delete orchestration, validates/normalizes IDs before touching the map, and delegates all field rules to `Contact` (constructor + `update(...)`) and `Validation`.
+- Because state lives on the instance (not static), this class remains the seam for swapping in persistence or caching later without touching the entity/tests.
 
 ### Storage & Extension Points
-**HashMap<String, Contact> (planned backing store)**
+**ConcurrentHashMap<String, Contact> (current backing store)**
 | Operation | Average | Worst | Space |
 |-----------|---------|-------|-------|
 | add/get   | O(1)    | O(n)  | O(1)  |
@@ -155,6 +159,7 @@ graph TD
 ### Approach & TDD
 - Each validator rule started as a failing test, then the implementation was written until the suite passed.
 - `ContactTest` serves as the living specification covering both the success path and every invalid scenario.
+- `TaskTest` and `TaskServiceTest` mirror the same workflow for the Task domain/service, reusing the shared `Validation` helper and singleton patterns.
 
 ### Parameterized Coverage
 - `@ParameterizedTest` + `@CsvSource` enumerate the invalid IDs, names, phones, and addresses so we don’t duplicate boilerplate tests.
@@ -193,7 +198,7 @@ void testInvalidContactId(String id, String expectedMessage) {
 ### Service Snapshot
 - **Singleton access** – `getInstance()` exposes one shared service so every caller sees the same `ConcurrentHashMap` backing store.
 - **Atomic uniqueness guard** – `addContact` rejects null inputs up front and calls `ConcurrentHashMap.putIfAbsent(...)` directly so duplicate IDs never overwrite state even under concurrent access.
-- **Shared validation** – `deleteContact` uses `Validation.validateNotBlank` for IDs and `updateContact` delegates to the `Contact` setters, guaranteeing the constructor’s length/null/phone rules apply to updates too.
+- **Shared validation** – `deleteContact` uses `Validation.validateNotBlank` for IDs and `updateContact` delegates to `Contact.update(...)`, guaranteeing the constructor’s length/null/phone rules apply to updates too.
 - **Defensive views** – `getDatabase()` returns an unmodifiable snapshot (tests now use `clearAllContacts()` to reset state) so callers can’t mutate the internal map accidentally.
 
 ## Validation & Error Handling
@@ -211,7 +216,7 @@ graph TD
     C -->|delete| H["remove(contactId)"]
     C -->|update| I[fetch existing]
     I -->|missing| F
-    I -->|found| J[Contact setters reuse Validation]
+    I -->|found| J[Contact.update(...) reuses Validation]
     J --> K[updated contact]
 ```
 - All entry points validate the `contactId` before touching the map so we never store blank keys.
@@ -233,7 +238,6 @@ graph TD
 ```
 - Successful operations mutate the in-memory map; duplicate IDs or missing contacts simply return `false` so clients can branch without exceptions.
 - Validation failures bubble up as unchecked exceptions, which keeps the fail-fast stance consistent with the domain model.
-
 ## Testing Strategy
 
 ### Approach & TDD
@@ -263,63 +267,88 @@ graph TD
 ## [Task.java](src/main/java/contactapp/Task.java) / [TaskTest.java](src/test/java/contactapp/TaskTest.java)
 
 ### Service Snapshot
-- _TODO: Document task fields, Immutability rules, and storage semantics once Task.java lands._
+- Task IDs are required, trimmed, and immutable after construction (length 1–10).
+- Name (≤20 chars) and description (≤50 chars) share one helper so constructor, setters, and `update(...)` all enforce identical rules.
+- `Task#update` validates both values first, then swaps them in one shot; invalid inputs leave the object untouched.
+- Tests mirror Contact coverage: constructor trimming, happy-path setters/update, and every invalid-path exception message.
 
 ## Validation & Error Handling
 
 ### Validation Pipeline
 ```mermaid
 graph TD
-    A[task input] --> B[TODO validateNotBlank]
-    B --> C[TODO length guard]
-    C --> D{TODO field-specific?}
-    D --> E[TODO assign]
-    D --> F[TODO exception]
+    A[Constructor / setter input] --> B["validateLength(taskId, 1–10)"]
+    B -->|ok| C["trim & store taskId"]
+    B -->|fail| X[IllegalArgumentException]
+    C --> D["validateLength(name, 1–20)"]
+    D -->|ok| E["trimmed name stored"]
+    D -->|fail| X
+    E --> F["validateLength(description, 1–50)"]
+    F -->|ok| G["trimmed description stored"]
+    F -->|fail| X
 ```
-- _Placeholder: describe how task IDs, names, and descriptions flow through validation helpers._
+- Constructor and setters call the same helper, so trimming + length checks stay in sync.
+- `update(...)` repeats the same validations, caches the trimmed values, then assigns both if they pass.
 
 ### Error Message Philosophy
-- _Placeholder: capture the exact wording strategy for task validation errors (e.g., label + reason)._
+- All strings come from `Validation.validateLength`, so failures always say `<label> must not be null or blank` or `<label> length must be between X and Y`.
+- Tests assert the exact messages so a wording change immediately fails the suite.
 
 ### Propagation Flow
 ```mermaid
-
+graph TD
+    A[Client] --> B[Task ctor/setter/update]
+    B --> C{Validation}
+    C -->|pass| D[State updated]
+    C -->|fail| E[IllegalArgumentException]
 ```
-- _Placeholder: explain how task validation failures bubble up to callers/tests._
+- No silent coercion; invalid data throws fast so tests/users fix the source input.
 
 ## Testing Strategy
 
 ### Approach & TDD
-- _Placeholder: outline the TDD workflow for TaskTest once implemented._
+- Started with constructor trimming tests, then added invalid cases before writing setters/update so every branch had a failing test first.
 
 ### Assertion Patterns
-- _Placeholder: list the AssertJ / JUnit idioms that will back TaskTest (field assertions, message checks, etc.).
+- AssertJ `hasFieldOrPropertyWithValue` keeps success assertions short.
+- `assertThatThrownBy(...).hasMessage(...)` locks in the Validation wording for each failure mode.
 
 ### Scenario Coverage
-- _Placeholder: TODO
+- Constructor stores trimmed values and rejects null/blank/too-long IDs, names, and descriptions.
+- Setters accept valid updates and reject invalid ones with the same helper-generated messages.
+- `update(...)` replaces both mutable fields atomically and never mutates on invalid input.
 
   <br>
 
 ## [TaskService.java](src/main/java/contactapp/TaskService.java) / [TaskServiceTest.java](src/test/java/contactapp/TaskServiceTest.java)
 
 ### Service Snapshot
-- _Placeholder: summarize task service responsibilities (add/delete/update, in-memory map, uniqueness guard)._
+- Singleton `TaskService` owns a `ConcurrentHashMap<String, Task>` plus a `clearAllTasks()` helper for tests.
+- `addTask` rejects null tasks and uses `putIfAbsent` so uniqueness checks and inserts are atomic.
+- `deleteTask` and `updateTask` validate + trim ids before touching the map, mirroring the Task entity’s trimming behavior.
+- `getDatabase()` returns `Map.copyOf(database)` so callers get a read-only snapshot.
 
 ## Validation & Error Handling
 
 ### Validation Pipeline
 ```mermaid
 graph TD
-    A[TaskService call] --> B[TODO validate taskId]
-    B --> C{operation}
-    C -->|add| D[TODO uniqueness check]
-    C -->|delete| E[TODO remove]
-    C -->|update| F[TODO apply setters]
+    A[TaskService call] --> B["validateNotBlank(taskId)"]
+    B --> C["trim taskId"]
+    C --> D{Operation}
+    D -->|add| E["task != null?"]
+    E -->|false| X[IllegalArgumentException]
+    E -->|true| F["putIfAbsent(trimmedId, task)"]
+    D -->|delete| G["remove(trimmedId)"]
+    D -->|update| H["lookup(trimmedId)"]
+    H -->|missing| Y[return false]
+    H -->|found| I["Task.update(newName, description)"]
 ```
-- _Placeholder: describe how the service coordinates Validation helpers and task setters._
+- Service boundaries use the same Validation helper so error messages stay identical to the entity layer.
+- Updates delegate to `Task.update(...)`, keeping atomicity centralized.
 
 ### Error Message Philosophy
-- _Placeholder: call out how service-level errors mirror the domain (e.g., null contact, missing task ID)._
+- Service-level guards emit just two strings (`"task must not be null"` and `"taskId must not be null or blank"`); everything else flows from the Task entity.
 
 ### Propagation Flow
 ```mermaid
@@ -330,18 +359,21 @@ graph TD
     C -->|false| E[Duplicate/missing]
     C -->|exception| F[Validation message]
 ```
-- _Placeholder: specify boolean vs exception paths just like the contact service section._
+- Boolean return mirrors ContactService: duplicates/missing IDs report `false`, invalid inputs throw.
 
 ## Testing Strategy
 
 ### Approach & TDD
-- _Placeholder: note how TaskServiceTest will isolate the in-memory store and exercise add/delete/update paths._
+- `@BeforeEach` clears the singleton to keep tests isolated.
+- Tests were written alongside each service method so duplicates/missing/blank cases were covered before implementation settled.
 
 ### Assertion Patterns
-- _Placeholder: describe the assertions that will check task map contents, boolean results, and thrown messages._
+- AssertJ checks (`containsEntry`, `doesNotContainKey`, `isTrue/isFalse`) keep map expectations concise.
+- `assertThatThrownBy` verifies the null-task guard and blank-id validation messages.
 
-### Scenario Coverage
-- _PlaceHolder:TODO
+- Singleton identity tests (instance returns same reference) match what is enforced for the contact service.
+- Happy-path add/delete/update plus duplicate and missing branches confirm boolean results and map state.
+- Tests prove trimmed IDs succeed on update and blank IDs throw before accessing the map.
 
   <br>
 
@@ -438,7 +470,7 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 ### Quality Gate Behavior
 - Each matrix job executes the full suite (tests, JaCoCo, Checkstyle, SpotBugs, Dependency-Check, PITest).
 - Checkstyle enforces formatting/import/indentation rules while SpotBugs scans bytecode for bug patterns and fails the build on findings.
-- SpotBugs runs as part of every `mvn verify` run on the supported JDKs (currently 17, 21, and 25 in CI) and fails the build on findings.
+- SpotBugs runs as part of every `mvn verify` run on the supported JDKs (currently 17 and 21 in CI) and fails the build on findings.
 - If Dependency-Check or PITest flakes because of environment constraints, the workflow retries with `-Ddependency-check.skip=true` or `-Dpit.skip=true` so contributors stay unblocked but warnings remain visible.
 - Python 3.12 is provisioned via `actions/setup-python@v5` so `scripts/ci_metrics_summary.py` runs consistently on both Ubuntu and Windows runners.
 - Node.js 20 is provisioned via `actions/setup-node@v4` and the React dashboard under `ui/qa-dashboard/` is built every run so the artifacts contain the interactive QA console.

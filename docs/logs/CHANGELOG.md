@@ -105,12 +105,22 @@ All notable changes to this project will be documented here. Follow the
   which helper backs the Contact rules.
 - `ContactService` validation headings now link to the source file so both
   sections mirror each other.
+- Converted the Validation helper docs to describe all domain fields (Contact + Task) now that both models share the same utility.
 - Added README links in each subheading so readers can jump directly to the
   relevant file (`Contact.java`, `ContactTest.java`, `ContactService.java`,
   `ContactServiceTest.java`) from the design/testing sections.
 - Added explicit placeholders/doc comments in `ContactService.java` and
   `ContactServiceTest.java` so the service layer mirrors the structure of the
   `Contact`/`ContactTest` pair while we flesh out CRUD behavior.
+- Completed the README sections for `Task.java`/`TaskTest.java` and `TaskService.java`/`TaskServiceTest.java`, describing validation flow, error philosophy, and scenario coverage instead of TODO placeholders.
+- README now matches the implementation details: `ContactService.updateContact` references `Contact.update(...)`, `validateNumeric10` lists the `requiredLength` parameter, and SpotBugs/JDK matrix text reflects the actual `{17, 21}` CI coverage.
+- README badges now use a uniform Shields.io flat-square style (GitHub Actions, Codecov, JaCoCo, PITest, SpotBugs, OWASP DC, License) with consistent colors (brightgreen for CI/coverage/mutation, blue for static analysis/license).
+- Added `TaskServiceTest.testClearAllTasksRemovesEntries` so PIT can kill the mutant that skips the internal `Map.clear()` call.
+- `ContactService#updateContact` and `TaskService#updateTask` now validate/trim
+  the incoming ids (matching the delete paths) so lookups succeed even if
+  callers include whitespace, and both services now throw `IllegalArgumentException`
+  for blank ids on update; new unit tests cover the trimmed-id success path and
+  blank-id error case.
 - Refreshed `README.md` and `index.md` to correct Task file paths (now under
   `contactapp`), link to the new architecture/ADR directories, and fix stale
   relative links left over from the original docs layout.

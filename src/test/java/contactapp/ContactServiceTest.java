@@ -130,6 +130,44 @@ public class ContactServiceTest {
                 .hasFieldOrPropertyWithValue("address", "1234 Test Street");
     }
 
+    @Test
+    void testUpdateContactTrimsId() {
+        ContactService service = ContactService.getInstance();
+        Contact contact = new Contact(
+                "200",
+                "Justin",
+                "Guida",
+                "1234567890",
+                "7622 Main Street"
+        );
+
+        service.addContact(contact);
+
+        boolean updated = service.updateContact(
+                " 200 ",
+                "Sebastian",
+                "Walker",
+                "0987654321",
+                "1234 Test Street"
+        );
+
+        assertThat(updated).isTrue();
+        assertThat(service.getDatabase().get("200"))
+                .hasFieldOrPropertyWithValue("firstName", "Sebastian")
+                .hasFieldOrPropertyWithValue("lastName", "Walker")
+                .hasFieldOrPropertyWithValue("phone", "0987654321")
+                .hasFieldOrPropertyWithValue("address", "1234 Test Street");
+    }
+
+    @Test
+    void testUpdateContactBlankIdThrows() {
+        ContactService service = ContactService.getInstance();
+
+        assertThatThrownBy(() -> service.updateContact(" ", "A", "B", "1234567890", "Somewhere"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("contactId must not be null or blank");
+    }
+
     // Test for Duplicate Contact IDs
     @Test
     void testAddDuplicateContactFails() {

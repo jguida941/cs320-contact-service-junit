@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Service responsible for managing {@link Contact} instances.
  *
- * For this milestone it owns the in-memory storage for contacts
- * and will expose operations to add, update, and delete them.
+ * For this milestone it owns the in memory storage for contacts
+ * and exposes operations to add, update, and delete them.
  *
  * Implemented as a singleton so the application uses a single shared
  * instance, obtained through {@link #getInstance()}.
@@ -23,8 +23,11 @@ public final class ContactService {
     /**
      * In-memory storage for contacts keyed by contactId.
      * Kept as an instance field so ContactService owns its own state.
-     * In this project we use a single shared instance via getInstance(),
-     * but this design still allows separate instances for tests if needed.
+     *
+     * In this project we use a single shared instance via getInstance().
+     * Because the state lives on the instance (not static), the class could be
+     * refactored later to support multiple instances if requirements change.
+     *
      * ConcurrentHashMap gives O(1) average time for add, lookup, update,
      * and delete, and is safe for concurrent access.
      */
@@ -40,12 +43,13 @@ public final class ContactService {
 
     /**
      * Returns the global {@code ContactService} instance.
+     *
      * The method is synchronized so that only one instance is created
      * even if multiple threads call it at the same time.
      *
-     * SpotBugs warning MS_EXPOSE_REP is suppressed on purpose because this getter must
-     * return the shared instance. {@code value} names the warning and {@code justification}
-     * states why returning it is safe here.
+     * SpotBugs warning MS_EXPOSE_REP is suppressed on purpose because this
+     * method must return the shared instance. The internal {@code database}
+     * map remains private and is never exposed directly.
      *
      * @return the singleton {@code ContactService} instance
      */
@@ -82,18 +86,20 @@ public final class ContactService {
     /**
      * Deletes a contact by id.
      *
+     * The provided id is validated and trimmed before removal so callers can pass
+     * values like " 123 " and still target the stored entry for "123".
+     *
      * @param contactId the id of the contact to remove; must not be null or blank
      * @return true if a contact was removed, false if no contact existed
      * @throws IllegalArgumentException if contactId is null or blank
      */
     public boolean deleteContact(final String contactId) {
         Validation.validateNotBlank(contactId, "contactId");
-        return database.remove(contactId) != null;
+        return database.remove(contactId.trim()) != null;
     }
 
     /**
      * Updates an existing contact's mutable fields by id.
-     * Uses the Contact setters so all constructor validation rules still apply.
      *
      * @param contactId the id of the contact to update
      * @param firstName new first name
@@ -102,10 +108,14 @@ public final class ContactService {
      * @param address   new address
      * @return true if the contact exists and was updated, false if no contact with that id exists
      *
-     * If any value is invalid, {@link Contact#update(String, String, String, String)} throws before
-     * the contact is changed, so callers never see a half-updated record (atomic update behavior).
+     * Additional implementation notes:
+     *  - The contactId is validated and trimmed before lookup, keeping behavior
+     *    consistent with {@link #deleteContact(String)}.
+     *  - If any value is invalid, {@link Contact#update(String, String, String, String)} throws before
+     *    the contact is changed, so callers never see a half-updated record (atomic update behavior).
      *
-     * @throws IllegalArgumentException if any new field value is invalid (from Contact setters)
+     * @throws IllegalArgumentException if any new field value is invalid
+     *                                  (propagated from {@code Contact#update(String, String, String, String)})
      */
     public boolean updateContact(
             final String contactId,
@@ -113,7 +123,9 @@ public final class ContactService {
             final String lastName,
             final String phone,
             final String address) {
-        final Contact contact = database.get(contactId);
+        Validation.validateNotBlank(contactId, "contactId");
+        final String normalizedId = contactId.trim();
+        final Contact contact = database.get(normalizedId);
         if (contact == null) {
             return false;
         }

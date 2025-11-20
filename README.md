@@ -389,6 +389,7 @@ graph TD
 | Semantic security   | **CodeQL**                 | Detects SQLi/XSS/path-traversal patterns in a separate workflow.                     |
 
 Each layer runs automatically in CI, so local `mvn verify` mirrors the hosted pipelines.
+- Dependabot runs daily against the Maven ecosystem and automatically opens PRs for available dependency upgrades.
 
 ## Mutation Testing & Quality Gates
 - PITest runs inside `mvn verify`, so the new service tests contribute directly to the enforced mutation score.
@@ -475,6 +476,7 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 - Python 3.12 is provisioned via `actions/setup-python@v5` so `scripts/ci_metrics_summary.py` runs consistently on both Ubuntu and Windows runners.
 - Node.js 20 is provisioned via `actions/setup-node@v4` and the React dashboard under `ui/qa-dashboard/` is built every run so the artifacts contain the interactive QA console.
 - Mutation coverage now relies on GitHub-hosted runners by default; the self-hosted lane is opt-in and only fires when the repository variable `RUN_SELF_HOSTED` is set.
+- Dependabot checks run daily so Maven updates appear as automated PRs without waiting for the weekly window.
 - After every matrix job, `scripts/ci_metrics_summary.py` posts a table to the GitHub Actions run summary showing tests, JaCoCo coverage, PITest mutation score, and Dependency-Check counts (with ASCII bars for quick scanning).
 - The same summary script emits a dark-mode HTML dashboard (`target/site/qa-dashboard/index.html`) with quick stats and links to the JaCoCo, SpotBugs, Dependency-Check, and PITest HTML reports (packaged inside the `quality-reports-*` artifact for download) and drops `serve_quality_dashboard.py` next to the reports for easy local previewing.
 

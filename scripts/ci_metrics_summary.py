@@ -357,7 +357,7 @@ def maybe_update_badges(
         "jacoco.json": _badge_payload("JaCoCo", coverage_pct),
         "mutation.json": _badge_payload("PITest", mutation_pct),
         "spotbugs.json": _count_badge("SpotBugs", spotbugs_count, "issues", "clean"),
-        "dependency.json": _count_badge("Dependency-Check", dep_vulns, "vulns", "clean"),
+        "dependency.json": _count_badge("OWASP DC", dep_vulns, "vulns", "clean"),
     }
 
     for filename, payload in badge_payloads.items():

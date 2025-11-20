@@ -5,7 +5,7 @@
 [![JaCoCo](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/jacoco.json)](#qa-summary)
 [![PITest](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/mutation.json)](#qa-summary)
 [![SpotBugs](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/spotbugs.json)](#static-analysis--quality-gates)
-[![Dependency-Check](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/dependency.json)](#static-analysis--quality-gates)
+[![OWASP Dependency-Check](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/cs320-contact-service-junit/master/badges/dependency.json)](#static-analysis--quality-gates)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Small Java project for the CS320 Contact Service milestone. The work breaks down into two pieces:

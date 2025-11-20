@@ -299,7 +299,7 @@ graph TD
 ### Propagation Flow
 ```mermaid
 graph TD
-    A[Client] --> B[Task ctor/setter/update]
+    A[Client] --> B[Task constructor/setter/update]
     B --> C{Validation}
     C -->|pass| D[State updated]
     C -->|fail| E[IllegalArgumentException]

@@ -606,7 +606,6 @@ You’ll see the same KPIs, inline progress bars, and quick links over to the Ja
 
 <br/>
 
-<br>
 
 ## Self-Hosted Mutation Runner Setup
 - Register a runner per GitHub's instructions (Settings -> Actions -> Runners -> New self-hosted runner). Choose macOS/Linux + architecture.

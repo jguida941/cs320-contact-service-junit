@@ -1,9 +1,10 @@
 # ADR-0006: Documentation Structure
 
-Status: Accepted
-Date: 2025-11-19
-Owners: Justin Guida
-Related: README.md, docs/requirements/, docs/architecture/, docs/adrs/, docs/logs/CHANGELOG.md
+**Status**: Accepted  
+**Date**: 2025-11-19  
+**Owners**: Justin Guida  
+
+**Related**: [README](../../README.md), [docs/requirements/](../requirements/), [docs/architecture/](../architecture/), [docs/adrs/](../adrs/), [CHANGELOG.md](../logs/CHANGELOG.md)
 
 ## Context
 - Documentation started as a monolithic README, which quickly became unwieldy once requirements, CI notes, and design plans accumulated.

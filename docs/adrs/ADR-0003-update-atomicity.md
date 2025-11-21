@@ -1,9 +1,10 @@
 # ADR-0003: Update Atomicity Strategy
 
-Status: Accepted
-Date: 2025-11-19
-Owners: Justin Guida
-Related: src/main/java/contactapp/Contact.java, src/main/java/contactapp/ContactService.java, docs/logs/CHANGELOG.md
+**Status**: Accepted  
+**Date**: 2025-11-19  
+**Owners**: Justin Guida  
+
+**Related**: [Contact.java](../../src/main/java/contactapp/Contact.java), [ContactService.java](../../src/main/java/contactapp/ContactService.java), [CHANGELOG.md](../logs/CHANGELOG.md)
 
 ## Context
 - Requirements demand that updates never leave partially modified records; either every field change applies or none do.

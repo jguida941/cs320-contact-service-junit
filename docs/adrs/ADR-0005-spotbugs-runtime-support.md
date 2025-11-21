@@ -1,9 +1,10 @@
 # ADR-0005: SpotBugs Runtime Support
 
-Status: Accepted
-Date: 2025-11-19
-Owners: Justin Guida
-Related: pom.xml (spotbugs-maven-plugin), README.md#spotbugs, docs/ci-cd/ci_cd_plan.md
+**Status**: Accepted  
+**Date**: 2025-11-19  
+**Owners**: Justin Guida  
+
+**Related**: [pom.xml](../../pom.xml) (spotbugs-maven-plugin), [README](../../README.md#spotbugs), [CI/CD plan](../ci-cd/ci_cd_plan.md)
 
 ## Context
 - SpotBugs is required for the course rubric, but the upstream launcher historically lagged when new JDK releases arrived (e.g., JDK 23).

@@ -1,9 +1,10 @@
 # ADR-0007: Task Entity and Service
 
-Status: Accepted
-Date: 2025-11-19
-Owners: Justin Guida
-Related: docs/architecture/2025-11-19-task-entity-and-service.md, docs/requirements/task-requirements/requirements.md, PR #123
+**Status**: Accepted  
+**Date**: 2025-11-19  
+**Owners**: Justin Guida  
+
+**Related**: [Task plan](../architecture/2025-11-19-task-entity-and-service.md), [Task requirements](../requirements/task-requirements/requirements.md), [PR #123](https://github.com/jguida941/contact-service-junit/pull/123)
 
 ## Summary
 Implements Task (id, name, description) and TaskService with a singleton store and atomic updates.

@@ -1,9 +1,10 @@
 # ADR-0002: Contact Service Storage Model
 
-Status: Accepted
-Date: 2025-11-19
-Owners: Justin Guida
-Related: src/main/java/contactapp/ContactService.java, docs/logs/CHANGELOG.md
+**Status**: Accepted  
+**Date**: 2025-11-19  
+**Owners**: Justin Guida  
+
+**Related**: [ContactService.java](../../src/main/java/contactapp/ContactService.java), [CHANGELOG.md](../logs/CHANGELOG.md)
 
 ## Context
 - The application needs an in-memory store for contacts that enforces unique IDs and supports add/update/delete operations.

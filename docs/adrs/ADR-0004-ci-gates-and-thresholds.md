@@ -1,9 +1,10 @@
 # ADR-0004: CI Gates and Quality Thresholds
 
-Status: Accepted
-Date: 2025-11-19
-Owners: Justin Guida
-Related: pom.xml, .github/workflows/java-ci.yml, docs/ci-cd/ci_cd_plan.md, README.md#static-analysis--quality-gates
+**Status**: Accepted  
+**Date**: 2025-11-19  
+**Owners**: Justin Guida  
+
+**Related**: [pom.xml](../../pom.xml), [java-ci workflow](../../.github/workflows/java-ci.yml), [CI/CD plan](../ci-cd/ci_cd_plan.md), [README](../../README.md#static-analysis--quality-gates)
 
 ## Context
 - The project must prove correctness with more than unit tests; instructors expect concrete coverage, mutation, static analysis, and security scanning metrics.

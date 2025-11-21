@@ -1,9 +1,10 @@
 # ADR-0001: Validation Normalization Policy
 
-Status: Accepted
-Date: 2025-11-19
-Owners: Justin Guida
-Related: src/main/java/contactapp/Contact.java, src/main/java/contactapp/Validation.java, docs/logs/CHANGELOG.md
+**Status**: Accepted  
+**Date**: 2025-11-19  
+**Owners**: Justin Guida  
+
+**Related**: [Contact.java](../../src/main/java/contactapp/Contact.java), [Validation.java](../../src/main/java/contactapp/Validation.java), [CHANGELOG.md](../logs/CHANGELOG.md)
 
 ## Context
 - The milestone requirements mandate strict constraints for identifiers, names, phone numbers, and addresses.

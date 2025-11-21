@@ -1,9 +1,10 @@
 # ADR-0009: Test Strategy and Tooling
 
-Status: Accepted  
-Date: 2025-11-20  
-Owners: Justin Guida  
-Related: src/test/java/contactapp, docs/design-notes/notes/test-design-notes.md, docs/logs/CHANGELOG.md
+**Status**: Accepted  
+**Date**: 2025-11-20  
+**Owners**: Justin Guida  
+
+**Related**: [src/test/java/contactapp](../../src/test/java/contactapp), [test-design-notes.md](../design-notes/notes/test-design-notes.md), [CHANGELOG.md](../logs/CHANGELOG.md)
 
 ## Context
 - The assignment requires rigorous unit testing (length limits, null handling, CRUD behaviors) and our CI gates (JaCoCo, PITest) enforce quality thresholds.

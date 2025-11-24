@@ -424,7 +424,7 @@ flowchart TD
     C6 --> C7[validateLength description 1-50]
     C7 -->|ok| C8[trimmed description stored]
     C7 -->|fail| X
-    U1[update(newDate, newDescription)] --> U2[validateDateNotPast]
+    U1[update newDate, newDescription] --> U2[validateDateNotPast]
     U2 -->|fail| X
     U2 --> U3[validateLength description 1-50]
     U3 -->|fail| X

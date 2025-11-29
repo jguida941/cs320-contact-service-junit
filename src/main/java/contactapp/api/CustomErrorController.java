@@ -40,6 +40,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CustomErrorController implements ErrorController {
 
+    /** Default HTTP status code when container doesn't provide one. */
+    private static final int DEFAULT_ERROR_STATUS = 500;
+
     /**
      * Handles all errors forwarded to /error by the servlet container.
      *
@@ -59,7 +62,7 @@ public class CustomErrorController implements ErrorController {
     public ResponseEntity<ErrorResponse> handleError(final HttpServletRequest request) {
         // Extract status code from request attributes (set by servlet container)
         final Object statusObj = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
-        final int statusCode = (statusObj instanceof Integer) ? (Integer) statusObj : 500;
+        final int statusCode = (statusObj instanceof Integer) ? (Integer) statusObj : DEFAULT_ERROR_STATUS;
         final HttpStatus status = HttpStatus.resolve(statusCode);
 
         // Extract error message if available

@@ -16,6 +16,9 @@ All notable changes to this project will be documented here. Follow the
   - `ContactControllerTest`, `TaskControllerTest`, `AppointmentControllerTest`: Added `@SuppressWarnings` for `fieldName` parameters used in `@ParameterizedTest` display names via `{0}` placeholder.
 - **Documentation audit fixes**:
   - `agents.md`: Updated ADR range from ADR-0014–0020 to ADR-0014–0021, updated current state to Phase 2.5 complete.
+- **API fuzzing checks refined** to avoid false positives:
+  - Changed from `--checks all` to specific checks: `not_a_server_error`, `content_type_conformance`, `response_schema_conformance`.
+  - Avoids flagging expected 400 responses (e.g., past dates rejected by `@FutureOrPresent`).
 - **API fuzzing workflow hardened** (CodeRabbit review findings):
   - Added explicit `pyyaml` installation so YAML export succeeds reliably instead of silently failing.
   - Replaced fragile `grep -q '"status":"UP"'` health check with robust `jq -e '.status=="UP"'` JSON parsing.

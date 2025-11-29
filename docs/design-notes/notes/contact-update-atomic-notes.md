@@ -1,6 +1,6 @@
 # Update atomicity pattern
 
-(Related: [ADR-0003](../../adrs/ADR-0003-update-atomicity.md), [Contact.java](../../src/main/java/contactapp/Contact.java))
+(Related: [ADR-0003](../../adrs/ADR-0003-update-atomicity.md), [Contact.java](../../../src/main/java/contactapp/domain/Contact.java))
 
 File: docs/design-notes/notes/contact-update-atomic-notes.md
 

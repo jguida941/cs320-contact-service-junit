@@ -1,6 +1,6 @@
 # Test design and tooling
 
-(Related: [ContactTest.java](../../src/test/java/contactapp/ContactTest.java), [ValidationTest.java](../../src/test/java/contactapp/ValidationTest.java), [ContactServiceTest.java](../../src/test/java/contactapp/ContactServiceTest.java))
+(Related: [ContactTest.java](../../../src/test/java/contactapp/domain/ContactTest.java), [ValidationTest.java](../../../src/test/java/contactapp/domain/ValidationTest.java), [ContactServiceTest.java](../../../src/test/java/contactapp/service/ContactServiceTest.java))
 
 File: docs/design-notes/notes/test-design-notes.md
 

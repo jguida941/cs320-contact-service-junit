@@ -4,7 +4,7 @@
 **Date**: 2025-11-19  
 **Owners**: Justin Guida  
 
-**Related**: [Contact.java](../../src/main/java/contactapp/Contact.java), [Validation.java](../../src/main/java/contactapp/Validation.java), [CHANGELOG.md](../logs/CHANGELOG.md)
+**Related**: [Contact.java](../../src/main/java/contactapp/domain/Contact.java), [Validation.java](../../src/main/java/contactapp/domain/Validation.java), [CHANGELOG.md](../logs/CHANGELOG.md)
 
 ## Context
 - The milestone requirements mandate strict constraints for identifiers, names, phone numbers, and addresses.
@@ -12,7 +12,7 @@
 - Mutation testing exposed gaps whenever the validation flow or error messages diverged between constructor and setter paths.
 
 ## Decision
-- Centralize all field validation inside `contactapp.Validation`, exposing `validateNotBlank`, `validateLength`, `validateDigits`, and (for date fields) `validateDateNotPast`.
+- Centralize all field validation inside `contactapp.domain.Validation`, exposing `validateNotBlank`, `validateLength`, `validateDigits`, and (for date fields) `validateDateNotPast`.
 - Trim incoming strings before storage so persisted state matches what validation evaluates (`Contact` now trims IDs, names, and addresses before assigning).
 - Throw `IllegalArgumentException` with consistent messages such as `"<field> must not be null or blank"` or `"<field> length must be between X and Y"` so tests can assert exact text and callers get actionable feedback.
 - Reuse the same helpers everywhere (constructors, setters, and service entry points) to guarantee one enforcement pipeline.

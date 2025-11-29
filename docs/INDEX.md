@@ -26,30 +26,48 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 
 ## Key Files
 
+### Spring Boot Infrastructure
 | Path | Description |
 |------|-------------|
-| [`../src/main/java/contactapp/Contact.java`](../src/main/java/contactapp/Contact.java) | `Contact` domain object with all field validation rules. |
-| [`../src/main/java/contactapp/ContactService.java`](../src/main/java/contactapp/ContactService.java) | In-memory service that adds, updates, and deletes contacts. |
-| [`../src/main/java/contactapp/Validation.java`](../src/main/java/contactapp/Validation.java) | Shared helper with not-blank, length, 10-digit, and date-not-past checks. |
-| [`../src/main/java/contactapp/Task.java`](../src/main/java/contactapp/Task.java) | Task domain object mirroring Contact-style validation (id/name/description). |
-| [`../src/main/java/contactapp/TaskService.java`](../src/main/java/contactapp/TaskService.java) | Task service with in-memory CRUD and validation/trim guards on IDs. |
-| [`../src/main/java/contactapp/Appointment.java`](../src/main/java/contactapp/Appointment.java) | Appointment entity (id/date/description) with date-not-past validation. |
-| [`../src/main/java/contactapp/AppointmentService.java`](../src/main/java/contactapp/AppointmentService.java) | Appointment service singleton with in-memory CRUD and ID trim/validation guards. |
-| [`../src/test/java/contactapp/ContactTest.java`](../src/test/java/contactapp/ContactTest.java) | JUnit tests covering the `Contact` validation requirements. |
-| [`../src/test/java/contactapp/ContactServiceTest.java`](../src/test/java/contactapp/ContactServiceTest.java) | JUnit tests covering add, delete, and update behavior. |
-| [`../src/test/java/contactapp/ValidationTest.java`](../src/test/java/contactapp/ValidationTest.java) | Tests for the shared validation helper (length, numeric, and appointment date guards). |
-| [`../src/test/java/contactapp/TaskTest.java`](../src/test/java/contactapp/TaskTest.java) | JUnit tests for Task (trimming, invalid inputs, and atomic update behavior). |
-| [`../src/test/java/contactapp/TaskServiceTest.java`](../src/test/java/contactapp/TaskServiceTest.java) | JUnit tests for TaskService singleton behavior and CRUD flows. |
-| [`../src/test/java/contactapp/AppointmentTest.java`](../src/test/java/contactapp/AppointmentTest.java) | JUnit tests for Appointment entity validation and date rules. |
-| [`../src/test/java/contactapp/AppointmentServiceTest.java`](../src/test/java/contactapp/AppointmentServiceTest.java) | JUnit tests for AppointmentService singleton and CRUD flows. |
-| [`../pom.xml`](../pom.xml) | Maven project file defining dependencies and plugins. |
+| [`../src/main/java/contactapp/Application.java`](../src/main/java/contactapp/Application.java) | Spring Boot entrypoint (`@SpringBootApplication`). |
+| [`../src/main/resources/application.yml`](../src/main/resources/application.yml) | Profile-based configuration (dev/test/prod) with actuator lockdown. |
+| [`../src/test/java/contactapp/ApplicationTest.java`](../src/test/java/contactapp/ApplicationTest.java) | Spring Boot context load smoke test. |
+| [`../src/test/java/contactapp/ActuatorEndpointsTest.java`](../src/test/java/contactapp/ActuatorEndpointsTest.java) | Actuator endpoint security verification tests. |
+| [`../src/test/java/contactapp/ServiceBeanTest.java`](../src/test/java/contactapp/ServiceBeanTest.java) | Service bean presence and singleton verification tests. |
+
+### Domain Layer (`contactapp.domain`)
+| Path | Description |
+|------|-------------|
+| [`../src/main/java/contactapp/domain/Contact.java`](../src/main/java/contactapp/domain/Contact.java) | `Contact` domain object with all field validation rules. |
+| [`../src/main/java/contactapp/domain/Task.java`](../src/main/java/contactapp/domain/Task.java) | Task domain object mirroring Contact-style validation (id/name/description). |
+| [`../src/main/java/contactapp/domain/Appointment.java`](../src/main/java/contactapp/domain/Appointment.java) | Appointment entity (id/date/description) with date-not-past validation. |
+| [`../src/main/java/contactapp/domain/Validation.java`](../src/main/java/contactapp/domain/Validation.java) | Shared helper with not-blank, length, 10-digit, and date-not-past checks. |
+| [`../src/test/java/contactapp/domain/ContactTest.java`](../src/test/java/contactapp/domain/ContactTest.java) | JUnit tests covering the `Contact` validation requirements. |
+| [`../src/test/java/contactapp/domain/TaskTest.java`](../src/test/java/contactapp/domain/TaskTest.java) | JUnit tests for Task (trimming, invalid inputs, and atomic update behavior). |
+| [`../src/test/java/contactapp/domain/AppointmentTest.java`](../src/test/java/contactapp/domain/AppointmentTest.java) | JUnit tests for Appointment entity validation and date rules. |
+| [`../src/test/java/contactapp/domain/ValidationTest.java`](../src/test/java/contactapp/domain/ValidationTest.java) | Tests for the shared validation helper (length, numeric, and appointment date guards). |
+
+### Service Layer (`contactapp.service`)
+| Path | Description |
+|------|-------------|
+| [`../src/main/java/contactapp/service/ContactService.java`](../src/main/java/contactapp/service/ContactService.java) | @Service bean with static in-memory store for contacts. |
+| [`../src/main/java/contactapp/service/TaskService.java`](../src/main/java/contactapp/service/TaskService.java) | Task service with static in-memory store and validation/trim guards on IDs. |
+| [`../src/main/java/contactapp/service/AppointmentService.java`](../src/main/java/contactapp/service/AppointmentService.java) | Appointment service with static in-memory store and ID trim/validation guards. |
+| [`../src/test/java/contactapp/service/ContactServiceTest.java`](../src/test/java/contactapp/service/ContactServiceTest.java) | JUnit tests covering add, delete, and update behavior. |
+| [`../src/test/java/contactapp/service/TaskServiceTest.java`](../src/test/java/contactapp/service/TaskServiceTest.java) | JUnit tests for TaskService singleton behavior and CRUD flows. |
+| [`../src/test/java/contactapp/service/AppointmentServiceTest.java`](../src/test/java/contactapp/service/AppointmentServiceTest.java) | JUnit tests for AppointmentService singleton and CRUD flows. |
+
+### Build & Configuration
+| Path | Description |
+|------|-------------|
+| [`../pom.xml`](../pom.xml) | Maven project file with Spring Boot 3.4.12 parent and dependencies. |
 | [`../config/checkstyle/checkstyle.xml`](../config/checkstyle/checkstyle.xml) | Custom Checkstyle rules enforced in CI. |
 | [`../config/owasp-suppressions.xml`](../config/owasp-suppressions.xml) | Placeholder suppression list for OWASP Dependency-Check. |
 | [`../scripts/ci_metrics_summary.py`](../scripts/ci_metrics_summary.py) | Prints the QA metrics table (tests/coverage/mutations/dependencies) in GitHub Actions. |
 | [`../scripts/serve_quality_dashboard.py`](../scripts/serve_quality_dashboard.py) | Launches a local server for `target/site/qa-dashboard` when reading downloaded artifacts. |
 | [`architecture/2025-11-19-task-entity-and-service.md`](architecture/2025-11-19-task-entity-and-service.md) | Task entity/service plan with Definition of Done and phase breakdown. |
 | [`architecture/2025-11-24-appointment-entity-and-service.md`](architecture/2025-11-24-appointment-entity-and-service.md) | Appointment entity/service implementation record. |
-| [`adrs/README.md`](adrs/README.md) | ADR index summarizing ADR-0001 through ADR-0019. |
+| [`adrs/README.md`](adrs/README.md) | ADR index summarizing ADR-0001 through ADR-0020. |
 | [`design-notes/README.md`](design-notes/README.md) | Landing page for informal design notes (individual topics in `design-notes/notes/`). |
 | [`logs/backlog.md`](logs/backlog.md) | Backlog for reporting and domain enhancements. |
 | [`logs/CHANGELOG.md`](logs/CHANGELOG.md) | Project changelog. |

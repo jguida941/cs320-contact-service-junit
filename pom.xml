@@ -4,14 +4,30 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!--
+        Spring Boot parent provides sensible defaults for plugins, dependency versions,
+        and configuration. Using 3.4.x for Java 17+ compatibility and latest features.
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.12</version>
+        <relativePath/>
+    </parent>
+
     <groupId>com.github.jguida941</groupId>
     <artifactId>cs320-contact-service-junit</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>CS320 Contact Service</name>
+    <description>Contact, Task, and Appointment management service with REST API</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
+        <java.version>17</java.version>
+        <!--
+            Override JUnit version from Spring Boot parent if needed.
+            Spring Boot 3.4 uses JUnit 5.10.x by default, which matches our needs.
+        -->
         <junit.jupiter.version>5.10.3</junit.jupiter.version>
         <surefire.version>3.5.4</surefire.version>
         <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
@@ -26,23 +42,59 @@
     </properties>
 
     <dependencies>
+        <!--
+            Spring Boot Web starter: Brings in Spring MVC, embedded Tomcat,
+            Jackson for JSON, and auto-configuration for REST endpoints.
+            This is the foundation for our REST API layer.
+        -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!--
+            Spring Boot Actuator: Provides production-ready features like
+            health checks (/actuator/health), info endpoint (/actuator/info),
+            and metrics. Essential for monitoring and deployment readiness.
+        -->
         <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.27.6</version>
-            <scope>test</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+
+        <!--
+            Bean Validation (JSR-380): Enables @Valid, @NotBlank, @Size, etc.
+            on DTOs. Works alongside our domain-level Validation helper so
+            we have two layers of defense: API-level (annotations) and
+            domain-level (Validation.java).
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!--
+            SpotBugs annotations for static analysis.
+            Scope is provided since these are compile-time only.
+        -->
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
             <version>4.9.8</version>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- ==================== Test Dependencies ==================== -->
+
+        <!--
+            Spring Boot Test starter: Brings in JUnit 5, Mockito, AssertJ,
+            Spring Test, and MockMvc for testing REST controllers.
+            Replaces our standalone JUnit/AssertJ dependencies.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -207,7 +259,16 @@
                     <skip>${pit.skip}</skip>
                 </configuration>
             </plugin>
-        </plugins>
-</build>
 
- </project>
+            <!--
+                Spring Boot Maven Plugin: Enables 'mvn spring-boot:run' for local dev
+                and packages the app as an executable JAR with embedded Tomcat.
+                Repackage goal runs during package phase to create the fat JAR.
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

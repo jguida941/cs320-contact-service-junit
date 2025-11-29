@@ -1,17 +1,28 @@
-package contactapp;
+package contactapp.domain;
 
 /**
  * Task domain object.
  *
- * Enforces the Task requirements:
- *  - taskId: required, length 1-10, immutable after construction
- *  - name: required, length 1-20
- *  - description: required, length 1-50
+ * <p>Enforces the Task requirements:
+ * <ul>
+ *   <li>taskId: required, length 1-10, immutable after construction</li>
+ *   <li>name: required, length 1-20</li>
+ *   <li>description: required, length 1-50</li>
+ * </ul>
  *
- * All validation is delegated to {@link Validation} so the constructor,
+ * <p>All validation is delegated to {@link Validation} so the constructor,
  * setters, and {@link #update(String, String)} stay in sync.
  *
- * All fields are stored in trimmed form.
+ * <p>All fields are stored in trimmed form.
+ *
+ * <h2>Design Decisions</h2>
+ * <ul>
+ *   <li>Class is {@code final} to prevent subclassing that could bypass validation</li>
+ *   <li>ID is immutable after construction (stable map keys)</li>
+ *   <li>{@link #update} validates both fields atomically before mutation</li>
+ * </ul>
+ *
+ * @see Validation
  */
 public final class Task {
 
@@ -58,6 +69,7 @@ public final class Task {
     /**
      * Sets the task name after validating and trimming it.
      *
+     * @param name the new task name
      * @throws IllegalArgumentException if the name is null, blank,
      *                                  or longer than 20 characters
      */
@@ -68,6 +80,7 @@ public final class Task {
     /**
      * Sets the task description after validating and trimming it.
      *
+     * @param description the new task description
      * @throws IllegalArgumentException if the description is null, blank,
      *                                  or longer than 50 characters
      */
@@ -78,7 +91,7 @@ public final class Task {
     /**
      * Updates the mutable fields atomically after validating both values.
      *
-     * If either value is invalid, this method throws and leaves the
+     * <p>If either value is invalid, this method throws and leaves the
      * existing name and description unchanged.
      *
      * @param newName        new task name
@@ -95,9 +108,10 @@ public final class Task {
 
     /**
      * Validates that {@code value} is non-null, non-blank, and within
-     * the allowed length range, then returns its trimmed form. This relies on
-     * {@link Validation#validateLength(String, String, int, int)} to enforce the
-     * null/blank/length rules so every call site stays consistent.
+     * the allowed length range, then returns its trimmed form.
+     *
+     * <p>This relies on {@link Validation#validateLength(String, String, int, int)}
+     * to enforce the null/blank/length rules so every call site stays consistent.
      *
      * @throws IllegalArgumentException if validation fails
      */
@@ -112,13 +126,13 @@ public final class Task {
     /**
      * Creates a defensive copy of this Task.
      *
-     * Validates the source state, then reuses the public constructor so
+     * <p>Validates the source state, then reuses the public constructor so
      * defensive copies and validation stay aligned.
      *
      * @return a new Task with the same field values
      * @throws IllegalArgumentException if internal state is corrupted (null fields)
      */
-    Task copy() {
+    public Task copy() {
         validateCopySource(this);
         return new Task(this.taskId, this.name, this.description);
     }

@@ -1,16 +1,28 @@
-package contactapp;
+package contactapp.domain;
 
 /**
  * Contact domain object.
  *
- * Enforces all field constraints from the requirements:
- * - contactId: non-null, length 1-10, not updatable
- * - firstName/lastName: non-null, length 1-10
- * - phone: non-null, exactly 10 numeric digits
- * - address: non-null, length 1-30
+ * <p>Enforces all field constraints from the requirements:
+ * <ul>
+ *   <li>contactId: non-null, length 1-10, not updatable</li>
+ *   <li>firstName/lastName: non-null, length 1-10</li>
+ *   <li>phone: non-null, exactly 10 numeric digits</li>
+ *   <li>address: non-null, length 1-30</li>
+ * </ul>
  *
- * All violations result in {@link IllegalArgumentException} being thrown
+ * <p>All violations result in {@link IllegalArgumentException} being thrown
  * by the underlying {@link Validation} helper.
+ *
+ * <h2>Design Decisions</h2>
+ * <ul>
+ *   <li>Class is {@code final} to prevent subclassing that could bypass validation</li>
+ *   <li>ID is immutable after construction (stable map keys)</li>
+ *   <li>All inputs are trimmed before storage for consistent normalization</li>
+ *   <li>{@link #update} validates all fields atomically before mutation</li>
+ * </ul>
+ *
+ * @see Validation
  */
 public final class Contact {
     private static final int MIN_LENGTH = 1;
@@ -28,6 +40,11 @@ public final class Contact {
     /**
      * Creates a new Contact with the given values.
      *
+     * @param contactId unique identifier (required, length 1-10, immutable)
+     * @param firstName first name (required, length 1-10)
+     * @param lastName  last name (required, length 1-10)
+     * @param phone     phone number (required, exactly 10 digits)
+     * @param address   address (required, length 1-30)
      * @throws IllegalArgumentException if any field violates the Contact constraints
      */
     public Contact(
@@ -88,9 +105,14 @@ public final class Contact {
 
     /**
      * Updates all mutable fields after validating every new value first.
-     * If any value fails validation, nothing is changed, so callers never
+     *
+     * <p>If any value fails validation, nothing is changed, so callers never
      * see a partially updated contact. (Atomic update behavior.)
      *
+     * @param newFirstName new first name
+     * @param newLastName  new last name
+     * @param newPhone     new phone number
+     * @param newAddress   new address
      * @throws IllegalArgumentException if any new value violates the Contact constraints
      */
     public void update(
@@ -132,13 +154,13 @@ public final class Contact {
     /**
      * Creates a defensive copy of this Contact.
      *
-     * Validates the source state, then reuses the public constructor so
+     * <p>Validates the source state, then reuses the public constructor so
      * defensive copies and validation stay aligned.
      *
      * @return a new Contact with the same field values
      * @throws IllegalArgumentException if internal state is corrupted (null fields)
      */
-    Contact copy() {
+    public Contact copy() {
         validateCopySource(this);
         return new Contact(this.contactId, this.firstName, this.lastName, this.phone, this.address);
     }

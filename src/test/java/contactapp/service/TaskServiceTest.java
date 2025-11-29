@@ -1,5 +1,6 @@
-package contactapp;
+package contactapp.service;
 
+import contactapp.domain.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,10 +10,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests {@link TaskService} behavior mirrors the requirements.
  *
- * Covers:
- *  - singleton access
- *  - add/delete/update behaviors (including duplicate/missing/blank ID branches)
- *  - ID trimming, null guards, and clear-all reset hook
+ * <p>Covers:
+ * <ul>
+ *   <li>Singleton access</li>
+ *   <li>Add/delete/update behaviors (including duplicate/missing/blank ID branches)</li>
+ *   <li>ID trimming, null guards, and clear-all reset hook</li>
+ * </ul>
+ *
+ * <p>Tests are in the same package as TaskService to access package-private methods.
  */
 public class TaskServiceTest {
 
@@ -179,7 +184,7 @@ public class TaskServiceTest {
     }
 
     /**
-     * Verifies {@link TaskService#updateTask(String, String, String)} returns {@code false} when the ID is missing.
+     * Verifies {@link TaskService#updateTask} returns {@code false} when the ID is missing.
      */
     @Test
     void testUpdateMissingTaskReturnsFalse() {

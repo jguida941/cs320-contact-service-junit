@@ -14,7 +14,7 @@ Small Java project for the CS320 Contact Service milestone, now expanded to Task
 3. Mirror the same patterns for the `Task` entity/service (ID/name/description) so both domains share validation, atomic updates, and singleton storage.
 4. Apply the same validation/service patterns for `Appointment` (ID/date/description) with date-not-past enforcement and defensive date copies.
 
-Everything is packaged under `contactapp`; production classes live in `src/main/java` and the JUnit tests in `src/test/java`.
+Everything is packaged under `contactapp` with layered sub-packages (`domain`, `service`, `api`, `persistence`); production classes live in `src/main/java` and the JUnit tests in `src/test/java`. Spring Boot 3.4.12 provides the runtime with actuator health/info endpoints.
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -23,6 +23,7 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 - [Architecture Overview](#architecture-overview)
 - [Validation & Error Handling](#validation--error-handling)
 - [Testing Strategy](#testing-strategy)
+- [Spring Boot Infrastructure](#applicationjava--spring-boot-infrastructure)
 - [Static Analysis & Quality Gates](#static-analysis--quality-gates)
 - [Backlog](#backlog)
 - [CI/CD Pipeline](#cicd-pipeline)
@@ -32,31 +33,38 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 ## Getting Started
 1. Install Java 17 and Apache Maven (3.9+).
 2. Run `mvn verify` from the project root to compile everything, execute the JUnit suite, and run Checkstyle/SpotBugs/JaCoCo quality gates.
-3. Open the folder in IntelliJ/VS Code if you want IDE assistance—the Maven project model is auto-detected.
-4. Planning note: the current runtime is an in-memory library; the roadmap to add Spring Boot API + UI lives in `docs/REQUIREMENTS.md` (master document with scope, phases, and checklist). ADR-0014..0019 capture the selected stack; implementation is pending.
+3. Start the application with `mvn spring-boot:run` to access health/info actuator endpoints at `http://localhost:8080/actuator/health`.
+4. Open the folder in IntelliJ/VS Code if you want IDE assistance—the Maven project model is auto-detected.
+5. Planning note: Phase 1 (Spring Boot scaffold) is complete with layered packages and actuator endpoints. The roadmap for REST controllers, persistence, UI, and security lives in `docs/REQUIREMENTS.md`. ADR-0014..0020 capture the selected stack and implementation decisions.
 
 ## Folder Highlights
 | Path                                                                                                                 | Description                                                                                     |
 |----------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| [`src/main/java/contactapp/Contact.java`](src/main/java/contactapp/Contact.java)                                     | Contact entity enforcing the ID/name/phone/address constraints.                                 |
-| [`src/main/java/contactapp/ContactService.java`](src/main/java/contactapp/ContactService.java)                       | Singleton service with in-memory CRUD, uniqueness checks, and validation reuse.                 |
-| [`src/main/java/contactapp/Task.java`](src/main/java/contactapp/Task.java)                                           | Task entity (ID/name/description) mirroring the requirements document.                          |
-| [`src/main/java/contactapp/TaskService.java`](src/main/java/contactapp/TaskService.java)                             | Task service API (add/delete/update) mirroring the `ContactService` patterns.                   |
-| [`src/main/java/contactapp/Appointment.java`](src/main/java/contactapp/Appointment.java)                             | Appointment entity (ID/date/description) with date-not-past enforcement.                        |
-| [`src/main/java/contactapp/AppointmentService.java`](src/main/java/contactapp/AppointmentService.java)               | Appointment service singleton with in-memory CRUD and ID trim/validation guards.                |
-| [`src/main/java/contactapp/Validation.java`](src/main/java/contactapp/Validation.java)                               | Centralized validation helpers (not blank, length, numeric, date-not-past checks).              |
-| [`src/test/java/contactapp/ContactTest.java`](src/test/java/contactapp/ContactTest.java)                             | Unit tests for the `Contact` class (valid + invalid scenarios).                                 |
-| [`src/test/java/contactapp/TaskTest.java`](src/test/java/contactapp/TaskTest.java)                                   | Unit tests for the `Task` class (trimming, invalid inputs, and atomic update validation).       |
-| [`src/test/java/contactapp/TaskServiceTest.java`](src/test/java/contactapp/TaskServiceTest.java)                     | Unit tests for `TaskService` (singleton behavior and CRUD).                                     |
-| [`src/test/java/contactapp/AppointmentTest.java`](src/test/java/contactapp/AppointmentTest.java)                     | Unit tests for Appointment entity (ID/date/description validation).                             |
-| [`src/test/java/contactapp/AppointmentServiceTest.java`](src/test/java/contactapp/AppointmentServiceTest.java)       | Unit tests for AppointmentService singleton and CRUD behavior.                                  |
-| [`src/test/java/contactapp/ValidationTest.java`](src/test/java/contactapp/ValidationTest.java)                       | Boundary/blank/null/future coverage for the shared validation helpers.                          |
+| [`src/main/java/contactapp/Application.java`](src/main/java/contactapp/Application.java)                             | Spring Boot entrypoint (`@SpringBootApplication`).                                              |
+| [`src/main/java/contactapp/domain/Contact.java`](src/main/java/contactapp/domain/Contact.java)                       | Contact entity enforcing the ID/name/phone/address constraints.                                 |
+| [`src/main/java/contactapp/domain/Task.java`](src/main/java/contactapp/domain/Task.java)                             | Task entity (ID/name/description) mirroring the requirements document.                          |
+| [`src/main/java/contactapp/domain/Appointment.java`](src/main/java/contactapp/domain/Appointment.java)               | Appointment entity (ID/date/description) with date-not-past enforcement.                        |
+| [`src/main/java/contactapp/domain/Validation.java`](src/main/java/contactapp/domain/Validation.java)                 | Centralized validation helpers (not blank, length, numeric, date-not-past checks).              |
+| [`src/main/java/contactapp/service/ContactService.java`](src/main/java/contactapp/service/ContactService.java)       | @Service bean with in-memory CRUD, uniqueness checks, and validation reuse.                     |
+| [`src/main/java/contactapp/service/TaskService.java`](src/main/java/contactapp/service/TaskService.java)             | Task service API (add/delete/update) mirroring the `ContactService` patterns.                   |
+| [`src/main/java/contactapp/service/AppointmentService.java`](src/main/java/contactapp/service/AppointmentService.java) | Appointment service with in-memory CRUD and ID trim/validation guards.                        |
+| [`src/main/resources/application.yml`](src/main/resources/application.yml)                                           | Profile-based configuration (dev/test/prod) with actuator lockdown.                             |
+| [`src/test/java/contactapp/ApplicationTest.java`](src/test/java/contactapp/ApplicationTest.java)                     | Spring Boot context load smoke test.                                                            |
+| [`src/test/java/contactapp/ActuatorEndpointsTest.java`](src/test/java/contactapp/ActuatorEndpointsTest.java)         | Verifies actuator endpoint security (health/info exposed, others blocked).                      |
+| [`src/test/java/contactapp/ServiceBeanTest.java`](src/test/java/contactapp/ServiceBeanTest.java)                     | Verifies service beans are injectable and singletons.                                           |
+| [`src/test/java/contactapp/domain/ContactTest.java`](src/test/java/contactapp/domain/ContactTest.java)               | Unit tests for the `Contact` class (valid + invalid scenarios).                                 |
+| [`src/test/java/contactapp/domain/TaskTest.java`](src/test/java/contactapp/domain/TaskTest.java)                     | Unit tests for the `Task` class (trimming, invalid inputs, and atomic update validation).       |
+| [`src/test/java/contactapp/domain/AppointmentTest.java`](src/test/java/contactapp/domain/AppointmentTest.java)       | Unit tests for Appointment entity (ID/date/description validation).                             |
+| [`src/test/java/contactapp/domain/ValidationTest.java`](src/test/java/contactapp/domain/ValidationTest.java)         | Boundary/blank/null/future coverage for the shared validation helpers.                          |
+| [`src/test/java/contactapp/service/ContactServiceTest.java`](src/test/java/contactapp/service/ContactServiceTest.java) | Unit tests for ContactService (singleton behavior and CRUD).                                  |
+| [`src/test/java/contactapp/service/TaskServiceTest.java`](src/test/java/contactapp/service/TaskServiceTest.java)     | Unit tests for `TaskService` (singleton behavior and CRUD).                                     |
+| [`src/test/java/contactapp/service/AppointmentServiceTest.java`](src/test/java/contactapp/service/AppointmentServiceTest.java) | Unit tests for AppointmentService singleton and CRUD behavior.                            |
 | [`docs/requirements/contact-requirements/`](docs/requirements/contact-requirements/)                                 | Contact assignment requirements and checklist.                                                  |
 | [`docs/requirements/appointment-requirements/`](docs/requirements/appointment-requirements/)                         | Appointment assignment requirements and checklist.                                              |
 | [`docs/requirements/task-requirements/`](docs/requirements/task-requirements/)                                       | Task assignment requirements and checklist (same format as Contact).                            |
 | [`docs/architecture/2025-11-19-task-entity-and-service.md`](docs/architecture/2025-11-19-task-entity-and-service.md) | Task entity/service design plan with Definition of Done and phased approach.                    |
 | [`docs/architecture/2025-11-24-appointment-entity-and-service.md`](docs/architecture/2025-11-24-appointment-entity-and-service.md) | Appointment entity/service implementation record.                                               |
-| [`docs/adrs/README.md`](docs/adrs/README.md)                                                                         | Architecture Decision Record index (ADR-0001…ADR-0019).                                         |
+| [`docs/adrs/README.md`](docs/adrs/README.md)                                                                         | Architecture Decision Record index (ADR-0001…ADR-0020).                                         |
 | [`docs/ci-cd/`](docs/ci-cd/)                                                                                         | CI/CD design notes (pipeline plan + badge automation).                                          |
 | [`docs/design-notes/`](docs/design-notes/)                                                                           | Informal design notes hub; individual write-ups live under `docs/design-notes/notes/`.          |
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)                                                                       | **Master document**: scope, architecture, phased plan, checklist, and code examples.            |
@@ -94,9 +102,9 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 - These helpers double as both correctness logic and security filtering.
 
 ### Service Layer (`ContactService`)
-- Singleton that owns an in-memory `ConcurrentHashMap<String, Contact>` keyed by `contactId`.
+- Uses a static `ConcurrentHashMap<String, Contact>` keyed by `contactId`, ensuring Spring DI and `getInstance()` share the same data.
 - Provides add/update/delete orchestration, validates/normalizes IDs before touching the map, and delegates all field rules to `Contact` (constructor + `update(...)`) and `Validation`.
-- Because state lives on the instance (not static), this class remains the seam for swapping in persistence or caching later without touching the entity/tests.
+- The service layer remains the seam for swapping in persistence or caching later without touching the entity/tests.
 
 ### Storage & Extension Points
 **ConcurrentHashMap<String, Contact> (current backing store)**
@@ -109,7 +117,7 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 
   <br>
 
-## [Contact.java](src/main/java/contactapp/Contact.java) / [ContactTest.java](src/test/java/contactapp/ContactTest.java)
+## [Contact.java](src/main/java/contactapp/domain/Contact.java) / [ContactTest.java](src/test/java/contactapp/domain/ContactTest.java)
 
 ### Service Snapshot
 - `Contact` acts as the immutable ID holder with mutable first/last name, phone, and address fields.
@@ -123,16 +131,14 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 ```mermaid
 graph TD
     A[input]
-    B[validateNotBlank]
     C{Field type}
-    D[validateLength on trimmed text]
+    D["validateLength(input): validateNotBlank + measure trimmed length"]
     E[trim & assign id/name/address]
-    F[validateDigits: digits-only + length]
+    F["validateDigits(input): validateNotBlank + digits-only + exact length"]
     G[assign phone as provided]
     X[IllegalArgumentException]
 
-    A --> B --> C
-    B --> X
+    A --> C
     C -->|id/name/address| D
     C -->|phone| F
     D -->|pass| E
@@ -140,7 +146,8 @@ graph TD
     F -->|pass| G
     F -->|fail| X
 ```
-- Text fields (`contactId`, `firstName`, `lastName`, `address`) measure trimmed length, then store the trimmed value; phone numbers must already be ten digits with no spaces, so whitespace fails the digit check instead of getting trimmed implicitly.
+- Text fields (`contactId`, `firstName`, `lastName`, `address`): `validateLength` first calls `validateNotBlank` on the original input, then measures `input.trim().length()` against the bounds. If valid, the caller trims and stores.
+- Phone numbers: `validateDigits` calls `validateNotBlank` on the original input, then checks for digits-only and exact length. No trimming; whitespace fails the digit check.
 - Because the constructor routes through the setters, the exact same pipeline applies whether the object is being created or updated.
 
 ### Error Message Philosophy
@@ -213,16 +220,22 @@ void testInvalidContactId(String id, String expectedMessage) {
 - `ValidationTest.validateLengthRejectsTooLong` hits the max-length branch to keep upper-bound validation covered.
 - `ValidationTest.validateLengthRejectsTooShort` covers the min-length branch so both ends of the range are exercised.
 - `ValidationTest.validateDigitsRejectsBlankStrings` and `ValidationTest.validateDigitsRejectsNull` ensure the phone validator raises the expected messages before regex/length checks.
+- `ValidationTest.validateDigitsAcceptsValidPhoneNumber` proves valid 10-digit inputs pass without exception.
+- `ValidationTest.validateDigitsRejectsNonDigitCharacters` asserts non-digit input triggers the "must only contain digits 0-9" message.
+- `ValidationTest.validateDigitsRejectsWrongLength` asserts wrong-length input triggers the "must be exactly 10 digits" message.
 - `ValidationTest.validateDateNotPastAcceptsFutureDate`, `validateDateNotPastRejectsNull`, and `validateDateNotPastRejectsPastDate` assert the appointment date guard enforces the non-null/not-in-the-past contract before any Appointment state mutates.
 - `ValidationTest.validateDateNotPastAcceptsDateExactlyEqualToNow` (added for PITest) uses `Clock.fixed()` to deterministically test the exact boundary where `date.getTime() == clock.millis()`, killing the boundary mutant (`<` vs `<=`).
 - `ValidationTest.privateConstructorIsNotAccessible` (added for line coverage) exercises the private constructor via reflection to cover the utility class pattern.
+- Spring Boot tests use Mockito's subclass mock-maker (`src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker`) to avoid agent attach issues on newer JDKs while still enabling MockMvc/context testing.
+
+> **Note (JDK 25+):** When running tests on JDK 25 or later, you may see a warning like `Mockito is currently self-attaching to enable the inline-mock-maker`. This is expected and harmless; Mockito's subclass mock-maker handles mocking without requiring the Java agent, so the warning does not affect test correctness.
 
 <br>
 
-## [ContactService.java](src/main/java/contactapp/ContactService.java) / [ContactServiceTest.java](src/test/java/contactapp/ContactServiceTest.java)
+## [ContactService.java](src/main/java/contactapp/service/ContactService.java) / [ContactServiceTest.java](src/test/java/contactapp/service/ContactServiceTest.java)
 
 ### Service Snapshot
-- **Singleton access** - `getInstance()` exposes one shared service so every caller sees the same `ConcurrentHashMap` backing store.
+- **Shared static store** - The backing `ConcurrentHashMap` is static, so both Spring DI and `getInstance()` share the same data regardless of initialization order.
 - **Atomic uniqueness guard** - `addContact` rejects null inputs up front and calls `ConcurrentHashMap.putIfAbsent(...)` directly so duplicate IDs never overwrite state even under concurrent access.
 - **Thread-safe updates** - `updateContact` uses `ConcurrentHashMap.computeIfPresent(...)` for atomic lookup + update, then delegates to `Contact.update(...)` guaranteeing the constructor's length/null/phone rules apply.
 - **Shared validation** - `deleteContact` uses `Validation.validateNotBlank` for IDs; all paths reuse the same `Validation` helpers.
@@ -295,7 +308,7 @@ graph TD
 
 <br>
 
-## [Task.java](src/main/java/contactapp/Task.java) / [TaskTest.java](src/test/java/contactapp/TaskTest.java)
+## [Task.java](src/main/java/contactapp/domain/Task.java) / [TaskTest.java](src/test/java/contactapp/domain/TaskTest.java)
 
 ### Service Snapshot
 - Task IDs are required, trimmed, and immutable after construction (length 1-10).
@@ -309,19 +322,20 @@ graph TD
 ### Validation Pipeline
 ```mermaid
 graph TD
-    A[Constructor / setter input] --> B[validateLength taskId 1-10]
+    A[Constructor input] --> B["validateLength(taskId, 1-10)"]
     B -->|ok| C[trim & store taskId]
     B -->|fail| X[IllegalArgumentException]
-    C --> D[validateLength name 1-20]
-    D -->|ok| E[trimmed name stored]
+    C --> D["validateLength(name, 1-20)"]
+    D -->|ok| E[trim & store name]
     D -->|fail| X
-    E --> F[validateLength description 1-50]
-    F -->|ok| G[trimmed description stored]
+    E --> F["validateLength(description, 1-50)"]
+    F -->|ok| G[trim & store description]
     F -->|fail| X
 ```
-- Constructor and setters call the same helper, so trimming + length checks stay in sync.
-- Inputs are trimmed before length checks and before storing, so normalization matches validation.
-- `update(...)` repeats the same validations, caches the trimmed values, then assigns both if they pass.
+- Constructor validates taskId, then delegates to setters for name/description.
+- `validateLength` measures `input.trim().length()` on the original input, then the caller trims before storing.
+- Setters (`setName`, `setDescription`) use the same `validateLength` + trim pattern for updates.
+- `update(...)` validates both fields first, then assigns both atomically if they pass.
 
 ### Error Message Philosophy
 - All strings come from `Validation.validateLength`, so failures always say `<label> must not be null or blank` or `<label> length must be between X and Y`.
@@ -356,10 +370,10 @@ graph TD
 
   <br>
 
-## [TaskService.java](src/main/java/contactapp/TaskService.java) / [TaskServiceTest.java](src/test/java/contactapp/TaskServiceTest.java)
+## [TaskService.java](src/main/java/contactapp/service/TaskService.java) / [TaskServiceTest.java](src/test/java/contactapp/service/TaskServiceTest.java)
 
 ### Service Snapshot
-- Singleton `TaskService` owns a `ConcurrentHashMap<String, Task>` plus a `clearAllTasks()` helper (package-private) for tests.
+- Uses a static `ConcurrentHashMap<String, Task>` so Spring DI and `getInstance()` share the same data; `clearAllTasks()` (package-private) resets state for tests.
 - `addTask` rejects null tasks and uses `putIfAbsent` so uniqueness checks and inserts are atomic.
 - `deleteTask` validates + trims ids before removal; `updateTask` uses `ConcurrentHashMap.computeIfPresent(...)` for thread-safe atomic lookup + update.
 - `getDatabase()` returns an unmodifiable snapshot of defensive copies (via `Task.copy()`) so callers can't mutate internal state.
@@ -420,7 +434,7 @@ graph TD
 
   <br>
 
-## [Appointment.java](src/main/java/contactapp/Appointment.java) / [AppointmentTest.java](src/test/java/contactapp/AppointmentTest.java)
+## [Appointment.java](src/main/java/contactapp/domain/Appointment.java) / [AppointmentTest.java](src/test/java/contactapp/domain/AppointmentTest.java)
 
 ### Service Snapshot
 - Appointment IDs are required, trimmed, and immutable after construction (length 1-10).
@@ -434,26 +448,25 @@ graph TD
 flowchart TD
     X[IllegalArgumentException]
 
-    C1[Constructor inputs] --> C2[validateNotBlank appointmentId]
-    C2 -->|pass| C3[trim id]
+    C1[Constructor inputs] --> C2["validateLength(appointmentId, 1-10)"]
+    C2 -->|ok| C3[trim & store id]
     C2 -->|fail| X
-    C3 --> C4[validateLength appointmentId 1-10]
-    C4 -->|ok| C5[validateDateNotPast]
+    C3 --> C4[validateDateNotPast]
+    C4 -->|ok| C5[defensive copy of date stored]
     C4 -->|fail| X
-    C5 -->|ok| C6[defensive copy of date stored]
-    C5 -->|fail| X
-    C6 --> C7[validateLength description 1-50]
-    C7 -->|ok| C8[trimmed description stored]
-    C7 -->|fail| X
+    C5 --> C6["validateLength(description, 1-50)"]
+    C6 -->|ok| C7[trim & store description]
+    C6 -->|fail| X
     U1[update newDate, newDescription] --> U2[validateDateNotPast]
     U2 -->|fail| X
-    U2 --> U3[validateLength description 1-50]
+    U2 --> U3["validateLength(description, 1-50)"]
     U3 -->|fail| X
-    U3 --> U4[copy date + trim/store description]
+    U3 --> U4[copy date + trim & store description]
 ```
-- Constructor validates/trim/length-checks IDs, then date, then description; update skips ID checks and only validates date + description before mutating.
+- Constructor: `validateLength` validates/measures trimmed ID, then trim & store. Then delegates to setters for date + description.
+- `validateLength` measures `input.trim().length()` on the original input, then the caller trims before storing (matches Contact/Task pattern).
 - Dates are validated via `Validation.validateDateNotPast` and copied on set/get to prevent external mutation.
-- String fields reuse `Validation.validateLength`, so constructor/setters/update share the same messages.
+- `update(...)` validates both inputs before mutating, keeping updates atomic.
 
 ### Testing Strategy
 - `AppointmentTest` covers trimmed creation with defensive date copies, description setter happy path, invalid constructor cases (null/blank/over-length id/description, null/past dates), invalid description setters, invalid updates (null/past dates, bad descriptions) that leave state unchanged, and defensive getters.
@@ -468,10 +481,10 @@ flowchart TD
 - `testSetDescriptionValidation` covers invalid description setter inputs.
 - `testUpdateRejectsInvalidValuesAtomically` enumerates invalid update inputs and asserts state remains unchanged.
 
-## [AppointmentService.java](src/main/java/contactapp/AppointmentService.java) / [AppointmentServiceTest.java](src/test/java/contactapp/AppointmentServiceTest.java)
+## [AppointmentService.java](src/main/java/contactapp/service/AppointmentService.java) / [AppointmentServiceTest.java](src/test/java/contactapp/service/AppointmentServiceTest.java)
 
 ### Service Snapshot
-- **Singleton access** - `getInstance()` exposes one shared service backed by a `ConcurrentHashMap<String, Appointment>`.
+- **Shared static store** - The backing `ConcurrentHashMap<String, Appointment>` is static, so both Spring DI and `getInstance()` share the same data.
 - **Atomic uniqueness guard** - `addAppointment` rejects null inputs, validates IDs (already trimmed by the `Appointment` constructor), and uses `putIfAbsent` so duplicate IDs never overwrite existing entries.
 - **Shared validation** - `deleteAppointment` trims/validates IDs; `updateAppointment` trims IDs and delegates field rules to `Appointment.update(...)` via `computeIfPresent` to avoid a get-then-mutate race.
 - **Defensive views** - `getDatabase()` returns an unmodifiable snapshot of defensive copies (via `Appointment.copy()`, which validates the source and reuses the public constructor); `clearAllAppointments()` (package-private) resets state between tests.
@@ -514,6 +527,103 @@ graph TD
 - `testUpdateAppointmentBlankIdThrows` and `testUpdateMissingAppointmentReturnsFalse` cover validation/missing update branches.
 - `testClearAllAppointmentsRemovesEntries` proves the reset hook empties the backing store.
 - `testCopyRejectsNullInternalState` exercises the copy guard against corrupted internal fields.
+
+<br>
+
+## [Application.java](src/main/java/contactapp/Application.java) / Spring Boot Infrastructure
+
+### Application Snapshot
+- **Spring Boot 3.4.12** provides the runtime foundation with embedded Tomcat, auto-configuration, and actuator endpoints.
+- `@SpringBootApplication` combines `@Configuration`, `@EnableAutoConfiguration`, and `@ComponentScan` to wire everything together.
+- Component scanning discovers `@Service` beans in `contactapp.service` package automatically.
+- Services retain their singleton `getInstance()` pattern for backward compatibility while also supporting Spring DI via `@Autowired`.
+
+### Package Structure
+```
+contactapp/
+├── Application.java              # Spring Boot entrypoint
+├── domain/                       # Domain entities (Contact, Task, Appointment, Validation)
+├── service/                      # @Service beans (ContactService, TaskService, AppointmentService)
+├── api/                          # REST controllers (Phase 2 - empty)
+└── persistence/                  # Repository interfaces (Phase 3 - empty)
+```
+
+### Configuration
+- **Profile-based settings** in `application.yml`:
+  - `dev`: Debug logging, health details always shown
+  - `test`: Minimal logging for fast CI runs
+  - `prod`: Restricted health details, warn-level logging
+- **Actuator lockdown**: Only `/actuator/health` and `/actuator/info` are exposed; all other endpoints (env, beans, metrics) return 404 per OWASP guidelines.
+
+## [application.yml](src/main/resources/application.yml)
+
+### Configuration Highlights
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info    # Only health and info exposed
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true           # Kubernetes liveness/readiness support
+```
+
+### Why These Defaults?
+- **Security**: Actuator endpoints can expose sensitive information (environment variables, bean definitions, metrics). Locking them down by default follows defense-in-depth.
+- **Observability**: Health and info endpoints are essential for orchestrators (Kubernetes probes, load balancer health checks) and operational dashboards.
+- **Profiles**: Environment-specific behavior without code changes; `spring.profiles.active=dev` unlocks more verbose settings locally.
+
+## [ApplicationTest.java](src/test/java/contactapp/ApplicationTest.java)
+
+### Test Snapshot
+- Smoke test verifying the Spring application context loads without errors.
+- Empty test body is intentional: `@SpringBootTest` triggers context loading before any test runs. If wiring fails, the test fails with detailed error messages.
+
+### Why This Test Matters
+- Catches configuration errors early: missing beans, circular dependencies, invalid property bindings, component scanning failures.
+- Fast feedback loop: fails in seconds rather than waiting for full integration tests to discover wiring issues.
+
+## [ActuatorEndpointsTest.java](src/test/java/contactapp/ActuatorEndpointsTest.java)
+
+### Test Snapshot
+- Integration tests verifying actuator endpoint security configuration using MockMvc.
+- Confirms security posture matches `application.yml` settings.
+
+### Scenario Coverage
+- `healthEndpointReturnsUp` - Verifies `/actuator/health` returns 200 OK with `{"status":"UP"}`. Critical for Kubernetes probes and load balancer health checks.
+- `infoEndpointReturnsOk` - Verifies `/actuator/info` returns 200 OK. Provides build metadata for operational dashboards.
+- `envEndpointIsNotExposed` - Verifies `/actuator/env` returns 404. Prevents exposure of environment variables that may contain secrets.
+- `beansEndpointIsNotExposed` - Verifies `/actuator/beans` returns 404. Prevents exposure of internal architecture details.
+- `metricsEndpointIsNotExposed` - Verifies `/actuator/metrics` returns 404. Prevents exposure of JVM/application metrics.
+
+### Security Rationale
+| Endpoint            | Status    | Reason                           |
+|---------------------|-----------|----------------------------------|
+| `/actuator/health`  | ✅ Exposed | Required for orchestrator probes |
+| `/actuator/info`    | ✅ Exposed | Build metadata for ops           |
+| `/actuator/env`     | ❌ Blocked | May contain secrets              |
+| `/actuator/beans`   | ❌ Blocked | Reveals architecture             |
+| `/actuator/metrics` | ❌ Blocked | Aids attackers                   |
+
+## [ServiceBeanTest.java](src/test/java/contactapp/ServiceBeanTest.java)
+
+### Test Snapshot
+- Integration tests verifying service beans are properly registered and injectable.
+- Proves component scanning discovers all `@Service` classes.
+
+### Scenario Coverage
+- `contactServiceBeanExists` - Verifies `ContactService` is injectable via `@Autowired` and retrievable from `ApplicationContext`.
+- `taskServiceBeanExists` - Verifies `TaskService` is injectable and present in context.
+- `appointmentServiceBeanExists` - Verifies `AppointmentService` is injectable and present in context.
+- `serviceBeansAreSingletons` - Verifies all three services are singletons (same instance across injection points), matching the expected behavior for stateful in-memory services.
+
+### Why These Tests Matter
+- Catches `NoSuchBeanDefinitionException` errors before they surface in controller tests (Phase 2).
+- Documents the expected wiring behavior: services should be singletons.
+- Verifies backward compatibility: Spring-managed beans should behave identically to `getInstance()` pattern.
 
 <br>
 

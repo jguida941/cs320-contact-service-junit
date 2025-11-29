@@ -1,5 +1,6 @@
-package contactapp;
+package contactapp.service;
 
+import contactapp.domain.Contact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,11 +10,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests the ContactService behavior.
  *
- * Verifies:
- * - getInstance() returns a non-null singleton
- * - addContact() adds a new contact and rejects duplicate IDs
- * - deleteContact() removes existing contacts and throws for blank IDs
- * - updateContact() updates existing contacts and returns false if the ID is missing
+ * <p>Verifies:
+ * <ul>
+ *   <li>getInstance() returns a non-null singleton</li>
+ *   <li>addContact() adds a new contact and rejects duplicate IDs</li>
+ *   <li>deleteContact() removes existing contacts and throws for blank IDs</li>
+ *   <li>updateContact() updates existing contacts and returns false if the ID is missing</li>
+ * </ul>
+ *
+ * <p>Tests are in the same package as ContactService to access package-private methods.
  */
 public class ContactServiceTest {
 
@@ -57,11 +62,8 @@ public class ContactServiceTest {
                 "7622 Main Street"
         );
 
-        // Indicates whether the contact was added successfully
         boolean added = contactService.addContact(contact);
 
-        // addContact(...) should return true for a new contactId
-        // the internal map should now contain the entry with correct data
         assertThat(added).isTrue();
         assertThat(contactService.getDatabase()).containsKey("100");
         Contact stored = contactService.getDatabase().get("100");
@@ -92,8 +94,6 @@ public class ContactServiceTest {
 
         boolean deleted = contactService.deleteContact("100");
 
-        // deleteContact(...) should report success
-        // and the map should no longer contain the key "100"
         assertThat(deleted).isTrue();
         assertThat(contactService.getDatabase()).doesNotContainKey("100");
     }
@@ -109,7 +109,7 @@ public class ContactServiceTest {
     }
 
     /**
-     * Verifies {@link ContactService#updateContact(String, String, String, String, String)} updates stored contacts.
+     * Verifies {@link ContactService#updateContact} updates stored contacts.
      */
     @Test
     void testUpdateContact() {
@@ -126,7 +126,6 @@ public class ContactServiceTest {
         assertThat(added).isTrue();
         assertThat(contactService.getDatabase()).containsKey("100");
 
-        // Update the contact's mutable fields
         boolean updated = contactService.updateContact(
                 "100",
                 "Sebastian",
@@ -135,7 +134,6 @@ public class ContactServiceTest {
                 "1234 Test Street"
         );
 
-        // updateContact(...) should report success
         assertThat(updated).isTrue();
 
         assertThat(contactService.getDatabase().get("100"))
@@ -202,7 +200,7 @@ public class ContactServiceTest {
         boolean secondAdd = service.addContact(contact2);
 
         assertThat(firstAdd).isTrue();
-        assertThat(secondAdd).isFalse();                  // duplicate id rejected
+        assertThat(secondAdd).isFalse();  // duplicate id rejected
         // Verify original data is still stored
         Contact stored = service.getDatabase().get("100");
         assertThat(stored.getFirstName()).isEqualTo("Justin");
@@ -238,6 +236,7 @@ public class ContactServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("contactId must not be null or blank");
     }
+
     /**
      * Verifies {@link ContactService#addContact(Contact)} guards against null input.
      */

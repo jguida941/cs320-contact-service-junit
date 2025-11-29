@@ -10,10 +10,10 @@ Summary: Implements Task (id,name,description) and TaskService with singleton st
 ## Implementation Summary
 
 Implemented in:
-- `src/main/java/contactapp/Task.java`
-- `src/main/java/contactapp/TaskService.java`
-- `src/test/java/contactapp/TaskTest.java`
-- `src/test/java/contactapp/TaskServiceTest.java`
+- `src/main/java/contactapp/domain/Task.java`
+- `src/main/java/contactapp/service/TaskService.java`
+- `src/test/java/contactapp/domain/TaskTest.java`
+- `src/test/java/contactapp/service/TaskServiceTest.java`
 
 Key points:
 - Task fields and limits mirror the requirements (id 1–10 chars, name 1–20, description 1–50) and reuse the shared `Validation` helpers.
@@ -25,7 +25,7 @@ Key points:
 ## Definition of Done
 - All unit tests pass via `mvn verify`.
 - Line coverage: current JaCoCo reports 100% on mutated classes.
-- Mutation score: PITest shows 100% mutation score (all 116 mutants killed) as of 2025-11-29.
+- Mutation score: PITest shows 100% mutation score (all mutants killed).
 - Checkstyle and SpotBugs: zero new issues for Task-related files.
 - CodeQL and Dependency Check: no Task-specific findings as of 2025-11-20.
 - Public types/methods include Javadoc on Task and TaskService.

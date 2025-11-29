@@ -4,9 +4,9 @@
 **Date**: 2025-11-24  
 **Owners**: Justin Guida  
 
-**Related**: [Appointment.java](../../src/main/java/contactapp/Appointment.java),
-[AppointmentTest.java](../../src/test/java/contactapp/AppointmentTest.java),
-[Validation.java](../../src/main/java/contactapp/Validation.java),
+**Related**: [Appointment.java](../../src/main/java/contactapp/domain/Appointment.java),
+[AppointmentTest.java](../../src/test/java/contactapp/domain/AppointmentTest.java),
+[Validation.java](../../src/main/java/contactapp/domain/Validation.java),
 [Appointment requirements](../requirements/appointment-requirements/requirements.md)
 
 ## Context

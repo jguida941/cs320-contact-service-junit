@@ -9,18 +9,20 @@ Quick links and context for automation/assistant workflows implementing this pla
 | **Requirements** | `docs/REQUIREMENTS.md` | **START HERE** - Master document with scope, phases, checklist, code examples |
 | **Roadmap** | `docs/ROADMAP.md` | Quick phase overview |
 | **Index** | `docs/INDEX.md` | Full file/folder navigation |
-| **ADR Index** | `docs/adrs/README.md` | Stack decisions (ADR-0014–0019) |
+| **ADR Index** | `docs/adrs/README.md` | Stack decisions (ADR-0014–0020) |
 | **CI/CD Plan** | `docs/ci-cd/ci_cd_plan.md` | Pipeline phases including security testing |
 | **Backlog** | `docs/logs/backlog.md` | Deferred decisions (do not implement yet) |
 
 ## Current State
 
-- **Phase 0 complete**: Defensive copies and date validation fix implemented
-- Code is an **in-memory Java library** with Contact/Task/Appointment entities and services
-- Latest CI: **148 tests passing**, **100% PITest mutation score**, **100% line coverage**, SpotBugs clean
-- No Spring Boot runtime, no persistence, no HTTP layer yet
+- **Phase 1 complete**: Spring Boot scaffold implemented
+- Spring Boot 3.4.12 with layered packages (`contactapp.domain`, `contactapp.service`, `contactapp.api`, `contactapp.persistence`)
+- Services annotated with `@Service` for Spring DI while retaining `getInstance()` for backward compatibility
+- Health/info actuator endpoints available; other actuator endpoints locked down
+- Latest CI: **All tests passing**, **100% PITest mutation score**, **100% line coverage**, SpotBugs clean
+- No REST controllers, no persistence, no HTTP layer yet (Phase 2+)
 - Domain validation in `Validation.java` is the **source of truth** for all field rules
-- `getDatabase()` methods now return defensive copies; safe to surface over APIs
+- `getDatabase()` methods return defensive copies; safe to surface over APIs
 
 ## Implementation Constraints
 
@@ -43,6 +45,7 @@ Quick links and context for automation/assistant workflows implementing this pla
 | Component | Decision | ADR |
 |-----------|----------|-----|
 | Backend | Spring Boot 3 | ADR-0014 |
+| Scaffold | Spring Boot 3.4.12 + layered packages | ADR-0020 |
 | ORM | Spring Data JPA/Hibernate | ADR-0014 |
 | Migrations | Flyway | ADR-0014 |
 | Database | Postgres (prod), H2/Testcontainers (test) | ADR-0015 |
@@ -57,7 +60,7 @@ Quick links and context for automation/assistant workflows implementing this pla
 See `docs/REQUIREMENTS.md` for the full checklist. Definition of done for each phase:
 
 - **Phase 0 ✅ (complete)**: Defensive copies in Task/ContactService, date validation fixed, all tests pass
-- **Phase 1**: Spring Boot starts, health endpoint works, existing tests pass
+- **Phase 1 ✅ (complete)**: Spring Boot starts, health/info endpoints work, services are @Service beans, existing tests pass
 - **Phase 2**: CRUD endpoints for all 3 entities, OpenAPI accessible
 - **Phase 2.5**: Schemathesis runs in CI against spec
 - **Phase 3**: Data persists in Postgres, Flyway migrations work
@@ -69,13 +72,54 @@ See `docs/REQUIREMENTS.md` for the full checklist. Definition of done for each p
 ## Existing Code to Preserve
 
 These files contain the domain logic — **do not modify validation rules**:
-- `src/main/java/contactapp/Validation.java`
-- `src/main/java/contactapp/Contact.java`
-- `src/main/java/contactapp/Task.java`
-- `src/main/java/contactapp/Appointment.java`
+- `src/main/java/contactapp/domain/Validation.java`
+- `src/main/java/contactapp/domain/Contact.java`
+- `src/main/java/contactapp/domain/Task.java`
+- `src/main/java/contactapp/domain/Appointment.java`
 
 These tests must continue passing:
-- `src/test/java/contactapp/*Test.java` (all 7 test classes)
+- `src/test/java/contactapp/domain/*Test.java` (domain validation tests)
+- `src/test/java/contactapp/service/*Test.java` (service CRUD tests)
+- `src/test/java/contactapp/*Test.java` (Spring Boot smoke tests)
+
+## Documentation Checklist (After Each Change)
+
+**IMPORTANT**: After making ANY code changes, review ALL of these docs. Don't try to guess which ones need updates - just go through the whole list every time.
+
+### Core Docs (review after every change)
+| Document | Path | What to Check/Update |
+|----------|------|----------------------|
+| **README.md** | `README.md` | Folder Highlights table, test counts, scenario coverage lists, file paths |
+| **CHANGELOG.md** | `docs/logs/CHANGELOG.md` | Add entry under `[Unreleased]` section |
+| **INDEX.md** | `docs/INDEX.md` | Key Files tables, all file path links |
+| **REQUIREMENTS.md** | `docs/REQUIREMENTS.md` | Current State section, phase status, test counts, checklist items |
+| **agents.md** | `agents.md` | Current State, test counts, file paths |
+| **ROADMAP.md** | `docs/ROADMAP.md` | Phase completion status |
+
+### ADRs & Architecture (review after every change)
+| Document | Path | What to Check/Update |
+|----------|------|----------------------|
+| **ADR index** | `docs/adrs/README.md` | Add new ADR if architectural decision was made |
+| **Existing ADRs** | `docs/adrs/ADR-*.md` | Fix any relative links to source files |
+| **Architecture docs** | `docs/architecture/*.md` | Update status, fix links, add new docs if needed |
+
+### Design Notes & Requirements (review after every change)
+| Document | Path | What to Check/Update |
+|----------|------|----------------------|
+| **Design notes** | `docs/design-notes/notes/*.md` | Fix links, add new notes if complex feature added |
+| **Requirements checklists** | `docs/requirements/*/requirements_checklist.md` | Check off completed requirements |
+
+### Verification Commands
+```bash
+# Find stale links to old package structure
+grep -r "contactapp/[A-Z]" docs/ --include="*.md"
+
+# Find references to specific test counts (update if changed)
+grep -r "148 tests\|158 tests\|161 tests" docs/ README.md agents.md
+
+# Verify all tests still pass
+mvn test -q
+```
 
 ## When Complete
 

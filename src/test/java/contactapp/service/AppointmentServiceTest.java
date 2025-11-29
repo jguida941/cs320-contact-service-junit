@@ -1,5 +1,6 @@
-package contactapp;
+package contactapp.service;
 
+import contactapp.domain.Appointment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,10 +14,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests {@link AppointmentService} behavior mirrors the requirements.
  *
- * Covers:
- *  - singleton access
- *  - add/delete/update behaviors (including duplicate/missing/blank ID branches)
- *  - trimming of IDs, null guards, and clear-all reset hook
+ * <p>Covers:
+ * <ul>
+ *   <li>Singleton access</li>
+ *   <li>Add/delete/update behaviors (including duplicate/missing/blank ID branches)</li>
+ *   <li>Trimming of IDs, null guards, and clear-all reset hook</li>
+ * </ul>
+ *
+ * <p>Tests are in the same package as AppointmentService to access package-private methods.
  */
 public class AppointmentServiceTest {
 
@@ -75,7 +80,7 @@ public class AppointmentServiceTest {
     }
 
     /**
-     * Ensures {@link AppointmentService#updateAppointment(String, Date, String)} updates both fields.
+     * Ensures {@link AppointmentService#updateAppointment} updates both fields.
      */
     @Test
     void testUpdateAppointment() {

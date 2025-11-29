@@ -1,4 +1,4 @@
-package contactapp;
+package contactapp.domain;
 
 import java.lang.reflect.Field;
 import java.util.stream.Stream;
@@ -15,11 +15,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Unit tests for {@link Task}.
  *
- * Covers:
- *  - trimming and successful construction
- *  - update semantics (atomic replacement of fields and unchanged state on validation failure)
- *  - setter behavior for valid values
- *  - validation of taskId, name, and description in constructor, setters, and update(...)
+ * <p>Covers:
+ * <ul>
+ *   <li>Trimming and successful construction</li>
+ *   <li>Update semantics (atomic replacement of fields and unchanged state on validation failure)</li>
+ *   <li>Setter behavior for valid values</li>
+ *   <li>Validation of taskId, name, and description in constructor, setters, and update(...)</li>
+ * </ul>
+ *
+ * <p>Tests are in the same package as Task to access package-private methods.
  */
 public class TaskTest {
 
@@ -63,7 +67,7 @@ public class TaskTest {
     }
 
     /**
-     * Supplies invalid constructor inputs for {@link #testConstructorValidation(String, String, String, String)}.
+     * Supplies invalid constructor inputs for {@link #testConstructorValidation}.
      */
     @CsvSource(value = {
             // taskId validation
@@ -100,7 +104,7 @@ public class TaskTest {
     }
 
     /**
-     * Drives invalid name values for {@link #testSetNameValidation(String, String)}.
+     * Drives invalid name values for {@link #testSetNameValidation}.
      */
     @CsvSource(value = {
             "' ', 'name must not be null or blank'",
@@ -122,7 +126,7 @@ public class TaskTest {
     }
 
     /**
-     * Supplies invalid descriptions for {@link #testSetDescriptionValidation(String, String)}.
+     * Supplies invalid descriptions for {@link #testSetDescriptionValidation}.
      */
     @CsvSource(value = {
             "' ', 'description must not be null or blank'",
@@ -145,9 +149,8 @@ public class TaskTest {
 
     /**
      * Data for update(...) inputs we expect to fail.
-     * Added to cover a gap: update validation/atomicity was untested, so a regression could slip in.
      *
-     * Each Arguments.of(name, description, message) row feeds one run of
+     * <p>Each Arguments.of(name, description, message) row feeds one run of
      * testUpdateRejectsInvalidValuesAtomically.
      */
     private static Stream<Arguments> invalidUpdateInputs() {
@@ -165,11 +168,10 @@ public class TaskTest {
 
     /**
      * update(...) must:
-     *  - reject invalid name/description with the correct error message
-     *  - leave the existing Task state unchanged when validation fails
-     *
-     * This test uses invalidUpdateInputs() as a data source so each invalid
-     * combination (bad name, bad description, or both) runs as its own case.
+     * <ul>
+     *   <li>reject invalid name/description with the correct error message</li>
+     *   <li>leave the existing Task state unchanged when validation fails (atomic)</li>
+     * </ul>
      */
     @ParameterizedTest
     @MethodSource("invalidUpdateInputs")
@@ -191,9 +193,7 @@ public class TaskTest {
     /**
      * Ensures the copy guard rejects corrupted state (null internal fields).
      *
-     * Added to kill PITest mutant: "removed call to validateCopySource" in Task.copy().
-     * Without this test, removing the validateCopySource call would survive mutation
-     * since normal code paths never produce null internal fields.
+     * <p>Added to kill PITest mutant: "removed call to validateCopySource" in Task.copy().
      * This test uses reflection to corrupt internal state and verify copy() throws.
      */
     @Test

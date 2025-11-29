@@ -28,13 +28,16 @@
 
 ## Current State
 
-- **Phase 0 complete**: Defensive copies and date validation fix implemented.
-- Java 17 Maven project with domain classes (`Contact`, `Task`, `Appointment`) and in-memory singleton services; no HTTP/API layer or runtime entrypoint.
-- Latest CI: 148 tests passing, 100% mutation score, 100% line coverage, SpotBugs clean.
-- Data is volatile (ConcurrentHashMap only); no database, migrations, or persistence abstraction.
+- **Phase 1 complete**: Spring Boot scaffold implemented.
+- Spring Boot 3.4.12 Maven project with layered packages (`domain`, `service`, `api`, `persistence`).
+- Domain classes (`Contact`, `Task`, `Appointment`) with validation rules preserved.
+- Services annotated with `@Service` for Spring DI while retaining `getInstance()` for backward compatibility.
+- Health/info actuator endpoints available; other actuator endpoints locked down.
+- Latest CI: All tests passing, 100% mutation score, 100% line coverage, SpotBugs clean.
+- Data is still volatile (ConcurrentHashMap only); no database, migrations, or persistence abstraction yet (Phase 3).
 - `ui/qa-dashboard` is a sample Vite/React metrics console, not a product UI.
-- No authentication, authorization, centralized error handling, logging, or observability.
-- `getDatabase()` methods now return defensive copies; safe to surface over APIs.
+- No authentication, authorization, REST controllers, centralized error handling, logging, or observability yet.
+- `getDatabase()` methods return defensive copies; safe to surface over APIs.
 
 ---
 
@@ -54,6 +57,7 @@
 | Component | Decision | ADR |
 |-----------|----------|-----|
 | Backend | Spring Boot 3 | ADR-0014 |
+| Scaffold | Spring Boot 3.4.12 + layered packages | ADR-0020 |
 | ORM | Spring Data JPA/Hibernate | ADR-0014 |
 | Migrations | Flyway | ADR-0014 |
 | Database | Postgres (prod), H2/Testcontainers (test) | ADR-0015 |
@@ -84,10 +88,24 @@ Fixes implemented:
 - Added tests verifying defensive copy behavior.
 - All existing tests pass.
 
-### Phase 1: Backend scaffold
-- Add Spring Boot starter module (`app` or convert current module), keep domain validation intact.
-- Wire baseline lint/format (Spotless/Checkstyle) and split code into layered packages (controller, service/app, domain, persistence).
-- Add health/info endpoints and project configs for dev/test/prod profiles.
+### Phase 1: Backend scaffold ✅ (Completed)
+Implementation details:
+- Added Spring Boot 3.4.12 parent POM with starter-web, actuator, and validation dependencies.
+- Created `Application.java` Spring Boot entrypoint with `@SpringBootApplication`.
+- Reorganized packages into layered architecture:
+  - `contactapp.domain` - Domain entities (Contact, Task, Appointment, Validation)
+  - `contactapp.service` - Services with @Service annotations (ContactService, TaskService, AppointmentService)
+  - `contactapp.api` - REST controllers (empty, Phase 2)
+  - `contactapp.persistence` - Repository interfaces (empty, Phase 3)
+- Added `@Service` annotations while preserving `getInstance()` for backward compatibility.
+- Created `application.yml` with profile-based configuration (dev/test/prod).
+- Locked down actuator endpoints to health/info only per OWASP guidelines.
+- Added Spring Boot smoke tests:
+  - `ApplicationTest` - Context load verification
+  - `ActuatorEndpointsTest` - Endpoint security verification (health/info exposed, others blocked)
+  - `ServiceBeanTest` - Bean presence and singleton verification
+- All tests pass, 100% mutation score maintained.
+- See ADR-0020 for architectural decisions.
 
 ### Phase 2: API + DTOs
 - Add REST controllers for contacts, tasks, and appointments with request/response DTOs and Bean Validation.
@@ -190,6 +208,7 @@ Fixes implemented:
 - Add controller tests for REST endpoints and integration tests with Testcontainers.
 - Add UI component tests (Vitest/RTL) and at least a smoke E2E flow (Playwright/Cypress).
 - Maintain JaCoCo ≥ 80% coverage gate and keep mutation/static analysis gates in the pipeline.
+- Spring Boot tests use Mockito's subclass mock-maker (`src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker`) to avoid agent attach issues on newer JDKs while still enabling MockMvc/context testing.
 
 ---
 
@@ -204,12 +223,12 @@ Fixes implemented:
 - [x] Add tests verifying defensive copy behavior
 - [x] Verify all existing tests still pass
 
-### Phase 1: Backend Scaffold
-- [ ] Spring Boot entrypoint created
-- [ ] Services converted to `@Service` beans
-- [ ] Package structure split: api/service/domain/persistence
-- [ ] Health/info endpoints exposed
-- [ ] Dev/test/prod profiles configured
+### Phase 1: Backend Scaffold ✅
+- [x] Spring Boot entrypoint created
+- [x] Services converted to `@Service` beans
+- [x] Package structure split: api/service/domain/persistence
+- [x] Health/info endpoints exposed
+- [x] Dev/test/prod profiles configured
 
 ### Phase 2: API + DTOs
 - [ ] REST controllers for Contact/Task/Appointment (CRUD)
@@ -382,7 +401,7 @@ export function useCreateContact() {
 
 | Document | Path | Purpose |
 |----------|------|---------|
-| ADR Index | `docs/adrs/README.md` | Architecture decisions (ADR-0001–0019) |
+| ADR Index | `docs/adrs/README.md` | Architecture decisions (ADR-0001–0020) |
 | CI/CD Plan | `docs/ci-cd/ci_cd_plan.md` | Pipeline phases including security testing |
 | Backlog | `docs/logs/backlog.md` | Deferred decisions (UI kit, OAuth2/SSO, WAF) |
 | Agent Guide | `agents.md` | AI assistant entry point |

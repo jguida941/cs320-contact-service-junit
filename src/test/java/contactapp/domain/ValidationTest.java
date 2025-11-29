@@ -1,4 +1,4 @@
-package contactapp;
+package contactapp.domain;
 
 import java.lang.reflect.Constructor;
 import java.time.Clock;
@@ -15,6 +15,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Focused tests for {@link Validation} helpers to ensure PIT sees
  * their behavior when blank checks or boundary logic are mutated.
+ *
+ * <p>Tests are in the same package as the domain classes to verify
+ * the validation utility functions work correctly.
  */
 class ValidationTest {
 
@@ -105,6 +108,37 @@ class ValidationTest {
     }
 
     /**
+     * Valid phone numbers (all digits, correct length) must pass validation.
+     */
+    @Test
+    void validateDigitsAcceptsValidPhoneNumber() {
+        assertThatNoException().isThrownBy(() ->
+                Validation.validateDigits("1234567890", "phone", PHONE_LENGTH));
+    }
+
+    /**
+     * Phone numbers containing non-digit characters must be rejected.
+     */
+    @Test
+    void validateDigitsRejectsNonDigitCharacters() {
+        assertThatThrownBy(() ->
+                Validation.validateDigits("123abc7890", "phone", PHONE_LENGTH))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("phone must only contain digits 0-9");
+    }
+
+    /**
+     * Phone numbers with wrong length must be rejected.
+     */
+    @Test
+    void validateDigitsRejectsWrongLength() {
+        assertThatThrownBy(() ->
+                Validation.validateDigits("12345", "phone", PHONE_LENGTH))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("phone must be exactly 10 digits");
+    }
+
+    /**
      * Confirms future dates pass {@link Validation#validateDateNotPast(Date, String)}.
      */
     @Test
@@ -140,11 +174,9 @@ class ValidationTest {
     /**
      * A date exactly equal to "now" must be accepted (not rejected as "in the past").
      *
-     * Added to kill PITest mutant: boundary condition < vs <= in validateDateNotPast().
-     * Uses Clock.fixed() to deterministically test the exact boundary where
-     * date.getTime() == clock.millis(). With < operator this passes; with <= it would fail.
-     *
-     * See: https://stackoverflow.com/questions/2001671/override-java-system-currenttimemillis-for-testing-time-sensitive-code
+     * <p>Added to kill PITest mutant: boundary condition {@code <} vs {@code <=}
+     * in validateDateNotPast(). Uses Clock.fixed() to deterministically test the
+     * exact boundary where date.getTime() == clock.millis().
      */
     @Test
     void validateDateNotPastAcceptsDateExactlyEqualToNow() {
@@ -164,10 +196,8 @@ class ValidationTest {
     /**
      * Verifies the private constructor exists and is not accessible.
      *
-     * Added for line coverage: private constructor in utility class Validation.
-     * While not functionally necessary, this test ensures PITest doesn't flag
-     * the private constructor as uncovered and documents that the class is
-     * intentionally designed as a utility class (non-instantiable).
+     * <p>Added for line coverage: private constructor in utility class Validation.
+     * Documents that the class is intentionally designed as a utility class (non-instantiable).
      */
     @Test
     void privateConstructorIsNotAccessible() throws Exception {

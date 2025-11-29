@@ -1,0 +1,121 @@
+# =============================================================================
+# Contact Service Application Configuration
+# =============================================================================
+#
+# This file configures the Spring Boot application with sensible defaults
+# and security-conscious actuator settings. Profile-specific overrides
+# allow environment-appropriate behavior without code changes.
+#
+# Profiles:
+#   - dev:  Local development with relaxed security and verbose logging
+#   - test: CI/CD and automated testing with fast startup
+#   - prod: Production deployment with locked-down endpoints
+#
+# Security note: Actuator endpoints are restricted by default. Only health
+# and info are exposed to minimize attack surface per OWASP guidelines.
+# =============================================================================
+
+spring:
+  application:
+    name: contact-service
+
+# -----------------------------------------------------------------------------
+# Actuator Configuration (applies to all profiles unless overridden)
+# -----------------------------------------------------------------------------
+# Only expose health and info endpoints to minimize attack surface.
+# Health endpoint provides liveness/readiness probes for orchestrators.
+# Info endpoint exposes build metadata for operational visibility.
+#
+# All other actuator endpoints (env, beans, metrics, etc.) are disabled
+# by default to prevent information disclosure vulnerabilities.
+# -----------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+
+# -----------------------------------------------------------------------------
+# Server Configuration
+# -----------------------------------------------------------------------------
+server:
+  port: 8080
+
+# -----------------------------------------------------------------------------
+# Logging Configuration (default: INFO level)
+# -----------------------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    contactapp: INFO
+
+---
+# =============================================================================
+# Development Profile
+# =============================================================================
+# Relaxed settings for local development. Health details are always shown
+# to aid debugging. Debug logging is enabled for the application package.
+# =============================================================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    contactapp: DEBUG
+
+---
+# =============================================================================
+# Test Profile
+# =============================================================================
+# Optimized for fast test execution in CI/CD pipelines. Minimal logging
+# reduces noise in test output. Health probes remain enabled for
+# integration tests that verify actuator behavior.
+# =============================================================================
+spring:
+  config:
+    activate:
+      on-profile: test
+
+logging:
+  level:
+    root: WARN
+    contactapp: INFO
+
+---
+# =============================================================================
+# Production Profile
+# =============================================================================
+# Locked-down settings for production deployment. Health details are only
+# shown to authorized users. Consider adding authentication to actuator
+# endpoints in Phase 2+ when Spring Security is integrated.
+# =============================================================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    root: WARN
+    contactapp: INFO

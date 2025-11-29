@@ -1,4 +1,4 @@
-package contactapp;
+package contactapp.domain;
 
 import java.lang.reflect.Field;
 import java.util.stream.Stream;
@@ -14,11 +14,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests the Contact class.
- * Verifies:
- * - successful creation with valid data,
- * - updates via setters with valid data,
- * - and that invalid inputs cause the constructor/setters to throw IllegalArgumentException
- * with the specific validation messages emitted by the Validation helper.
+ *
+ * <p>Verifies:
+ * <ul>
+ *   <li>Successful creation with valid data</li>
+ *   <li>Updates via setters with valid data</li>
+ *   <li>Invalid inputs cause IllegalArgumentException with specific validation messages</li>
+ *   <li>Atomic update behavior (all-or-nothing)</li>
+ * </ul>
+ *
+ * <p>Tests are in the same package as Contact to access package-private methods.
  */
 public class ContactTest {
 
@@ -172,7 +177,7 @@ public class ContactTest {
     }
 
     /**
-     * Supplies invalid arguments to {@link #testUpdateRejectsInvalidValuesAtomically(String, String, String, String, String)}.
+     * Supplies invalid arguments to {@link #testUpdateRejectsInvalidValuesAtomically}.
      */
     private static Stream<Arguments> invalidUpdateValues() {
         return Stream.of(
@@ -184,7 +189,8 @@ public class ContactTest {
     }
 
     /**
-     * Ensures {@link Contact#update(String, String, String, String)} rejects invalid data and leaves state unchanged.
+     * Ensures {@link Contact#update(String, String, String, String)} rejects invalid data
+     * and leaves state unchanged (atomic update behavior).
      */
     @ParameterizedTest
     @MethodSource("invalidUpdateValues")
@@ -210,9 +216,7 @@ public class ContactTest {
     /**
      * Ensures the copy guard rejects corrupted state (null internal fields).
      *
-     * Added to kill PITest mutant: "removed call to validateCopySource" in Contact.copy().
-     * Without this test, removing the validateCopySource call would survive mutation
-     * since normal code paths never produce null internal fields.
+     * <p>Added to kill PITest mutant: "removed call to validateCopySource" in Contact.copy().
      * This test uses reflection to corrupt internal state and verify copy() throws.
      */
     @Test

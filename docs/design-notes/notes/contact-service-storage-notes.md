@@ -1,6 +1,6 @@
 # ContactService singleton and storage
 
-(Related: [ADR-0002](../../adrs/ADR-0002-contact-service-storage.md), [ContactService.java](../../src/main/java/contactapp/ContactService.java))
+(Related: [ADR-0002](../../adrs/ADR-0002-contact-service-storage.md), [ContactService.java](../../../src/main/java/contactapp/service/ContactService.java))
 
 File: docs/design-notes/notes/contact-service-storage-notes.md
 
@@ -9,8 +9,8 @@ File: docs/design-notes/notes/contact-service-storage-notes.md
 - A singleton keeps the store in one place instead of forcing callers to pass maps around.
 
 ## What the design is
-- `ContactService` is a singleton accessed via `getInstance()`.
-- It owns a `ConcurrentHashMap<String, Contact>` called `database`.
+- `ContactService` is a singleton accessed via `getInstance()` or Spring DI.
+- Uses a static `ConcurrentHashMap<String, Contact>` so both access paths share the same data.
 - Service API:
     - `addContact(Contact)` uses `putIfAbsent` to enforce unique IDs and returns `boolean`.
     - `deleteContact(String id)` validates the id then calls `remove`, returning `boolean`.

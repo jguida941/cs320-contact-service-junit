@@ -4,9 +4,9 @@
 **Date**: 2025-11-24  
 **Owners**: Justin Guida  
 
-**Related**: [Task.java](../../src/main/java/contactapp/Task.java),
-[TaskTest.java](../../src/test/java/contactapp/TaskTest.java),
-[Validation.java](../../src/main/java/contactapp/Validation.java),
+**Related**: [Task.java](../../src/main/java/contactapp/domain/Task.java),
+[TaskTest.java](../../src/test/java/contactapp/domain/TaskTest.java),
+[Validation.java](../../src/main/java/contactapp/domain/Validation.java),
 [Task requirements](../requirements/task-requirements/requirements.md)
 
 ## Context

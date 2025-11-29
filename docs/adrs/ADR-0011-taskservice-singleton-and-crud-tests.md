@@ -4,9 +4,9 @@
 **Date**: 2025-11-24  
 **Owners**: Justin Guida  
 
-**Related**: [TaskService.java](../../src/main/java/contactapp/TaskService.java),
-[TaskServiceTest.java](../../src/test/java/contactapp/TaskServiceTest.java),
-[Task.java](../../src/main/java/contactapp/Task.java),
+**Related**: [TaskService.java](../../src/main/java/contactapp/service/TaskService.java),
+[TaskServiceTest.java](../../src/test/java/contactapp/service/TaskServiceTest.java),
+[Task.java](../../src/main/java/contactapp/domain/Task.java),
 [Task requirements](../requirements/task-requirements/requirements.md)
 
 ## Context
@@ -22,8 +22,8 @@
 - Expose a process-wide singleton via `TaskService.getInstance()` with a
   synchronized accessor to avoid double creation under concurrent access.
 - Store tasks in a `ConcurrentHashMap<String, Task>` keyed by trimmed ids to
-  keep lookups deterministic; return `Map.copyOf(...)` from `getDatabase()` to
-  prevent external mutation.
+  keep lookups deterministic; return an unmodifiable snapshot of defensive copies
+  (via `Task.copy()`) from `getDatabase()` to prevent external mutation.
 - `addTask` rejects null inputs (task and id) and refuses to overwrite existing ids; all mutators
   validate/trim ids so stored keys are normalized before map access.
 - `deleteTask` and `updateTask` validate/trim ids, returning `false` instead of

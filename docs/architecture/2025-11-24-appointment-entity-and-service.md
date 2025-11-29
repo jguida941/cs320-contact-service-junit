@@ -11,10 +11,10 @@ Mirror the Contact/Task patterns: immutable trimmed ID (≤10), required descrip
 ## Implementation Summary
 
 Implemented in:
-- `src/main/java/contactapp/Appointment.java`
-- `src/main/java/contactapp/AppointmentService.java`
-- `src/test/java/contactapp/AppointmentTest.java`
-- `src/test/java/contactapp/AppointmentServiceTest.java`
+- `src/main/java/contactapp/domain/Appointment.java`
+- `src/main/java/contactapp/service/AppointmentService.java`
+- `src/test/java/contactapp/domain/AppointmentTest.java`
+- `src/test/java/contactapp/service/AppointmentServiceTest.java`
 
 Key points:
 - Appointment fields enforce the requirements: trimmed, immutable `appointmentId` (1–10 chars); description required, ≤50 chars; `appointmentDate` required, not in the past, validated via `Validation.validateNotBlank` + `validateLength` + `validateDateNotPast`.

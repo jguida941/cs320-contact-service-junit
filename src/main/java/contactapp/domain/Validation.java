@@ -1,4 +1,4 @@
-package contactapp;
+package contactapp.domain;
 
 import java.time.Clock;
 import java.util.Date;
@@ -6,9 +6,21 @@ import java.util.Date;
 /**
  * Utility methods for validating domain fields (Contact, Task, etc.).
  *
- * All methods throw {@link IllegalArgumentException} when a value violates
+ * <p>All methods throw {@link IllegalArgumentException} when a value violates
  * the requirements, keeping validation logic centralized so constructors
  * and setters stay consistent.
+ *
+ * <h2>Why centralized validation?</h2>
+ * <ul>
+ *   <li>Single source of truth for all validation rules</li>
+ *   <li>Consistent error messages across all domain objects</li>
+ *   <li>Easy to maintain and extend for new domains</li>
+ *   <li>Tests can assert exact exception messages</li>
+ * </ul>
+ *
+ * @see Contact
+ * @see Task
+ * @see Appointment
  */
 public final class Validation {
 
@@ -96,7 +108,7 @@ public final class Validation {
     /**
      * Validates that a date is not null and not in the past, using the provided clock.
      *
-     * This overload allows tests to inject a fixed clock for deterministic testing
+     * <p>This overload allows tests to inject a fixed clock for deterministic testing
      * of boundary conditions.
      *
      * @param date  the date to check

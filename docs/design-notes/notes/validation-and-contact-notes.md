@@ -1,6 +1,6 @@
 # Validation helper and Contact rules
 
-(Related: [ADR-0001](../../adrs/ADR-0001-validation-normalization.md), [Contact.java](../../src/main/java/contactapp/Contact.java))
+(Related: [ADR-0001](../../adrs/ADR-0001-validation-normalization.md), [Contact.java](../../../src/main/java/contactapp/domain/Contact.java))
 
 File: docs/design-notes/notes/validation-and-contact-notes.md
 
@@ -15,7 +15,7 @@ File: docs/design-notes/notes/validation-and-contact-notes.md
   By keeping the limits in constants and using `Validation.validateLength(...)` everywhere, both constructor and setter automatically stay in sync.
 
 ## What the design is
-- All checks live in `contactapp.Validation`.
+- All checks live in `contactapp.domain.Validation`.
 - Methods like `validateNotBlank`, `validateLength`, `validateDigits`, plus `validateDateNotPast` for domains (Appointment) that constrain dates.
 - `validateDateNotPast` uses `Clock.systemUTC()` by default, so "now" is evaluated in UTC. Callers in significantly different timezones should construct dates with UTC awareness. A `Clock` parameter overload enables tests to use `Clock.fixed()` for deterministic boundary testing.
 - They throw `IllegalArgumentException` with standard message text.

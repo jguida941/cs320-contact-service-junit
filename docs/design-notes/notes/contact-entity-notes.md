@@ -1,6 +1,6 @@
 # Contact entity design
 
-(Related: [Contact.java](../../src/main/java/contactapp/Contact.java), [ADR-0001](../../adrs/ADR-0001-validation-normalization.md), [ADR-0003](../../adrs/ADR-0003-update-atomicity.md))
+(Related: [Contact.java](../../../src/main/java/contactapp/domain/Contact.java), [ADR-0001](../../adrs/ADR-0001-validation-normalization.md), [ADR-0003](../../adrs/ADR-0003-update-atomicity.md))
 
 File: docs/design-notes/notes/contact-entity-notes.md
 

@@ -1,6 +1,5 @@
-package contactapp;
+package contactapp.domain;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,27 +17,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Unit tests for {@link Appointment}.
  *
- * Covers:
- *  - trimming on construction and defensive copies of dates
- *  - successful updates (date/description) and atomic rejection on invalid inputs
- *  - setter happy path plus validation of description/date in constructor, setters, and update(...)
+ * <p>Covers:
+ * <ul>
+ *   <li>Trimming on construction and defensive copies of dates</li>
+ *   <li>Successful updates (date/description) and atomic rejection on invalid inputs</li>
+ *   <li>Setter happy path plus validation of description/date in constructor, setters, and update(...)</li>
+ * </ul>
+ *
+ * <p>Tests are in the same package as Appointment to access package-private methods.
  */
 public class AppointmentTest {
-
-    /**
-     * Clears AppointmentService so each test starts clean.
-     */
-    @BeforeEach
-    void reset() {
-        AppointmentService.getInstance().clearAllAppointments();
-    }
 
     /**
      * Ensures construction trims strings and defensively copies the date.
      */
     @Test
     void testSuccessfulCreationTrimsAndCopiesDate() {
-        // Proves trimmed strings persist and dates are stored as defensive copies
         Date futureDate = futureDate(30);
         Appointment appointment = new Appointment(" 200 ", futureDate, " Document Date ");
 
@@ -53,7 +47,6 @@ public class AppointmentTest {
      */
     @Test
     void testUpdateReplacesValuesAtomically() {
-        // Proves both fields change together and the date is defensively copied
         Appointment appointment = new Appointment("400", futureDate(30), "First Appointment");
         Date newDate = futureDate(60);
 
@@ -69,7 +62,6 @@ public class AppointmentTest {
      */
     @Test
     void testSetDescriptionAcceptsValidValue() {
-        // Happy-path setter coverage for description
         Appointment appointment = new Appointment("500", futureDate(30), "Initial");
 
         appointment.setDescription("Updated Description");
@@ -82,7 +74,6 @@ public class AppointmentTest {
      */
     @Test
     void testGetAppointmentDateReturnsDefensiveCopy() {
-        // Mutating the returned Date must not mutate internal state
         Date future = futureDate(30);
         Appointment appointment = new Appointment("600", future, "Sample");
 
@@ -138,6 +129,9 @@ public class AppointmentTest {
         assertThat(appointment.getDescription()).isEqualTo("Original");
     }
 
+    /**
+     * Verifies copy() produces an independent instance with identical values.
+     */
     @Test
     void testCopyProducesIndependentInstance() {
         Date originalDate = futureDate(30);
@@ -154,6 +148,9 @@ public class AppointmentTest {
 
     /**
      * Ensures the copy guard rejects corrupted state (null internal fields).
+     *
+     * <p>Added to kill PITest mutant: "removed call to validateCopySource" in Appointment.copy().
+     * This test uses reflection to corrupt internal state and verify copy() throws.
      */
     @Test
     void testCopyRejectsNullInternalState() throws Exception {
@@ -170,7 +167,7 @@ public class AppointmentTest {
     }
 
     /**
-     * Supplies invalid constructor inputs for {@link #testConstructorValidation(String, Date, String, String)}.
+     * Supplies invalid constructor inputs for {@link #testConstructorValidation}.
      */
     private static Stream<Arguments> invalidCreationInputs() {
         Date future = futureDate(30);
@@ -191,7 +188,7 @@ public class AppointmentTest {
     }
 
     /**
-     * Supplies invalid update inputs for {@link #testUpdateRejectsInvalidValuesAtomically(Date, String, String)}.
+     * Supplies invalid update inputs for {@link #testUpdateRejectsInvalidValuesAtomically}.
      */
     private static Stream<Arguments> invalidUpdateInputs() {
         Date past = pastDate();

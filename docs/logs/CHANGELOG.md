@@ -5,6 +5,15 @@ All notable changes to this project will be documented here. Follow the
 
 ## [Unreleased]
 ### Added
+- **Phase 1 complete**: Spring Boot scaffold implemented.
+  - Added Spring Boot 3.4.12 parent POM with starter-web, actuator, and validation dependencies.
+  - Created `Application.java` Spring Boot entrypoint with `@SpringBootApplication`.
+  - Reorganized packages into layered architecture: `contactapp.domain`, `contactapp.service`, `contactapp.api`, `contactapp.persistence`.
+  - Added `@Service` annotations to `ContactService`, `TaskService`, and `AppointmentService` while preserving `getInstance()` for backward compatibility.
+  - Made `copy()` methods public so services can access them across packages.
+  - Created `application.yml` with profile-based configuration (dev/test/prod) and actuator lockdown (health/info only).
+  - Added Spring Boot smoke tests: `ApplicationTest` (context load), `ActuatorEndpointsTest` (endpoint security verification), `ServiceBeanTest` (bean presence and singleton verification).
+  - All tests pass, 100% mutation score maintained.
 - **Code review hardening**: Addressed recommendations from comprehensive code review.
   - Documented UTC timezone behavior in `Validation.validateDateNotPast()` Javadoc so callers understand that "now" is evaluated in UTC.
   - Made `clearAllContacts()`, `clearAllTasks()`, and `clearAllAppointments()` package-private to prevent accidental production usage while still allowing test access (tests are in the same package).
@@ -15,11 +24,12 @@ All notable changes to this project will be documented here. Follow the
   - Fixed `Validation.validateDateNotPast()` to accept equality (date equal to "now" is valid), avoiding millisecond-boundary flakiness.
   - Added `testGetDatabaseReturnsDefensiveCopies` tests to `TaskServiceTest` and `ContactServiceTest`.
   - Updated existing tests to verify data by field values instead of object identity.
+  - Added Mockito mock-maker subclass configuration (`src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker`) so Spring Boot tests run on JDK 25 without agent attach.
 - **Mutation coverage improved to 100%**: Added tests to kill all surviving mutants.
   - Added `testCopyRejectsNullInternalState` to `TaskTest` and `ContactTest` to kill mutants where `validateCopySource()` calls could be removed.
   - Added `validateDateNotPastAcceptsDateExactlyEqualToNow` to `ValidationTest` using `Clock.fixed()` to deterministically test the boundary mutant (`<` vs `<=`).
   - Added `privateConstructorIsNotAccessible` to `ValidationTest` for line coverage of the utility class private constructor.
-  - All 148 tests pass, 100% mutation score, 100% line coverage.
+  - All tests pass, 100% mutation score, 100% line coverage.
 - **Code review fixes**: Addressed issues identified during pre-Phase-1 code review.
   - Refactored `ContactService.updateContact()` and `TaskService.updateTask()` to use `computeIfPresent()` for thread-safe atomic lookup and update.
   - Added `final` modifier to `Contact` class (matching `Task` and `Appointment`).
@@ -70,6 +80,13 @@ All notable changes to this project will be documented here. Follow the
   AssertJ + parameterized tests, singleton reset helpers, and CI enforcement via JaCoCo/PITest).
 - Added appointment architecture/ADRs plus tightened appointment validation (trim-before-validate, not-blank guard),
   ID trimming in service adds, date validation reuse in `update`, and time-stable appointment tests (relative dates).
+
+### Fixed
+- **Spring DI and getInstance() now share the same backing store**: Made the `ConcurrentHashMap` database static in all services (`ContactService`, `TaskService`, `AppointmentService`). This guarantees Spring-created beans and legacy `getInstance()` callers share the same data regardless of how many instances are created or which access path runs first. Previously, each instance had its own map, so data added through one path was invisible to the other.
+- **Code review documentation fixes**:
+  - Removed incorrect "test" profile claim from `ApplicationTest.java` Javadoc (no `@ActiveProfiles` was present).
+  - Removed "constructor injection preferred" from `ServiceBeanTest.java` Javadoc since it uses field injection.
+  - Added missing `ValidationTest` coverage for `validateDigits`: happy path, non-digit rejection, wrong length rejection.
 
 ### Changed
 - README/index/agents now link to `docs/REQUIREMENTS.md`, `docs/ROADMAP.md`, and `docs/INDEX.md`.

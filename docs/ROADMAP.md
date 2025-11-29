@@ -5,8 +5,8 @@
 ## Implementation Order
 
 ```
-Phase 0   → Pre-API fixes (defensive copies, date validation)
-Phase 1   → Spring Boot scaffold
+Phase 0   ✅ Pre-API fixes (defensive copies, date validation)
+Phase 1   ✅ Spring Boot scaffold (layered packages, actuator, smoke tests)
 Phase 2   → REST API + DTOs + OpenAPI
 Phase 2.5 → API fuzzing in CI
 Phase 3   → Persistence (JPA, Flyway, Postgres)

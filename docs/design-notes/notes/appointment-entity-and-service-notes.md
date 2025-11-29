@@ -1,6 +1,6 @@
 # Appointment entity and service notes
 
-Related: [Appointment.java](../../src/main/java/contactapp/Appointment.java), [AppointmentService.java](../../src/main/java/contactapp/AppointmentService.java), ADR-0012, ADR-0013
+Related: [Appointment.java](../../../src/main/java/contactapp/domain/Appointment.java), [AppointmentService.java](../../../src/main/java/contactapp/service/AppointmentService.java), ADR-0012, ADR-0013
 
 ## Why Appointment exists
 - Adds the appointment domain (id/date/description) alongside Contact/Task while reusing shared validation patterns.
@@ -13,8 +13,9 @@ Related: [Appointment.java](../../src/main/java/contactapp/Appointment.java), [A
 - Limits are constants to avoid magic numbers.
 
 ## Validation and atomicity
-- Strings use `Validation.validateNotBlank` + `validateLength`; dates use `Validation.validateDateNotPast`.
-- Constructor, setters, and `update(Date, String)` share the same validation path; `update` validates both inputs before assignment so invalid input leaves state unchanged. Setters and update reuse the same helpers to avoid drift.
+- String IDs/descriptions use `Validation.validateLength` (which internally calls `validateNotBlank` and measures trimmed length); dates use `Validation.validateDateNotPast`. This matches the Contact/Task validation pattern.
+- Constructor validates ID via `validateLength`, then trims and stores. Mutable fields (date, description) are delegated to setters.
+- `update(Date, String)` validates both inputs before assignment so invalid input leaves state unchanged. Setters and update reuse the same helpers to avoid drift.
 - Defensive copies on set/get prevent external mutation of stored dates.
 
 ## Service summary

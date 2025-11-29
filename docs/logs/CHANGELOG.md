@@ -5,6 +5,10 @@ All notable changes to this project will be documented here. Follow the
 
 ## [Unreleased]
 ### Added
+- Consolidated application requirements/roadmap/checklist into `docs/REQUIREMENTS.md` (phases 0–10) and `docs/ROADMAP.md` (overview).
+- Phase 0 (Pre-API Fixes) captured in `docs/REQUIREMENTS.md`: defensive copies for Task/ContactService, date validation boundary, copy() methods for Task/Contact.
+- Published ADR-0014 through ADR-0019 covering backend stack, database, API style, frontend stack, auth model, and deployment/packaging; updated ADR index accordingly.
+- Added `agents.md` quick-link guide for assistants/automation to roadmap/requirements/ADRs.
 - Appointment domain/service documentation and tests:
   - `docs/adrs/ADR-0012-appointment-validation-and-tests.md` and `docs/adrs/ADR-0013-appointmentservice-singleton-and-crud-tests.md`.
   - README/index updates for Appointment classes/tests and ADR index through ADR-0013.
@@ -46,6 +50,9 @@ All notable changes to this project will be documented here. Follow the
   ID trimming in service adds, date validation reuse in `update`, and time-stable appointment tests (relative dates).
 
 ### Changed
+- README/index/agents now link to `docs/REQUIREMENTS.md`, `docs/ROADMAP.md`, and `docs/INDEX.md`.
+- ADR-0018 expanded to document secrets management (env vars for dev/test; vault/secret manager for prod).
+- Backlog now tracks deferred decisions (UI kit, OAuth2/SSO, WAF, prod secrets).
 - Appointment is now `final`, `Appointment.copy()` validates source state and reuses the public constructor for defensive copies, and `AppointmentServiceTest` uses reflection (instead of subclassing) to simulate a blank ID so SpotBugs remains clean.
 - Documented the shared `validateDateNotPast` helper across README/index/ADR/design notes and expanded `ValidationTest` with future/past-date cases so Appointment docs mirror the code.
 - Appointment update/add logic now validates both fields before mutation, enforces trimmed IDs on add,

@@ -15,3 +15,9 @@
 | [ADR-0011](ADR-0011-taskservice-singleton-and-crud-tests.md)        | TaskService Singleton and CRUD Tests            | Accepted |
 | [ADR-0012](ADR-0012-appointment-validation-and-tests.md)            | Appointment Validation and Test Coverage        | Accepted |
 | [ADR-0013](ADR-0013-appointmentservice-singleton-and-crud-tests.md) | AppointmentService Singleton and CRUD Tests     | Accepted |
+| [ADR-0014](ADR-0014-backend-framework-and-persistence-stack.md)     | Backend Framework and Persistence Stack         | Accepted |
+| [ADR-0015](ADR-0015-database-choice-and-profiles.md)                | Database Choice and Environment Profiles        | Accepted |
+| [ADR-0016](ADR-0016-api-style-and-contract.md)                      | API Style and Contract                          | Accepted |
+| [ADR-0017](ADR-0017-frontend-stack-and-application-shell.md)        | Frontend Stack and Application Shell            | Accepted |
+| [ADR-0018](ADR-0018-authentication-and-authorization-model.md)      | Authentication and Authorization Model          | Accepted |
+| [ADR-0019](ADR-0019-deployment-and-packaging.md)                    | Deployment and Packaging                        | Accepted |

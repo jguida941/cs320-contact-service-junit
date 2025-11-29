@@ -33,6 +33,7 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 1. Install Java 17 and Apache Maven (3.9+).
 2. Run `mvn verify` from the project root to compile everything, execute the JUnit suite, and run Checkstyle/SpotBugs/JaCoCo quality gates.
 3. Open the folder in IntelliJ/VS Code if you want IDE assistance—the Maven project model is auto-detected.
+4. Planning note: the current runtime is an in-memory library; the roadmap to add Spring Boot API + UI lives in `docs/REQUIREMENTS.md` (master document with scope, phases, and checklist). ADR-0014..0019 capture the selected stack; implementation is pending.
 
 ## Folder Highlights
 | Path                                                                                                                 | Description                                                                                     |
@@ -55,10 +56,13 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 | [`docs/requirements/task-requirements/`](docs/requirements/task-requirements/)                                       | Task assignment requirements and checklist (same format as Contact).                            |
 | [`docs/architecture/2025-11-19-task-entity-and-service.md`](docs/architecture/2025-11-19-task-entity-and-service.md) | Task entity/service design plan with Definition of Done and phased approach.                    |
 | [`docs/architecture/2025-11-24-appointment-entity-and-service.md`](docs/architecture/2025-11-24-appointment-entity-and-service.md) | Appointment entity/service implementation record.                                               |
-| [`docs/adrs/README.md`](docs/adrs/README.md)                                                                         | Architecture Decision Record index with links to ADR-0001…ADR-0013.                             |
+| [`docs/adrs/README.md`](docs/adrs/README.md)                                                                         | Architecture Decision Record index (ADR-0001…ADR-0019).                                         |
 | [`docs/ci-cd/`](docs/ci-cd/)                                                                                         | CI/CD design notes (pipeline plan + badge automation).                                          |
 | [`docs/design-notes/`](docs/design-notes/)                                                                           | Informal design notes hub; individual write-ups live under `docs/design-notes/notes/`.          |
-| [`index.md`](index.md)                                                                                               | Quick reference guide for the repo layout.                                                      |
+| [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)                                                                       | **Master document**: scope, architecture, phased plan, checklist, and code examples.            |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md)                                                                                 | Quick phase overview (points to REQUIREMENTS.md for details).                                   |
+| [`docs/INDEX.md`](docs/INDEX.md)                                                                                     | Full file/folder navigation for the repository.                                                 |
+| [`agents.md`](agents.md)                                                                                             | AI assistant entry point with constraints and stack decisions.                                  |
 | [`pom.xml`](pom.xml)                                                                                                 | Maven build file (dependencies, plugins, compiler config).                                      |
 | [`config/checkstyle`](config/checkstyle)                                                                             | Checkstyle configuration used by Maven/CI quality gates.                                        |
 | [`config/owasp-suppressions.xml`](config/owasp-suppressions.xml)                                                     | Placeholder suppression list for OWASP Dependency-Check.                                        |
@@ -772,7 +776,8 @@ If you're working through CS320 (or just exploring the project), the recommended
 |------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
 | [docs/requirements/contact-requirements/](docs/requirements/contact-requirements/) | Contact assignment requirements and acceptance criteria.                 |
 | [docs/requirements/task-requirements/](docs/requirements/task-requirements/)       | Task assignment requirements and acceptance criteria.                    |
-| [index.md](index.md)                                                               | Repo structure reference (future `docs/design.md` will hold deep dives). |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)                                       | Master document with scope, phases, checklist, and code examples.        |
+| [docs/INDEX.md](docs/INDEX.md)                                                     | Full file/folder navigation for the repository.                          |
 | [GitHub Actions workflows](.github/workflows)                                      | CI/CD definitions described above.                                       |
 | [config/checkstyle](config/checkstyle)                                             | Checkstyle rules enforced in CI.                                         |
 | [Java 17 (Temurin)](https://adoptium.net/temurin/releases/)                        | JDK used locally and in CI.                                              |

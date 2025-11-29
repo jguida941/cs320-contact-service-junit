@@ -44,5 +44,26 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 6. ✅ Publish per-run QA summaries in the GitHub Actions job summary (tests, JaCoCo, PITest, Dependency-Check) via `scripts/ci_metrics_summary.py`.
 7. ✅ Normalize CI flags so Dependency-Check skip/delay settings (`dependency.check.skip`, `nvdApiDelay`) match the Maven configuration and avoid hanging runs when secrets are absent.
 
+---
+
+**Note:** Phases 8–10 below are *pipeline* phases (CI/CD maturity). They correspond to *implementation* phases in `docs/REQUIREMENTS.md`:
+- CI Phase 8 (ZAP) → REQUIREMENTS.md Phase 5.5
+- CI Phase 9 (API fuzzing) → REQUIREMENTS.md Phase 2.5
+- CI Phase 10 (auth tests) → REQUIREMENTS.md Phase 5.5
+
+---
+
+## Phase 8 - Dynamic Security Testing (Planned)
+1. ☐ Add OWASP ZAP baseline/API scan in CI against a running test instance (fail on high/critical findings).
+2. ☐ Publish ZAP reports as artifacts for triage.
+
+## Phase 9 - API Fuzzing (Planned)
+1. ☐ Add Schemathesis or RESTler in CI against the OpenAPI spec; fail on 5xx or schema violations.
+2. ☐ Gate fuzzing behind the same matrices as integration tests to keep runtime reasonable.
+
+## Phase 10 - Auth/Role Integration Tests (Planned)
+1. ☐ Add MockMvc/WebTestClient flows that assert 401/403 for anonymous or unauthorized roles and 2xx for allowed roles.
+2. ☐ Ensure token/credential handling is wired into CI (test-only secrets).
+
 Keep this plan updated as each phase lands. When a task completes, we replace the checkbox with ✅ and add links to PRs or workflow runs for traceability.
 Once all phases are complete, we summarize the final workflow in `README.md`.

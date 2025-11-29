@@ -11,7 +11,7 @@ File: docs/design-notes/notes/docs-structure-notes.md
 - `docs/logs/` - changelog/backlog history.
 - `docs/requirements/` - assignment/spec documents and checklists.
 - `docs/design-notes/` - personal explanations (non-graded notes, like this file).
-- Root `README.md` and `index.md` point to the key folders above.
+- Root `README.md`, `agents.md`, and `docs/INDEX.md` point to the key folders above.
 
 ## Why this helps
 - Decisions, requirements, and design docs live in predictable locations, so reviewers don’t have to hunt through the repo.

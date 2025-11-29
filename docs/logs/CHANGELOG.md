@@ -8,6 +8,10 @@ All notable changes to this project will be documented here. Follow the
 - **Phase 2.5 complete**: API security testing foundation implemented.
 
 ### Fixed
+- **API fuzzing workflow hardened** (CodeRabbit review findings):
+  - Added explicit `pyyaml` installation so YAML export succeeds reliably instead of silently failing.
+  - Replaced fragile `grep -q '"status":"UP"'` health check with robust `jq -e '.status=="UP"'` JSON parsing.
+  - Added JAR file validation before app startup: verifies exactly one JAR exists in `target/`, fails fast with clear error otherwise.
 - **Dependency vulnerabilities resolved**:
   - Upgraded springdoc-openapi from 2.7.0 to 2.8.7 to fix CVE-2025-26791 (DOMPurify in swagger-ui).
   - Added explicit commons-lang3 3.20.0 dependency to override Spring Boot's 3.17.0 and fix CVE-2025-48924.

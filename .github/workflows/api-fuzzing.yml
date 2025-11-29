@@ -56,9 +56,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Install Schemathesis
+      - name: Install Schemathesis and dependencies
         run: |
-          pip install schemathesis
+          pip install schemathesis pyyaml
           schemathesis --version
 
       # Build the app first (skip tests since main CI already ran them)
@@ -69,7 +69,19 @@ jobs:
       - name: Start Spring Boot app
         run: |
           echo "Starting Spring Boot application..."
-          nohup java -jar target/*.jar --server.port=8080 > app.log 2>&1 &
+          # Validate exactly one JAR exists before starting
+          JAR_COUNT=$(ls target/*.jar 2>/dev/null | wc -l)
+          if [ "$JAR_COUNT" -eq 0 ]; then
+            echo "ERROR: No JAR file found in target/"
+            exit 1
+          elif [ "$JAR_COUNT" -gt 1 ]; then
+            echo "ERROR: Multiple JAR files found in target/, expected exactly one:"
+            ls target/*.jar
+            exit 1
+          fi
+          JAR_FILE=$(ls target/*.jar)
+          echo "Starting JAR: $JAR_FILE"
+          nohup java -jar "$JAR_FILE" --server.port=8080 > app.log 2>&1 &
           echo $! > app.pid
           echo "App PID: $(cat app.pid)"
 
@@ -78,7 +90,8 @@ jobs:
         run: |
           echo "Waiting for app to start..."
           for i in {1..60}; do
-            if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+            # Use jq for robust JSON parsing instead of grep
+            if curl -s http://localhost:8080/actuator/health | jq -e '.status=="UP"' > /dev/null 2>&1; then
               echo "App is ready!"
               exit 0
             fi
@@ -95,8 +108,9 @@ jobs:
           mkdir -p target/openapi
           curl -s http://localhost:8080/v3/api-docs > target/openapi/openapi.json
           echo "OpenAPI spec exported to target/openapi/openapi.json"
-          # Also export as YAML for readability
-          python -c "import json, yaml, sys; yaml.dump(json.load(open('target/openapi/openapi.json')), open('target/openapi/openapi.yaml', 'w'), default_flow_style=False)" 2>/dev/null || echo "YAML export skipped (pyyaml not installed)"
+          # Also export as YAML for readability (pyyaml installed in Install step)
+          python -c "import json, yaml; yaml.dump(json.load(open('target/openapi/openapi.json')), open('target/openapi/openapi.yaml', 'w'), default_flow_style=False)"
+          echo "OpenAPI YAML exported to target/openapi/openapi.yaml"
 
       # Run Schemathesis API fuzzing
       - name: Run API fuzzing

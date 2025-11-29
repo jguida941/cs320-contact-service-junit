@@ -151,6 +151,10 @@ Implementation details:
   - Publishes JUnit XML results and fuzzing summary to GitHub Actions.
 - ZAP-compatible artifacts prepared: OpenAPI spec exported as CI artifact (`openapi-spec`).
 - Added `scripts/api_fuzzing.py` helper for local fuzzing runs.
+- Workflow hardened (CodeRabbit review):
+  - Explicit `pyyaml` installation for reliable YAML export.
+  - Robust `jq`-based health check instead of fragile `grep` JSON parsing.
+  - JAR file validation: verifies exactly one JAR in `target/` before startup.
 
 ### Phase 3: Persistence
 - Add JPA entities/repositories and replace in-memory maps with persistence-backed services.
@@ -271,10 +275,11 @@ Implementation details:
 - [x] OpenAPI/Swagger UI published via springdoc-openapi
 - [x] Controller tests added (71 tests: 30 Contact + 21 Task + 20 Appointment)
 
-### Phase 2.5: API Security Testing Foundation
+### Phase 2.5: API Security Testing Foundation ✅
 - [x] OpenAPI spec generated automatically from controllers
 - [x] API fuzzing (Schemathesis or RESTler) running in CI
 - [x] ZAP-compatible artifacts prepared
+- [x] Workflow hardened (pyyaml, jq health check, JAR validation)
 
 ### Phase 3: Persistence
 - [ ] Postgres configuration for dev/prod

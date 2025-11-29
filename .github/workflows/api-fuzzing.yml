@@ -121,15 +121,12 @@ jobs:
 
           # Note: Using specific checks instead of 'all' to avoid false positives
           # from expected 400 responses (e.g., past dates rejected by @FutureOrPresent)
+          # Schemathesis v4+ removed --base-url (inferred from spec), --hypothesis-* options
           schemathesis run \
             http://localhost:8080/v3/api-docs \
             --checks not_a_server_error,content_type_conformance,response_schema_conformance \
-            --base-url http://localhost:8080 \
             --workers 1 \
             --max-examples 50 \
-            --hypothesis-deadline 5000 \
-            --hypothesis-suppress-health-check all \
-            --validate-schema true \
             --junit-xml target/schemathesis-results.xml \
             2>&1 | tee target/schemathesis-output.txt
 

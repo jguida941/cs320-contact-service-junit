@@ -184,11 +184,12 @@ class TaskControllerTest {
 
     @ParameterizedTest(name = "create task with invalid {0}")
     @MethodSource("invalidTaskInputs")
+    @SuppressWarnings("java:S1172") // fieldName used in @ParameterizedTest name for test output
     void createTask_invalidInput_returns400(
             final String fieldName,
             final String jsonBody,
             final String expectedMessageContains) throws Exception {
-
+        // fieldName is used in test display name via {0} placeholder above
         mockMvc.perform(post("/api/v1/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody))

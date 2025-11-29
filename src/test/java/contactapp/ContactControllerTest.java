@@ -198,11 +198,12 @@ class ContactControllerTest {
 
     @ParameterizedTest(name = "create contact with invalid {0}")
     @MethodSource("invalidContactInputs")
+    @SuppressWarnings("java:S1172") // fieldName used in @ParameterizedTest name for test output
     void createContact_invalidInput_returns400(
             final String fieldName,
             final String jsonBody,
             final String expectedMessageContains) throws Exception {
-
+        // fieldName is used in test display name via {0} placeholder above
         mockMvc.perform(post("/api/v1/contacts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody))

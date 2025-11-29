@@ -202,11 +202,12 @@ class AppointmentControllerTest {
 
     @ParameterizedTest(name = "create appointment with invalid {0}")
     @MethodSource("invalidAppointmentInputs")
+    @SuppressWarnings("java:S1172") // fieldName used in @ParameterizedTest name for test output
     void createAppointment_invalidInput_returns400(
             final String fieldName,
             final String jsonBody,
             final String expectedMessageContains) throws Exception {
-
+        // fieldName is used in test display name via {0} placeholder above
         mockMvc.perform(post("/api/v1/appointments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody))

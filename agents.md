@@ -9,13 +9,13 @@ Quick links and context for automation/assistant workflows implementing this pla
 | **Requirements** | `docs/REQUIREMENTS.md` | **START HERE** - Master document with scope, phases, checklist, code examples |
 | **Roadmap** | `docs/ROADMAP.md` | Quick phase overview |
 | **Index** | `docs/INDEX.md` | Full file/folder navigation |
-| **ADR Index** | `docs/adrs/README.md` | Stack decisions (ADR-0014–0020) |
+| **ADR Index** | `docs/adrs/README.md` | Stack decisions (ADR-0014–0021) |
 | **CI/CD Plan** | `docs/ci-cd/ci_cd_plan.md` | Pipeline phases including security testing |
 | **Backlog** | `docs/logs/backlog.md` | Deferred decisions (do not implement yet) |
 
 ## Current State
 
-- **Phase 2 complete**: REST API + DTOs implemented
+- **Phase 2.5 complete**: REST API + DTOs + API fuzzing in CI
 - Spring Boot 3.4.12 with layered packages (`contactapp.domain`, `contactapp.service`, `contactapp.api`, `contactapp.persistence`)
 - Services annotated with `@Service` for Spring DI while retaining `getInstance()` for backward compatibility
 - REST controllers at `/api/v1/contacts`, `/api/v1/tasks`, `/api/v1/appointments`
@@ -66,7 +66,7 @@ See `docs/REQUIREMENTS.md` for the full checklist. Definition of done for each p
 - **Phase 0 ✅ (complete)**: Defensive copies in Task/ContactService, date validation fixed, all tests pass
 - **Phase 1 ✅ (complete)**: Spring Boot starts, health/info endpoints work, services are @Service beans, existing tests pass
 - **Phase 2 ✅ (complete)**: CRUD endpoints for all 3 entities, OpenAPI accessible, 71 controller tests, Bean Validation on DTOs
-- **Phase 2.5**: Schemathesis runs in CI against spec
+- **Phase 2.5 ✅ (complete)**: Schemathesis runs in CI against spec, workflow hardened (pyyaml, jq, JAR validation)
 - **Phase 3**: Data persists in Postgres, Flyway migrations work
 - **Phase 4**: React UI can CRUD all entities
 - **Phase 5**: JWT auth protects endpoints, security headers applied

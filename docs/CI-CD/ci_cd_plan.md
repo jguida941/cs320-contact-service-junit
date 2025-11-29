@@ -65,6 +65,10 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 2. ✅ Fuzzing runs on ubuntu-latest with 20-minute timeout to keep CI reasonable.
    - Uses `--max-examples 50` and `--workers 1` for speed.
    - Local testing available via `scripts/api_fuzzing.py`.
+3. ✅ Workflow hardened (CodeRabbit review):
+   - Explicit `pyyaml` installation for reliable YAML export.
+   - Robust `jq`-based health check instead of fragile `grep` JSON parsing.
+   - JAR file validation: verifies exactly one JAR in `target/` before startup.
 
 ## Phase 10 - Auth/Role Integration Tests (Planned)
 1. ☐ Add MockMvc/WebTestClient flows that assert 401/403 for anonymous or unauthorized roles and 2xx for allowed roles.

@@ -66,11 +66,17 @@ public class GlobalExceptionHandler {
     /**
      * Handles malformed JSON in request body.
      *
-     * @param ex the exception thrown when JSON cannot be parsed
+     * <p>Returns a generic error message to avoid leaking internal parsing details.
+     * The exception parameter is required by Spring's @ExceptionHandler contract
+     * but intentionally unused to prevent information disclosure.
+     *
+     * @param ex the exception thrown when JSON cannot be parsed (unused intentionally)
      * @return 400 Bad Request with a generic error message
      */
+    @SuppressWarnings("java:S1172") // Parameter required by Spring @ExceptionHandler contract
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleMalformedJson(final HttpMessageNotReadableException ex) {
+        // Intentionally return generic message - do not expose parsing details to clients
         return ResponseEntity.badRequest().body(new ErrorResponse("Invalid JSON in request body"));
     }
 

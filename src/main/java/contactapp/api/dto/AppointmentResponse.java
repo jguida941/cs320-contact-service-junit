@@ -12,7 +12,9 @@ import java.util.Objects;
  * Uses a factory method to convert from the domain object.
  *
  * <h2>Date Format</h2>
- * <p>The appointmentDate is serialized as ISO 8601 format.
+ * <p>The appointmentDate is serialized as ISO 8601 with milliseconds and offset:
+ * {@code "2024-12-25T10:30:00.000+00:00"} (UTC).
+ * This matches the format accepted by {@link AppointmentRequest}.
  *
  * @param id              the appointment's unique identifier
  * @param appointmentDate the appointment date/time
@@ -20,7 +22,7 @@ import java.util.Objects;
  */
 public record AppointmentResponse(
         String id,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
         Date appointmentDate,
         String description
 ) {

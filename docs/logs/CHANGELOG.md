@@ -8,6 +8,14 @@ All notable changes to this project will be documented here. Follow the
 - **Phase 2.5 complete**: API security testing foundation implemented.
 
 ### Fixed
+- **API fuzzing date format mismatch resolved** (CI fuzzing failure root cause):
+  - `AppointmentResponse` now uses same `@JsonFormat` pattern as `AppointmentRequest`: `yyyy-MM-dd'T'HH:mm:ss.SSSXXX` with UTC timezone.
+  - Previously, request accepted millis+offset but response omitted them, causing Schemathesis schema violations.
+- **CodeQL unused parameter warnings resolved**:
+  - `GlobalExceptionHandler.handleMalformedJson`: Added `@SuppressWarnings` with documentation explaining the parameter is required by Spring's `@ExceptionHandler` contract but intentionally unused to prevent information disclosure.
+  - `ContactControllerTest`, `TaskControllerTest`, `AppointmentControllerTest`: Added `@SuppressWarnings` for `fieldName` parameters used in `@ParameterizedTest` display names via `{0}` placeholder.
+- **Documentation audit fixes**:
+  - `agents.md`: Updated ADR range from ADR-0014–0020 to ADR-0014–0021, updated current state to Phase 2.5 complete.
 - **API fuzzing workflow hardened** (CodeRabbit review findings):
   - Added explicit `pyyaml` installation so YAML export succeeds reliably instead of silently failing.
   - Replaced fragile `grep -q '"status":"UP"'` health check with robust `jq -e '.status=="UP"'` JSON parsing.

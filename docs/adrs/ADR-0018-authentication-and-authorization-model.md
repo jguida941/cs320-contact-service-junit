@@ -14,8 +14,9 @@
 ## Decision
 - Use stateless JWT bearer auth for API access; secure all mutating endpoints.
 - Enforce role-based authorization with Spring Security + `@PreAuthorize` at controller/service boundaries.
+- Predefined roles: `ROLE_USER` (read + own mutations), `ROLE_ADMIN` (full access); assigned at registration or by admin.
 - Configure CORS for the SPA origin and apply standard security headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options).
-- User store: in-memory users for dev; DB-backed users for prod with hashed passwords.
+- User store: in-memory users for dev; DB-backed users for prod with Argon2-hashed passwords (via Spring Security's `Argon2PasswordEncoder`).
 - Secrets management: environment variables for dev/test; vault/cloud secret manager (e.g., HashiCorp Vault/AWS Secrets Manager) for prod.
 - Token strategy: short-lived access tokens (e.g., 30 minutes); refresh tokens optional in a later iteration.
 - Rate limiting to be applied at the gateway/reverse proxy layer when deployed.

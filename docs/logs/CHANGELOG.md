@@ -6,6 +6,11 @@ All notable changes to this project will be documented here. Follow the
 ## [Unreleased]
 ### Added
 - **Phase 2.5 complete**: API security testing foundation implemented.
+- **OpenAPI spec improvements** for better tooling compatibility:
+  - Added `@Tag`, `@Operation`, `@ApiResponses` annotations to all controllers.
+  - Changed content type from `*/*` to `application/json` via `produces`/`consumes` attributes.
+  - Documented error responses (400, 404, 409) with `ErrorResponse` schema in OpenAPI.
+  - Added operation summaries for Swagger UI clarity.
 
 ### Fixed
 - **API fuzzing date format mismatch resolved** (CI fuzzing failure root cause):

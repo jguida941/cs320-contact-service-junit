@@ -2,14 +2,22 @@ package contactapp.api;
 
 import contactapp.api.dto.ContactRequest;
 import contactapp.api.dto.ContactResponse;
+import contactapp.api.dto.ErrorResponse;
 import contactapp.api.exception.DuplicateResourceException;
 import contactapp.api.exception.ResourceNotFoundException;
 import contactapp.domain.Contact;
 import contactapp.service.ContactService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,7 +54,8 @@ import org.springframework.web.bind.annotation.RestController;
  * @see ContactService
  */
 @RestController
-@RequestMapping("/api/v1/contacts")
+@RequestMapping(value = "/api/v1/contacts", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Contacts", description = "Contact CRUD operations")
 @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
         justification = "Spring-managed singleton service is intentionally stored without copy"
@@ -71,7 +80,16 @@ public class ContactController {
      * @return the created contact
      * @throws DuplicateResourceException if a contact with the given ID already exists
      */
-    @PostMapping
+    @Operation(summary = "Create a new contact")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Contact created",
+                    content = @Content(schema = @Schema(implementation = ContactResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Contact with this ID already exists",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ContactResponse create(@Valid @RequestBody final ContactRequest request) {
         // Domain constructor validates via Validation.java
@@ -96,6 +114,8 @@ public class ContactController {
      *
      * @return list of all contacts
      */
+    @Operation(summary = "Get all contacts")
+    @ApiResponse(responseCode = "200", description = "List of contacts")
     @GetMapping
     public List<ContactResponse> getAll() {
         return contactService.getAllContacts().stream()
@@ -110,6 +130,13 @@ public class ContactController {
      * @return the contact
      * @throws ResourceNotFoundException if no contact with the given ID exists
      */
+    @Operation(summary = "Get contact by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contact found",
+                    content = @Content(schema = @Schema(implementation = ContactResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Contact not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/{id}")
     public ContactResponse getById(@PathVariable final String id) {
         return contactService.getContactById(id)
@@ -126,7 +153,16 @@ public class ContactController {
      * @return the updated contact
      * @throws ResourceNotFoundException if no contact with the given ID exists
      */
-    @PutMapping("/{id}")
+    @Operation(summary = "Update an existing contact")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contact updated",
+                    content = @Content(schema = @Schema(implementation = ContactResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Contact not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ContactResponse update(
             @PathVariable final String id,
             @Valid @RequestBody final ContactRequest request) {
@@ -149,6 +185,12 @@ public class ContactController {
      * @param id the contact ID
      * @throws ResourceNotFoundException if no contact with the given ID exists
      */
+    @Operation(summary = "Delete a contact")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Contact deleted"),
+            @ApiResponse(responseCode = "404", description = "Contact not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable final String id) {

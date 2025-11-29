@@ -559,13 +559,14 @@ graph TD
 - **DTOs with Bean Validation** (`ContactRequest`, `TaskRequest`, `AppointmentRequest`) validate input at the HTTP boundary before reaching domain logic.
 - **Global exception handling** via `@RestControllerAdvice` maps exceptions to consistent JSON error responses.
 - **OpenAPI/Swagger UI** available at `/swagger-ui.html` and `/v3/api-docs` (powered by springdoc-openapi).
+- **Enhanced OpenAPI spec**: Controllers use `@Tag`, `@Operation`, and `@ApiResponses` annotations to produce a production-quality spec with `application/json` content types and documented error responses (400/404/409).
 
 ### Endpoint Summary
-| Resource     | Create (POST)           | Read (GET)                     | Update (PUT)            | Delete (DELETE)         |
-|--------------|-------------------------|--------------------------------|-------------------------|-------------------------|
-| Contacts     | `/api/v1/contacts`      | `/api/v1/contacts`, `/api/v1/contacts/{id}` | `/api/v1/contacts/{id}` | `/api/v1/contacts/{id}` |
-| Tasks        | `/api/v1/tasks`         | `/api/v1/tasks`, `/api/v1/tasks/{id}`       | `/api/v1/tasks/{id}`    | `/api/v1/tasks/{id}`    |
-| Appointments | `/api/v1/appointments`  | `/api/v1/appointments`, `/api/v1/appointments/{id}` | `/api/v1/appointments/{id}` | `/api/v1/appointments/{id}` |
+| Resource     | Create (POST)          | Read (GET)                                          | Update (PUT)                | Delete (DELETE)             |
+|--------------|------------------------|-----------------------------------------------------|-----------------------------|-----------------------------|
+| Contacts     | `/api/v1/contacts`     | `/api/v1/contacts`, `/api/v1/contacts/{id}`         | `/api/v1/contacts/{id}`     | `/api/v1/contacts/{id}`     |
+| Tasks        | `/api/v1/tasks`        | `/api/v1/tasks`, `/api/v1/tasks/{id}`               | `/api/v1/tasks/{id}`        | `/api/v1/tasks/{id}`        |
+| Appointments | `/api/v1/appointments` | `/api/v1/appointments`, `/api/v1/appointments/{id}` | `/api/v1/appointments/{id}` | `/api/v1/appointments/{id}` |
 
 ### HTTP Status Codes
 | Status | Meaning                       | When Used                                    |

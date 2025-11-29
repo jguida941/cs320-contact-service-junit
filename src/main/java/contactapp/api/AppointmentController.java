@@ -2,14 +2,22 @@ package contactapp.api;
 
 import contactapp.api.dto.AppointmentRequest;
 import contactapp.api.dto.AppointmentResponse;
+import contactapp.api.dto.ErrorResponse;
 import contactapp.api.exception.DuplicateResourceException;
 import contactapp.api.exception.ResourceNotFoundException;
 import contactapp.domain.Appointment;
 import contactapp.service.AppointmentService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,7 +43,8 @@ import org.springframework.web.bind.annotation.RestController;
  * </ul>
  *
  * <h2>Date Handling</h2>
- * <p>Dates are accepted and returned in ISO 8601 format: {@code yyyy-MM-dd'T'HH:mm:ss}
+ * <p>Dates are accepted and returned in ISO 8601 format with milliseconds and offset:
+ * {@code yyyy-MM-dd'T'HH:mm:ss.SSSXXX} (UTC timezone).
  *
  * <h2>Validation</h2>
  * <p>Uses two layers of validation:
@@ -49,7 +58,8 @@ import org.springframework.web.bind.annotation.RestController;
  * @see AppointmentService
  */
 @RestController
-@RequestMapping("/api/v1/appointments")
+@RequestMapping(value = "/api/v1/appointments", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Appointments", description = "Appointment CRUD operations")
 @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
         justification = "Spring-managed singleton service is intentionally stored without copy"
@@ -74,7 +84,16 @@ public class AppointmentController {
      * @return the created appointment
      * @throws DuplicateResourceException if an appointment with the given ID already exists
      */
-    @PostMapping
+    @Operation(summary = "Create a new appointment")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Appointment created",
+                    content = @Content(schema = @Schema(implementation = AppointmentResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error (e.g., past date)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Appointment with this ID already exists",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public AppointmentResponse create(@Valid @RequestBody final AppointmentRequest request) {
         final Appointment appointment = new Appointment(
@@ -96,6 +115,8 @@ public class AppointmentController {
      *
      * @return list of all appointments
      */
+    @Operation(summary = "Get all appointments")
+    @ApiResponse(responseCode = "200", description = "List of appointments")
     @GetMapping
     public List<AppointmentResponse> getAll() {
         return appointmentService.getAllAppointments().stream()
@@ -110,6 +131,13 @@ public class AppointmentController {
      * @return the appointment
      * @throws ResourceNotFoundException if no appointment with the given ID exists
      */
+    @Operation(summary = "Get appointment by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Appointment found",
+                    content = @Content(schema = @Schema(implementation = AppointmentResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Appointment not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/{id}")
     public AppointmentResponse getById(@PathVariable final String id) {
         return appointmentService.getAppointmentById(id)
@@ -126,7 +154,16 @@ public class AppointmentController {
      * @return the updated appointment
      * @throws ResourceNotFoundException if no appointment with the given ID exists
      */
-    @PutMapping("/{id}")
+    @Operation(summary = "Update an existing appointment")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Appointment updated",
+                    content = @Content(schema = @Schema(implementation = AppointmentResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error (e.g., past date)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Appointment not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public AppointmentResponse update(
             @PathVariable final String id,
             @Valid @RequestBody final AppointmentRequest request) {
@@ -147,6 +184,12 @@ public class AppointmentController {
      * @param id the appointment ID
      * @throws ResourceNotFoundException if no appointment with the given ID exists
      */
+    @Operation(summary = "Delete an appointment")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Appointment deleted"),
+            @ApiResponse(responseCode = "404", description = "Appointment not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable final String id) {

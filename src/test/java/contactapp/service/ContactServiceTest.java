@@ -4,6 +4,8 @@ import contactapp.domain.Contact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -271,5 +273,28 @@ public class ContactServiceTest {
         assertThat(freshSnapshot.getLastName()).isEqualTo("Name");
         assertThat(freshSnapshot.getPhone()).isEqualTo("1234567890");
         assertThat(freshSnapshot.getAddress()).isEqualTo("Original Address");
+    }
+
+    /**
+     * Covers the cold-start branch in getInstance() where instance is null.
+     *
+     * <p>Uses reflection to reset the static instance field, then verifies
+     * getInstance() creates a new instance. This ensures full branch coverage
+     * of the lazy initialization pattern.
+     */
+    @Test
+    void testGetInstanceColdStart() throws Exception {
+        // Reset static instance to null via reflection
+        Field instanceField = ContactService.class.getDeclaredField("instance");
+        instanceField.setAccessible(true);
+        instanceField.set(null, null);
+
+        // Now getInstance() should create a new instance
+        ContactService service = ContactService.getInstance();
+        assertThat(service).isNotNull();
+
+        // Verify the instance was properly registered
+        ContactService second = ContactService.getInstance();
+        assertThat(second).isSameAs(service);
     }
 }

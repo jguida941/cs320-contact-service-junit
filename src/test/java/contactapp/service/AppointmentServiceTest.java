@@ -247,6 +247,29 @@ public class AppointmentServiceTest {
     }
 
     /**
+     * Covers the cold-start branch in getInstance() where instance is null.
+     *
+     * <p>Uses reflection to reset the static instance field, then verifies
+     * getInstance() creates a new instance. This ensures full branch coverage
+     * of the lazy initialization pattern.
+     */
+    @Test
+    void testGetInstanceColdStart() throws Exception {
+        // Reset static instance to null via reflection
+        Field instanceField = AppointmentService.class.getDeclaredField("instance");
+        instanceField.setAccessible(true);
+        instanceField.set(null, null);
+
+        // Now getInstance() should create a new instance
+        AppointmentService service = AppointmentService.getInstance();
+        assertThat(service).isNotNull();
+
+        // Verify the instance was properly registered
+        AppointmentService second = AppointmentService.getInstance();
+        assertThat(second).isSameAs(service);
+    }
+
+    /**
      * Helper to generate a zeroed future date relative to "now".
      */
     private static Date futureDate(int daysInFuture) {

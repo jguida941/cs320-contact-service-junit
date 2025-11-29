@@ -31,4 +31,17 @@ class ApplicationTest {
         // Context loading is the test - no assertions needed.
         // Spring will throw if beans cannot be wired or configuration is invalid.
     }
+
+    /**
+     * Covers the main() method for JaCoCo line coverage.
+     *
+     * <p>Calls Application.main() directly to ensure the entrypoint is exercised.
+     * Since @SpringBootTest already starts a context, this just verifies the
+     * main method itself is reachable. Spring Boot handles duplicate context
+     * gracefully in test mode.
+     */
+    @Test
+    void mainMethodCoverage() {
+        Application.main(new String[]{});
+    }
 }

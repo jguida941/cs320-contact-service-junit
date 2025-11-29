@@ -305,6 +305,7 @@ graph TD
 - `testUpdateContact` verifies every mutable field changes via setter delegation.
 - `testUpdateMissingContactReturnsFalse` covers the "not found" branch so callers can rely on the boolean result.
 - `testGetDatabaseReturnsDefensiveCopies` proves callers cannot mutate internal state through the returned snapshot.
+- `testGetInstanceColdStart` uses reflection to reset the static instance, then verifies `getInstance()` creates a new instance when none exists—ensuring full branch coverage of the lazy initialization pattern.
 
 <br>
 
@@ -431,6 +432,7 @@ graph TD
 - Tests prove trimmed IDs succeed on update and blank IDs throw before accessing the map.
 - Invalid update inputs (e.g., blank name) throw and leave the stored task unchanged, proving atomicity at the service layer.
 - `testGetDatabaseReturnsDefensiveCopies` proves callers cannot mutate internal state through the returned snapshot.
+- `testGetInstanceColdStart` uses reflection to reset the static instance, then verifies `getInstance()` creates a new instance when none exists—ensuring full branch coverage of the lazy initialization pattern.
 
   <br>
 
@@ -527,6 +529,7 @@ graph TD
 - `testUpdateAppointmentBlankIdThrows` and `testUpdateMissingAppointmentReturnsFalse` cover validation/missing update branches.
 - `testClearAllAppointmentsRemovesEntries` proves the reset hook empties the backing store.
 - `testCopyRejectsNullInternalState` exercises the copy guard against corrupted internal fields.
+- `testGetInstanceColdStart` uses reflection to reset the static instance, then verifies `getInstance()` creates a new instance when none exists—ensuring full branch coverage of the lazy initialization pattern.
 
 <br>
 
@@ -581,6 +584,10 @@ management:
 ### Test Snapshot
 - Smoke test verifying the Spring application context loads without errors.
 - Empty test body is intentional: `@SpringBootTest` triggers context loading before any test runs. If wiring fails, the test fails with detailed error messages.
+
+### Scenario Coverage
+- `contextLoads` - Verifies the application context loads without exceptions.
+- `mainMethodCoverage` - Calls `Application.main()` directly to ensure the entrypoint is exercised for JaCoCo line coverage.
 
 ### Why This Test Matters
 - Catches configuration errors early: missing beans, circular dependencies, invalid property bindings, component scanning failures.

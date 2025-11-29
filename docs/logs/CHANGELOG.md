@@ -14,6 +14,10 @@ All notable changes to this project will be documented here. Follow the
   - Created `application.yml` with profile-based configuration (dev/test/prod) and actuator lockdown (health/info only).
   - Added Spring Boot smoke tests: `ApplicationTest` (context load), `ActuatorEndpointsTest` (endpoint security verification), `ServiceBeanTest` (bean presence and singleton verification).
   - All tests pass, 100% mutation score maintained.
+- **100% instruction coverage achieved**: Added tests to cover all service `getInstance()` cold-start branches and `Application.main()` entrypoint.
+  - Added `testGetInstanceColdStart` to `ContactServiceTest`, `TaskServiceTest`, and `AppointmentServiceTest` using reflection to reset the static instance and verify lazy initialization.
+  - Added `mainMethodCoverage` to `ApplicationTest` to exercise the `Application.main()` method directly.
+  - Total: 165 tests passing with 100% instruction coverage.
 - **Code review hardening**: Addressed recommendations from comprehensive code review.
   - Documented UTC timezone behavior in `Validation.validateDateNotPast()` Javadoc so callers understand that "now" is evaluated in UTC.
   - Made `clearAllContacts()`, `clearAllTasks()`, and `clearAllAppointments()` package-private to prevent accidental production usage while still allowing test access (tests are in the same package).

@@ -4,6 +4,8 @@ import contactapp.domain.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -229,5 +231,28 @@ public class TaskServiceTest {
         Task freshSnapshot = service.getDatabase().get("400");
         assertThat(freshSnapshot.getName()).isEqualTo("Original Name");
         assertThat(freshSnapshot.getDescription()).isEqualTo("Original Description");
+    }
+
+    /**
+     * Covers the cold-start branch in getInstance() where instance is null.
+     *
+     * <p>Uses reflection to reset the static instance field, then verifies
+     * getInstance() creates a new instance. This ensures full branch coverage
+     * of the lazy initialization pattern.
+     */
+    @Test
+    void testGetInstanceColdStart() throws Exception {
+        // Reset static instance to null via reflection
+        Field instanceField = TaskService.class.getDeclaredField("instance");
+        instanceField.setAccessible(true);
+        instanceField.set(null, null);
+
+        // Now getInstance() should create a new instance
+        TaskService service = TaskService.getInstance();
+        assertThat(service).isNotNull();
+
+        // Verify the instance was properly registered
+        TaskService second = TaskService.getInstance();
+        assertThat(second).isSameAs(service);
     }
 }

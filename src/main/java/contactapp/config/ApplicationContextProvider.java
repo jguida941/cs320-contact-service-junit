@@ -1,5 +1,6 @@
 package contactapp.config;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,9 @@ public final class ApplicationContextProvider implements ApplicationContextAware
     private static volatile ApplicationContext context;
 
     @Override
+    @SuppressFBWarnings(
+            value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+            justification = "Standard Spring ApplicationContextAware pattern for static context access")
     public void setApplicationContext(final ApplicationContext applicationContext) {
         context = applicationContext;
     }

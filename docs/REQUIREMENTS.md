@@ -442,7 +442,7 @@ export function useCreateContact() {
 
 | Document | Path | Purpose |
 |----------|------|---------|
-| ADR Index | `docs/adrs/README.md` | Architecture decisions (ADR-0001–0020) |
+| ADR Index | `docs/adrs/README.md` | Architecture decisions (ADR-0001–0022) |
 | CI/CD Plan | `docs/ci-cd/ci_cd_plan.md` | Pipeline phases including security testing |
 | Backlog | `docs/logs/backlog.md` | Deferred decisions (UI kit, OAuth2/SSO, WAF) |
 | Agent Guide | `agents.md` | AI assistant entry point |

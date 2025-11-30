@@ -30,7 +30,7 @@ All notable changes to this project will be documented here. Follow the
 - **Phase 2.5 complete**: API security testing foundation implemented.
 - **Path variable validation** on controllers:
   - Added `@NotBlank @Size(min=1, max=MAX_ID_LENGTH)` to all `{id}` path parameters to reject whitespace-only and enforce 10-char limit.
-  - Added `@Parameter(schema=@Schema(minLength=1, maxLength=10))` for proper OpenAPI spec documentation.
+  - Added `@Parameter(schema=@Schema(minLength=1, maxLength=10, pattern=".*\\S.*"))` for proper OpenAPI spec documentation.
   - Eliminates Schemathesis "schema validation mismatch" warnings by documenting actual API constraints.
   - Added `@Schema(pattern = ".*\\S.*")` to all `@NotBlank` DTO fields to reject whitespace-only strings in OpenAPI schema.
 - **OpenAPI spec improvements** for better tooling compatibility:

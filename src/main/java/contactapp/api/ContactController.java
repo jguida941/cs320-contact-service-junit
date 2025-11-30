@@ -145,7 +145,7 @@ public class ContactController {
     })
     @GetMapping("/{id}")
     public ContactResponse getById(
-            @Parameter(description = "Contact ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
+            @Parameter(description = "Contact ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH, pattern = ".*\\S.*"))
             @NotBlank @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id) {
         return contactService.getContactById(id)
                 .map(ContactResponse::from)
@@ -172,7 +172,7 @@ public class ContactController {
     })
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ContactResponse update(
-            @Parameter(description = "Contact ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
+            @Parameter(description = "Contact ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH, pattern = ".*\\S.*"))
             @NotBlank @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id,
             @Valid @RequestBody final ContactRequest request) {
 
@@ -203,7 +203,7 @@ public class ContactController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
-            @Parameter(description = "Contact ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
+            @Parameter(description = "Contact ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH, pattern = ".*\\S.*"))
             @NotBlank @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id) {
         if (!contactService.deleteContact(id)) {
             throw new ResourceNotFoundException("Contact not found: " + id);

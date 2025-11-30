@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -146,7 +147,7 @@ public class AppointmentController {
     @GetMapping("/{id}")
     public AppointmentResponse getById(
             @Parameter(description = "Appointment ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
-            @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id) {
+            @NotBlank @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id) {
         return appointmentService.getAppointmentById(id)
                 .map(AppointmentResponse::from)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -173,7 +174,7 @@ public class AppointmentController {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public AppointmentResponse update(
             @Parameter(description = "Appointment ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
-            @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id,
+            @NotBlank @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id,
             @Valid @RequestBody final AppointmentRequest request) {
 
         if (!appointmentService.updateAppointment(
@@ -202,7 +203,7 @@ public class AppointmentController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @Parameter(description = "Appointment ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
-            @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id) {
+            @NotBlank @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id) {
         if (!appointmentService.deleteAppointment(id)) {
             throw new ResourceNotFoundException("Appointment not found: " + id);
         }

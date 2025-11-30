@@ -141,8 +141,8 @@ public class TaskController {
     })
     @GetMapping("/{id}")
     public TaskResponse getById(
-            @Parameter(description = "Task ID", schema = @Schema(maxLength = MAX_ID_LENGTH))
-            @Size(max = MAX_ID_LENGTH) @PathVariable final String id) {
+            @Parameter(description = "Task ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
+            @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id) {
         return taskService.getTaskById(id)
                 .map(TaskResponse::from)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -168,8 +168,8 @@ public class TaskController {
     })
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public TaskResponse update(
-            @Parameter(description = "Task ID", schema = @Schema(maxLength = MAX_ID_LENGTH))
-            @Size(max = MAX_ID_LENGTH) @PathVariable final String id,
+            @Parameter(description = "Task ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
+            @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id,
             @Valid @RequestBody final TaskRequest request) {
 
         if (!taskService.updateTask(
@@ -197,8 +197,8 @@ public class TaskController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
-            @Parameter(description = "Task ID", schema = @Schema(maxLength = MAX_ID_LENGTH))
-            @Size(max = MAX_ID_LENGTH) @PathVariable final String id) {
+            @Parameter(description = "Task ID", schema = @Schema(minLength = 1, maxLength = MAX_ID_LENGTH))
+            @Size(min = 1, max = MAX_ID_LENGTH) @PathVariable final String id) {
         if (!taskService.deleteTask(id)) {
             throw new ResourceNotFoundException("Task not found: " + id);
         }

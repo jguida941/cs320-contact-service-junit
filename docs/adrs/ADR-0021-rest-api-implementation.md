@@ -38,7 +38,7 @@ Request DTOs use Jakarta Bean Validation annotations:
 HTTP Request → Bean Validation (DTO + @PathVariable) → Domain Constructor → Service Layer
 ```
 - Bean Validation catches invalid input early with user-friendly messages
-- Path variables validated via `@Size` constraints (requires `@Validated` on controller)
+- Path variables validated via `@Size(min=1, max=10)` constraints (requires `@Validated` on controller)
 - Domain validation acts as a backup layer (same rules, same constants)
 - Controllers construct domain objects directly, not duplicate validation logic
 

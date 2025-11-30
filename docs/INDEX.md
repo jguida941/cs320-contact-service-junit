@@ -80,6 +80,13 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 | [`../src/test/java/contactapp/GlobalExceptionHandlerTest.java`](../src/test/java/contactapp/GlobalExceptionHandlerTest.java) | Unit tests for GlobalExceptionHandler methods (4 tests). |
 | [`../src/test/java/contactapp/CustomErrorControllerTest.java`](../src/test/java/contactapp/CustomErrorControllerTest.java) | Unit tests for CustomErrorController (17 tests). |
 
+### Config Layer (`contactapp.config`)
+| Path | Description |
+|------|-------------|
+| [`../src/main/java/contactapp/config/JsonErrorReportValve.java`](../src/main/java/contactapp/config/JsonErrorReportValve.java) | Tomcat valve for JSON error responses at container level (ADR-0022). |
+| [`../src/main/java/contactapp/config/TomcatConfig.java`](../src/main/java/contactapp/config/TomcatConfig.java) | Registers JsonErrorReportValve with embedded Tomcat. |
+| [`../src/test/java/contactapp/config/JsonErrorReportValveTest.java`](../src/test/java/contactapp/config/JsonErrorReportValveTest.java) | Unit tests for JsonErrorReportValve (17 tests). |
+
 ### Build & Configuration
 | Path | Description |
 |------|-------------|

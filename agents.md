@@ -22,9 +22,11 @@ Quick links and context for automation/assistant workflows implementing this pla
 - DTOs with Bean Validation mapped to domain objects; constraints use `Validation.MAX_*` constants
 - Global exception handler (`GlobalExceptionHandler`) maps exceptions to JSON responses (400, 404, 409)
 - Custom error controller (`CustomErrorController`) ensures ALL errors return JSON (including Tomcat-level errors)
+- JsonErrorReportValve in `contactapp.config` intercepts Tomcat container-level errors with explicit Content-Length (ADR-0022)
 - OpenAPI/Swagger UI at `/swagger-ui.html` and `/v3/api-docs` (springdoc-openapi)
 - Health/info actuator endpoints available; other actuator endpoints locked down
-- Latest CI: **275 tests passing** (100% mutation score), **100% line coverage**, SpotBugs clean
+- Latest CI: **295 tests passing** (100% mutation score), **100% line coverage**, SpotBugs clean
+- All Schemathesis API fuzzing phases pass (Coverage, Fuzzing, Stateful: 8,245 test cases)
 - No persistence yet (Phase 3+)
 - Domain validation in `Validation.java` is the **source of truth** for all field rules
 - Controllers use service-level lookup methods (`getAllXxx()`, `getXxxById()`) for better encapsulation

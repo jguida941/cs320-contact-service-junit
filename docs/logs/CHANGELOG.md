@@ -57,6 +57,7 @@ All notable changes to this project will be documented here. Follow the
 - Regression tests to kill remaining PIT survivors: legacy `add*` duplicate coverage in `ContactServiceLegacyTest`/`TaskServiceLegacyTest`/`AppointmentServiceLegacyTest`, repository-backed `existsById` false-path asserts in `Jpa*StoreTest`, RequestLoggingFilter sanitization/masking tests, RateLimitingFilter wait-time + cache reset tests, and a fresh-token guard in `JwtServiceTest`.
 
 ### Changed
+- Dependabot Maven job now runs weekly on Mondays at 15:30 ET (America/New_York) to keep updates predictable without daily noise.
 - Maven now defaults `skipITs=true` so local `mvn verify` no longer requires Docker; Ubuntu CI and any Docker-enabled runs pass `-DskipITs=false`, Windows runners stay on `-DskipITs=true`, and README/ADR-0004/agents/requirements now document the opt-in behavior.
 - README/INDEX/agents now describe the HttpOnly cookie auth flow and sessionStorage-based profile caching so doc guidance matches the secure SPA implementation.
 - V5 migration uses MERGE INTO and resets identity sequence to avoid conflicts

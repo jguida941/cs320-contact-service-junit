@@ -64,6 +64,14 @@ Everything is packaged under `contactapp` with layered sub-packages (`domain`, `
 6. Open the folder in IntelliJ/VS Code if you want IDE assistance—the Maven project model is auto-detected.
 7. Planning note: Phases 0-4 complete (Spring Boot scaffold, REST API + DTOs, API fuzzing, persistence layer, React UI) with **345 tests** covering both the JPA path and the legacy singleton fallbacks (PIT mutation coverage 99% with 99% line coverage on mutated classes). Three remaining PIT mutants correspond to the constant `return true` statements inside the `add*` methods—tests already exercise those success paths, but this mutator replaces the return with `true` again so PIT reports them as uncovered. The roadmap for security and packaging lives in `docs/REQUIREMENTS.md`. ADR-0014..0028 capture the selected stack and implementation decisions.
 
+## React UI Highlights
+- Built with **Vite + React 19 + TypeScript + Tailwind CSS v4** plus shadcn/ui components for a professional look.
+- Full CRUD pages for **Contacts, Tasks, and Appointments** with React Hook Form + Zod validation that mirrors the backend rules (length limits, date-not-past, etc.).
+- Global theme system (Slate, Ocean, Forest, Violet, Zinc; each with light/dark) and instant theme switching via the top bar.
+- Settings page (profile + appearance) and Help page (getting started steps, resource links, keyboard shortcuts).
+- TanStack Query handles caching/revalidation, so edits in one tab immediately flow through the rest of the UI.
+- Build artifacts are bundled into the Spring Boot JAR (via `frontend-maven-plugin`), so `java -jar target/*.jar` serves the API and SPA from the same origin.
+
 ## Branches & History
 - `master` (this branch) - the Spring Boot + React suite with persistence, CI, and the full UI.
 - `original-cs320` - the unmodified CS320 milestone (HashMap-backed services + the original requirements/tests). Browse it at [`original-cs320`](https://github.com/jguida941/contact-suite-spring-react/tree/original-cs320) to compare the baseline against this modern implementation.

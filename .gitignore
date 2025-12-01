@@ -48,3 +48,7 @@ ui/contact-app/node/
 ui/contact-app/test-results/
 ui/contact-app/playwright-report/
 ui/contact-app/coverage/
+
+# Claude audit files
+claudeaudit.md
+claudeaudittoday.md

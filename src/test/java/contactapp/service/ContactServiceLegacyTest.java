@@ -1,8 +1,10 @@
 package contactapp.service;
 
+import contactapp.api.exception.DuplicateResourceException;
 import contactapp.domain.Contact;
 import contactapp.persistence.store.ContactStore;
 import contactapp.persistence.store.InMemoryContactStore;
+import contactapp.security.TestUserSetup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -13,16 +15,28 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Verifies the legacy {@link ContactService#getInstance()} path works outside Spring.
+ *
+ * <p>Note: These tests run with Spring context to get the TestUserSetup bean.
  */
+@SpringBootTest
+@ActiveProfiles("test")
 class ContactServiceLegacyTest {
+
+    @Autowired
+    private TestUserSetup testUserSetup;
 
     @BeforeEach
     void resetSingleton() throws Exception {
+        testUserSetup.setupTestUser();
         setInstance(null);
     }
 
@@ -70,6 +84,23 @@ class ContactServiceLegacyTest {
                 .as("registerInstance should copy contacts from the temporary store")
                 .isPresent();
         assertThat(ContactService.getInstance()).isSameAs(springBean);
+    }
+
+    /**
+     * Ensures the legacy in-memory branch returns true on success and throws the same DuplicateResourceException
+     * used by the JPA path when ids collide. Without this test, PIT could flip the boolean return or skip the
+     * duplicate guard entirely in legacy mode.
+     */
+    @Test
+    void legacyInsertReturnsTrueAndDuplicateThrows() throws Exception {
+        ContactService legacy = createLegacyService();
+        Contact contact = new Contact("LEG-1", "Legacy", "User", "1234567890", "Legacy Lane");
+
+        assertThat(legacy.addContact(contact)).isTrue();
+        assertThat(legacy.getContactById("LEG-1")).isPresent();
+        assertThatThrownBy(() -> legacy.addContact(contact))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("LEG-1");
     }
 
     private static void setInstance(final ContactService newInstance) throws Exception {

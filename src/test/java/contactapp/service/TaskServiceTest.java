@@ -1,12 +1,16 @@
 package contactapp.service;
 
+import contactapp.api.exception.DuplicateResourceException;
 import contactapp.domain.Task;
+import contactapp.security.Role;
+import contactapp.security.TestUserSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -18,17 +22,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 public class TaskServiceTest {
 
     @Autowired
     private TaskService service;
 
+    @Autowired
+    private TestUserSetup testUserSetup;
+
     /**
-     * Clears singleton storage so each test starts with an empty map.
+     * Sets up test user and clears data before each test.
      */
     @BeforeEach
     void reset() {
+        testUserSetup.setupTestUser();
         service.clearAllTasks();
     }
 
@@ -71,7 +78,9 @@ public class TaskServiceTest {
         Task duplicate = new Task("100", "Other", "Another desc");
 
         assertThat(service.addTask(original)).isTrue();
-        assertThat(service.addTask(duplicate)).isFalse();
+        assertThatThrownBy(() -> service.addTask(duplicate))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("100");
         // Verify original data is still stored
         Task stored = service.getDatabase().get("100");
         assertThat(stored.getName()).isEqualTo("Write docs");
@@ -317,5 +326,60 @@ public class TaskServiceTest {
         var result = service.getAllTasks();
 
         assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void getAllTasksAllUsers_requiresAdminRole() {
+        runAs("limited", Role.USER, () ->
+                service.addTask(new Task("task-1", "Task", "User owned")));
+
+        assertThatThrownBy(service::getAllTasksAllUsers)
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Only ADMIN users can access all tasks");
+    }
+
+    @Test
+    void getAllTasksAllUsers_returnsDataForAdmins() {
+        runAs("user-one", Role.USER, () ->
+                service.addTask(new Task("tu-1", "User One", "Task One")));
+        runAs("user-two", Role.USER, () ->
+                service.addTask(new Task("tu-2", "User Two", "Task Two")));
+
+        runAs("admin", Role.ADMIN, () -> assertThat(service.getAllTasksAllUsers())
+                .extracting(Task::getTaskId)
+                .contains("tu-1", "tu-2"));
+    }
+
+    @Test
+    void getTaskById_onlyReturnsCurrentUsersTasks() {
+        runAs("owner", Role.USER, () ->
+                service.addTask(new Task("shared01", "Owner Task", "Owned by user")));
+
+        runAs("other", Role.USER, () ->
+                assertThat(service.getTaskById("shared01")).isEmpty());
+    }
+
+    @Test
+    void deleteTask_doesNotAllowOtherUsersToDelete() {
+        runAs("owner", Role.USER, () ->
+                service.addTask(new Task("locked01", "Locked", "Should stay")));
+
+        runAs("other", Role.USER, () ->
+                assertThat(service.deleteTask("locked01")).isFalse());
+    }
+
+    @Test
+    void updateTask_doesNotAllowCrossUserModification() {
+        runAs("owner", Role.USER, () ->
+                service.addTask(new Task("owned01", "Owned", "Original")));
+
+        runAs("other", Role.USER, () ->
+                assertThat(service.updateTask("owned01", "Edited", "New description"))
+                        .isFalse());
+    }
+
+    private void runAs(final String username, final Role role, final Runnable action) {
+        testUserSetup.setupTestUser(username, username + "@example.com", role);
+        action.run();
     }
 }

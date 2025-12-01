@@ -63,6 +63,17 @@
         </dependency>
 
         <!--
+            Micrometer Prometheus Registry (SimpleClient): Exposes metrics in Prometheus format
+            at /actuator/prometheus for scraping by monitoring systems.
+            Uses simpleclient variant for Micrometer 1.13+ compatibility with Spring Boot 3.4.
+            See: https://github.com/micrometer-metrics/micrometer/issues/5103
+        -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
+        </dependency>
+
+        <!--
             Bean Validation (JSR-380): Enables @Valid, @NotBlank, @Size, etc.
             on DTOs. Works alongside our domain-level Validation helper so
             we have two layers of defense: API-level (annotations) and
@@ -71,6 +82,61 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!--
+            Spring Security: Provides authentication, authorization, and
+            protection against common attacks (CSRF, session fixation, etc.).
+            Phase 5 requirement for JWT-based stateless authentication.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!--
+            JJWT (Java JWT): Library for creating and validating JSON Web Tokens.
+            Used for stateless authentication in the REST API. Includes:
+            - jjwt-api: Core interfaces
+            - jjwt-impl: Implementation (runtime)
+            - jjwt-jackson: JSON processing with Jackson (runtime)
+        -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            Bucket4j: Token bucket rate limiting library for preventing API abuse.
+            Used to enforce per-IP and per-user rate limits on high-risk endpoints.
+        -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>8.10.1</version>
+        </dependency>
+
+        <!--
+            Caffeine: High-performance caching library used to bound rate limit
+            bucket maps with max size and time-based expiration (prevents DoS).
+        -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.1.8</version>
         </dependency>
 
         <!--
@@ -138,6 +204,17 @@
         </dependency>
 
         <!--
+            Logstash Logback Encoder: Provides structured JSON logging for production.
+            Enables correlation IDs, custom fields, and easy integration with ELK/observability platforms.
+            Includes StructuredArguments for programmatic field injection.
+        -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>8.0</version>
+        </dependency>
+
+        <!--
             SpotBugs annotations for static analysis.
             Scope is provided since these are compile-time only.
         -->
@@ -158,6 +235,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+            Spring Security Test: Provides @WithMockUser, SecurityMockMvcRequestPostProcessors,
+            and other utilities for testing secured endpoints.
+        -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -196,7 +283,31 @@
                     <useModulePath>false</useModulePath>
                     <parallel>classes</parallel>
                     <useUnlimitedThreads>true</useUnlimitedThreads>
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                    </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                    <parallel>classes</parallel>
+                    <useUnlimitedThreads>true</useUnlimitedThreads>
+                    <includes>
+                        <include>**/*IT.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

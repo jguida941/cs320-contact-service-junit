@@ -1,0 +1,204 @@
+# =============================================================================
+# Production-Ready Docker Compose Configuration
+# =============================================================================
+# This docker-compose file defines a production-like environment for the
+# Contact Service with PostgreSQL database and optional pgAdmin.
+#
+# Services:
+# - app: Spring Boot application with health checks and metrics
+# - postgres: PostgreSQL 16 database with persistent volume
+# - pgadmin: (Optional) Web UI for database management
+#
+# Usage:
+#   docker-compose up -d              # Start all services in background
+#   docker-compose logs -f app        # Follow application logs
+#   docker-compose down               # Stop and remove containers
+#   docker-compose down -v            # Stop and remove volumes (data loss!)
+#
+# Security Notes:
+# - Uses environment variables for secrets (set via .env file)
+# - All services run on isolated network
+# - Database not exposed to host (only accessible via internal network)
+# - Application runs as non-root user (defined in Dockerfile)
+# =============================================================================
+
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database Service
+  # ---------------------------------------------------------------------------
+  # Official PostgreSQL 16 image from Docker Hub.
+  # Data is persisted in a named volume to survive container restarts.
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: contactapp-postgres-prod
+    restart: unless-stopped
+
+    # Environment variables for PostgreSQL initialization.
+    # In production, use Docker secrets or external secret management.
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-contactapp}
+      POSTGRES_USER: ${POSTGRES_USER:-contactapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      # Performance tuning for containerized Postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+
+    # DO NOT expose port 5432 to host in production.
+    # Database should only be accessible via internal Docker network.
+    # Uncomment for development debugging only:
+    # ports:
+    #   - "5432:5432"
+
+    # Named volume for persistent database storage.
+    # Data survives 'docker-compose down' but is removed by 'docker-compose down -v'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Health check to ensure Postgres is ready before starting dependent services.
+    # The app service waits for this to be healthy via depends_on condition.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-contactapp} -d ${POSTGRES_DB:-contactapp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    networks:
+      - contactapp-network
+
+  # ---------------------------------------------------------------------------
+  # Spring Boot Application Service
+  # ---------------------------------------------------------------------------
+  # Builds from local Dockerfile and connects to Postgres.
+  # Waits for database health check before starting.
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: contactapp-service
+    restart: unless-stopped
+
+    # Wait for postgres to be healthy before starting.
+    # This prevents "connection refused" errors during startup.
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    # Expose port 8080 to host for accessing the application.
+    # Maps host:container (8080:8080)
+    ports:
+      - "8080:8080"
+
+    # Environment variables for application configuration.
+    # Override default application.yml values for production profile.
+    environment:
+      # Activate Spring Boot production profile
+      SPRING_PROFILES_ACTIVE: prod
+
+      # Database connection (uses Docker internal DNS: service name 'postgres')
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-contactapp}
+      DB_USERNAME: ${POSTGRES_USER:-contactapp}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+
+      # JWT secret for token signing (MUST be set via .env file in production)
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+
+      # Environment tag for metrics (defaults to 'docker')
+      ENVIRONMENT: ${ENVIRONMENT:-docker}
+
+      # JVM tuning for containerized environment
+      JAVA_OPTS: >-
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:+ExitOnOutOfMemoryError
+        -Dspring.profiles.active=prod
+
+    # Health check using Spring Boot Actuator endpoint.
+    # Kubernetes-style liveness probe to detect if app is running.
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/actuator/health/liveness || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    networks:
+      - contactapp-network
+
+    # Resource limits to prevent container from consuming all host resources.
+    # Adjust based on your application's memory requirements.
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # pgAdmin Service (Optional - Comment out for production)
+  # ---------------------------------------------------------------------------
+  # Web-based PostgreSQL administration tool.
+  # Useful for development/staging, but should be removed in production.
+  # Access at http://localhost:5050 after starting.
+  # ---------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: contactapp-pgadmin
+    restart: unless-stopped
+
+    # pgAdmin login credentials (set via .env file)
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@contactapp.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+
+    # Expose pgAdmin web UI on port 5050
+    ports:
+      - "5050:80"
+
+    # Persist pgAdmin configuration and server connections
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+    networks:
+      - contactapp-network
+
+    # pgAdmin doesn't need to wait for Postgres to start,
+    # but you won't be able to connect until Postgres is healthy.
+    depends_on:
+      - postgres
+
+# =============================================================================
+# Named Volumes
+# =============================================================================
+# Persist data across container restarts.
+# Remove with 'docker-compose down -v' (WARNING: data loss!)
+# =============================================================================
+volumes:
+  # PostgreSQL data directory
+  postgres_data:
+    driver: local
+
+  # pgAdmin configuration and saved servers
+  pgadmin_data:
+    driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+# Isolated bridge network for inter-service communication.
+# Services cannot access external networks unless explicitly configured.
+# =============================================================================
+networks:
+  contactapp-network:
+    driver: bridge
+    # Optional: Define custom subnet for network isolation
+    # ipam:
+    #   config:
+    #     - subnet: 172.25.0.0/16

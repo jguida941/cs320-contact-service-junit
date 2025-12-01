@@ -4,24 +4,83 @@ All notable changes to this project will be documented here. Follow the
 [Semantic Versioning](https://semver.org/) once formal releases begin.
 
 ## [Unreleased]
-### Security
-- **react-router vulnerability**: Bumped `react-router` and `react-router-dom` from 7.0.2 to 7.9.6 to fix CVE for pre-render data spoofing.
+
+### Added
+- **ADR-0040**: Request Tracing and Logging Infrastructure – detailed documentation for CorrelationIdFilter, RequestLoggingFilter, and RequestUtils with test coverage.
+- **ADR-0041**: PII Masking in Log Output – phone number and address masking patterns with Logback configuration.
+- **ADR-0042**: Docker Containerization Strategy – multi-stage build, layer caching, JVM configuration, and compose stack.
+- **README Observability section**: New comprehensive section documenting all Phase 5 filters with detailed scenario coverage for 40+ test methods across config tests.
+- **JPA Store unit tests**: Added `JpaContactStoreTest`, `JpaTaskStoreTest`, `JpaAppointmentStoreTest` verifying repository delegations and UnsupportedOperationException guards for deprecated legacy methods.
+- **Entity ID getter tests**: Added reflection-based tests for `getId()` in all entity classes to kill PIT EmptyObjectReturnValsMutator survivors.
+- **User.isEnabled() disabled state test**: Added test case for `enabled=false` to kill BooleanTrueReturnValsMutator.
+- **CorrelationIdFilter boundary tests**: Added exact boundary tests for MAX_CORRELATION_ID_LENGTH (64 chars) to catch ConditionalsBoundaryMutator.
+- **RequestLoggingFilter query string tests**: Added tests verifying query string inclusion/exclusion in logs.
 
 ### Fixed
+- Prometheus actuator endpoint now works in tests with `@AutoConfigureObservability`
+- H2 identity sequence conflict resolved in V5 migration
+- Rate limit maps bounded with Caffeine to prevent DoS
+- JWT secret no longer has default value (required in production)
+- MDC.remove() used instead of MDC.clear() for proper cleanup
+- SPA deep links and browser refreshes now load without a pre-existing JWT by permitting non `/api/**` GET requests in `SecurityConfig`; `/login` can be visited directly.
+- Frontend no longer wipes tokens on legitimate 403 responses—only 401 Unauthorized forces logout so accidental forbidden calls do not drop the session.
+- Postgres V6 migration now initializes surrogate key sequences with a minimum of 1 (using `setval(..., false)` when the table is empty) to avoid `value 0 is out of bounds` errors during Testcontainers spins.
+
+### Added
+- `micrometer-registry-prometheus-simpleclient` for Micrometer 1.13+ compatibility
+- Test utilities: `@WithMockAppUser`, `TestUserSetup`, `TestUserFactory`
+- `@AutoConfigureObservability` annotation on ActuatorEndpointsTest
+- Regression tests to kill remaining PIT survivors: legacy `add*` duplicate coverage in `ContactServiceLegacyTest`/`TaskServiceLegacyTest`/`AppointmentServiceLegacyTest`, repository-backed `existsById` false-path asserts in `Jpa*StoreTest`, RequestLoggingFilter sanitization/masking tests, RateLimitingFilter wait-time + cache reset tests, and a fresh-token guard in `JwtServiceTest`.
+
+### Changed
+- V5 migration uses MERGE INTO and resets identity sequence to avoid conflicts
+
+### Security
+- **react-router vulnerability**: Bumped `react-router` and `react-router-dom` from 7.0.2 to 7.9.6 to fix CVE for pre-render data spoofing.
+- **Per-user data isolation**: Added `user_id` column to contacts, tasks, and appointments tables (V5 migration). Services now filter all queries by authenticated user. ADMIN users can access all records via `?all=true` query parameter.
+- **Rate limiting**: Implemented bucket4j token-bucket rate limiting to protect against brute force and DoS attacks:
+  - `/api/auth/login`: 5 requests/minute per IP
+  - `/api/auth/register`: 3 requests/minute per IP
+  - `/api/v1/**`: 100 requests/minute per authenticated user
+- **PII masking in logs**: Phone numbers masked as `***-***-1234`, addresses show only city/state.
+- **SPA login + sanitized logging**: React router now exposes `/login`, `RequireAuth`, and `PublicOnlyRoute` components so the SPA authenticates before calling `/api/v1/**`, with `AuthController` issued JWTs persisted via secure-cookie guidance. `RequestLoggingFilter` was rewritten to mask client IPs, redact token/password query parameters, include normalized user-agent strings, and leverage the shared `RequestUtils` helper for safe header parsing.
+- **Flyway secret placeholders**: H2/Postgres `V5__add_user_id_columns.sql` migrations now accept `${system_user_password_hash}` placeholders (no plaintext hashes in git) and wrap ALTER/CREATE statements in conditional guards so reruns remain idempotent. The migration directory split (`common`, `h2`, `postgresql`) mirrors production vs. test behaviors.
+
+### Added
+- **Phase 5 Observability Stack (ADR-0039)**:
+  - Structured JSON logging in production via logstash-logback-encoder.
+  - Correlation ID tracking (X-Correlation-ID header) via `CorrelationIdFilter`.
+  - Request/response audit logging via `RequestLoggingFilter` (configurable).
+  - Prometheus metrics endpoint at `/actuator/prometheus`.
+  - Kubernetes-style liveness/readiness probes at `/actuator/health/liveness` and `/actuator/health/readiness`.
+- **Docker packaging**:
+  - Multi-stage `Dockerfile` with Eclipse Temurin 17 JRE, layered JAR extraction, non-root user.
+  - Production `docker-compose.yml` with postgres, app, and optional pgadmin services.
+  - Health checks, resource limits, and environment variable configuration.
+  - `.env.example` template and `.dockerignore` for secure builds.
+- **Rate limit configuration**: `RateLimitConfig` class with YAML binding for tunable limits.
+
+### Fixed
+- **User security hardening**: Added Validation `validateEmail`, enforced email format + BCrypt hash requirements in `User`, and expanded unit tests.
+- **Users table auditing**: Added JPA lifecycle callbacks (@PrePersist/@PreUpdate) in `V4__create_users_table.sql` so `updated_at` reflects the latest modification automatically.
+- **JWT secret handling**: `JwtService` now Base64-decodes the configured secret (with UTF-8 fallback) so docs and implementation align.
 - **Dev profile Postgres driver**: `application.yml` now sets the PostgreSQL driver (and the launcher injects `SPRING_DATASOURCE_DRIVER_CLASS_NAME`) so running with `SPRING_PROFILES_ACTIVE=dev` or `python scripts/dev_stack.py --database postgres` no longer fails with "Driver org.h2.Driver claims to not accept jdbcUrl".
+- **Docker compose CLI detection**: `scripts/dev_stack.py --database postgres` now auto-detects whether `docker compose` or `docker-compose` is available, preventing "unknown shorthand flag: 'f' in -f" errors on older Docker installs.
 - **SpotBugs false positive**: Added `@SuppressFBWarnings` to `ApplicationContextProvider.setApplicationContext()` for standard Spring ApplicationContextAware pattern.
-- **Race condition in add methods**: Fixed check-then-insert race condition in `ContactService.addContact()`, `TaskService.addTask()`, and `AppointmentService.addAppointment()` using a hybrid approach: fast-path `existsById()` check for immediate rejection plus `DataIntegrityViolationException` catch for race condition safety in JPA stores. This provides optimal performance (no DB round-trip for obvious duplicates) while ensuring atomicity via database UNIQUE constraints. See ADR-0024 for details.
+- **Race condition in add methods**: Fixed check-then-insert race condition in `ContactService.addContact()`, `TaskService.addTask()`, and `AppointmentService.addAppointment()` by removing the `existsById()` pre-check entirely and treating the database's UNIQUE constraints as the single source of truth. Violations now raise `DuplicateResourceException`, which the REST layer maps to HTTP 409 via the global exception handler.
 - **UI API endpoint mismatch**: Changed API base from `/api` to `/api/v1` to match backend controller mappings.
 - **Appointment date field name**: Fixed `date` → `appointmentDate` to match backend `AppointmentRequest` DTO.
 - **Missing ID fields in forms**: Added ID input field to Contact, Task, and Appointment create forms (backend requires ID in request body).
 - **Vite proxy configuration**: Updated proxy to forward `/api/v1`, `/actuator`, `/swagger-ui`, and `/v3/api-docs` to backend.
 
 ### Added
+- **ADR-0036**: Documented the plan for an admin-only dashboard using role-based routing in the existing SPA; Phase 7 checklist updated with the new deliverable.
 - **Settings page** (`SettingsPage.tsx`): Profile management (name, email with localStorage persistence), appearance settings (dark mode toggle, 5 color themes), and data management (clear settings).
 - **Help page** (`HelpPage.tsx`): Getting started guide, feature documentation, developer resources (Swagger UI, OpenAPI spec, health check links), keyboard shortcuts.
 - **Profile hook** (`useProfile.ts`): Manages user profile (name, email, initials) in localStorage with auto-computed initials.
 - **TopBar navigation**: Avatar dropdown now links to Settings and Help pages, shows user initials from profile.
 - **README Development URLs table**: Clear distinction between `:5173` (React UI) and `:8080` (API/Swagger).
+- **Security test coverage**: Added mutation-focused tests for service `add*` persistence failures plus new `JwtServiceTest`, `JwtAuthenticationFilterTest`, `CustomUserDetailsServiceTest`, and the config/logging/rate-limit suites, bringing the repo to **570 tests** with **96% PIT coverage** (599/626 mutants killed) and **96% line coverage** on mutated classes.
 
 - **Phase 4 React UI (complete)**:
   - Scaffolded `ui/contact-app/` with Vite + React 19 + TypeScript + Tailwind CSS v4.
@@ -46,7 +105,7 @@ All notable changes to this project will be documented here. Follow the
   - Created `vitest.config.ts`, `playwright.config.ts`, `src/test/setup.ts`, and `src/test/test-utils.tsx` for test infrastructure.
   - Added npm scripts: `npm run test:run` (Vitest), `npm run test:e2e` (Playwright), `npm run test:coverage`.
   - Updated `.gitignore` with `test-results/`, `playwright-report/`, `coverage/` directories.
-- Mapper null-guard tests, fresh JPA entity accessor suites, and additional `findById` Optional-empty assertions in the legacy `InMemory*Store` tests so persistence and fallback layers cover both branches, pushing the suite to **345 tests** with **99% mutation kills** (PIT still reports the three constant `return true` success-path mutants in the `add*` methods as uncovered) and **99% line coverage on mutated classes**.
+- Mapper null-guard tests, fresh JPA entity accessor suites, and additional `findById` Optional-empty assertions in the legacy `InMemory*Store` tests so persistence and fallback layers cover both branches, pushing the suite well past **400 tests** with **99% line coverage** on mutated classes.
 - Legacy singleton regression coverage ensuring `registerInstance` migrates in-memory data into the Spring-managed services (Contact/Task/Appointment).
 - Unit tests for `InMemoryContactStore`, `InMemoryTaskStore`, and `InMemoryAppointmentStore` that prove defensive copies and delete semantics so PIT can mutate those branches safely.
 - Added fallback tests calling `ContactService.getInstance()` (and Task/Appointment variants) with both Spring context and legacy cold-start scenarios so PIT's null-return mutants are exercised, resulting in **100% mutation score (307/307)** with 93% line coverage on mutated classes.
@@ -141,7 +200,7 @@ All notable changes to this project will be documented here. Follow the
 ### Changed
 - `scripts/dev_stack.py` now supports `--database postgres`, Docker Compose startup, datasource/profile defaults, and multi-argument Maven goals; README/PROJECT_SUMMARY explain the new workflow.
 - `ApplicationTest.mainMethodCoverage` now launches `Application` with `--server.port=0` so PIT/CI runs pick an ephemeral port instead of colliding with another JVM on the agent.
-- README/REQUIREMENTS/agents/Roadmap now document the expanded **319-test** suite and PIT's **96% mutation / 93% line coverage** after the new regression tests.
+- README/REQUIREMENTS/agents/Roadmap now document the expanded **570-test** suite and PIT's **96% mutation (599/626) / 96% line coverage** after the new regression tests.
 - Simplified legacy singleton compatibility: `getInstance()` in Contact/Task/Appointment services now returns the Spring-managed proxy when the context is ready (or the in-memory fallback before boot) without any manual `Advised` proxy unwrapping. Updated the corresponding Spring Boot service tests to assert shared persistence behavior between DI and legacy access instead of relying on brittle object identity checks.
 - Updated `docs/logs/backlog.md` to mark CVE dependencies as fixed.
 

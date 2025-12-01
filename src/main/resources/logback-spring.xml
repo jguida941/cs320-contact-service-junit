@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- ================================================================== -->
+    <!-- PII Masking Converter                                              -->
+    <!-- ================================================================== -->
+    <!-- Register custom converter for masking PII in log messages         -->
+    <!-- ================================================================== -->
+    <conversionRule conversionWord="pii"
+                    converterClass="contactapp.config.PiiMaskingConverter" />
+
+    <!-- ================================================================== -->
+    <!-- Property Definitions                                               -->
+    <!-- ================================================================== -->
+    <property name="LOG_PATH" value="${LOG_PATH:-logs}" />
+    <property name="APP_NAME" value="contact-service" />
+
+    <!-- ================================================================== -->
+    <!-- Console Appender (Human-Readable for Development)                 -->
+    <!-- ================================================================== -->
+    <!-- Used in dev profile for easy reading during local development     -->
+    <!-- Includes PII masking and correlation ID in the pattern            -->
+    <!-- ================================================================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlationId=%X{correlationId}] - %pii%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ================================================================== -->
+    <!-- JSON Console Appender (Structured Logging for Production)         -->
+    <!-- ================================================================== -->
+    <!-- Uses Logstash encoder to output structured JSON logs              -->
+    <!-- Includes: timestamp, level, logger, message, correlationId, thread -->
+    <!-- Compatible with ELK stack and other log aggregation tools         -->
+    <!-- ================================================================== -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Include standard fields -->
+            <includeMdcKeyName>correlationId</includeMdcKeyName>
+            <includeContext>false</includeContext>
+            <includeCallerData>false</includeCallerData>
+
+            <!-- Custom fields -->
+            <customFields>{"application":"${APP_NAME}"}</customFields>
+
+            <!-- Field names mapping -->
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <message>message</message>
+                <logger>logger</logger>
+                <thread>thread</thread>
+                <level>level</level>
+                <levelValue>[ignore]</levelValue>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <!-- ================================================================== -->
+    <!-- JSON File Appender (Production Log Files)                         -->
+    <!-- ================================================================== -->
+    <!-- Writes JSON logs to rotating files                                -->
+    <!-- Max file size: 10MB, keeps 30 days, max 1GB total                 -->
+    <!-- ================================================================== -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.json</file>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>correlationId</includeMdcKeyName>
+            <includeContext>false</includeContext>
+            <includeCallerData>false</includeCallerData>
+            <customFields>{"application":"${APP_NAME}"}</customFields>
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <message>message</message>
+                <logger>logger</logger>
+                <thread>thread</thread>
+                <level>level</level>
+                <levelValue>[ignore]</levelValue>
+            </fieldNames>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.%i.json.gz</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ================================================================== -->
+    <!-- Default Profile (Test/Unknown)                                     -->
+    <!-- ================================================================== -->
+    <!-- Uses console appender with INFO level for testing                 -->
+    <!-- ================================================================== -->
+    <springProfile name="default,test">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+
+        <!-- Application package at INFO level -->
+        <logger name="contactapp" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE" />
+        </logger>
+    </springProfile>
+
+    <!-- ================================================================== -->
+    <!-- Development Profile                                                -->
+    <!-- ================================================================== -->
+    <!-- Human-readable console output with DEBUG level for app package    -->
+    <!-- Includes detailed SQL logging from Hibernate                      -->
+    <!-- ================================================================== -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+
+        <!-- Application package at DEBUG level -->
+        <logger name="contactapp" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE" />
+        </logger>
+
+        <!-- SQL logging for development -->
+        <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE" />
+        </logger>
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
+            <appender-ref ref="CONSOLE" />
+        </logger>
+    </springProfile>
+
+    <!-- ================================================================== -->
+    <!-- Production Profile                                                 -->
+    <!-- ================================================================== -->
+    <!-- Structured JSON output to both console and file                   -->
+    <!-- WARN level for root, INFO for application package                 -->
+    <!-- Optimized for log aggregation and monitoring systems              -->
+    <!-- ================================================================== -->
+    <springProfile name="prod">
+        <root level="WARN">
+            <appender-ref ref="JSON_CONSOLE" />
+            <appender-ref ref="JSON_FILE" />
+        </root>
+
+        <!-- Application package at INFO level -->
+        <logger name="contactapp" level="INFO" additivity="false">
+            <appender-ref ref="JSON_CONSOLE" />
+            <appender-ref ref="JSON_FILE" />
+        </logger>
+
+        <!-- Spring framework at WARN level to reduce noise -->
+        <logger name="org.springframework" level="WARN" additivity="false">
+            <appender-ref ref="JSON_CONSOLE" />
+            <appender-ref ref="JSON_FILE" />
+        </logger>
+
+        <!-- Hibernate at WARN level (no SQL logging in production) -->
+        <logger name="org.hibernate" level="WARN" additivity="false">
+            <appender-ref ref="JSON_CONSOLE" />
+            <appender-ref ref="JSON_FILE" />
+        </logger>
+    </springProfile>
+
+    <!-- ================================================================== -->
+    <!-- Integration Test Profile                                           -->
+    <!-- ================================================================== -->
+    <!-- Minimal logging for integration tests                             -->
+    <!-- ================================================================== -->
+    <springProfile name="integration">
+        <root level="WARN">
+            <appender-ref ref="CONSOLE" />
+        </root>
+
+        <logger name="contactapp" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE" />
+        </logger>
+    </springProfile>
+
+</configuration>

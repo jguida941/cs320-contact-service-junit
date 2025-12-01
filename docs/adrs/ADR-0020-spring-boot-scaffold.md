@@ -1,5 +1,7 @@
 # ADR-0020: Spring Boot Scaffold
 
+> **Note**: This ADR describes the legacy in-memory implementation. See [ADR-0024](ADR-0024-persistence-implementation.md) for the current JPA persistence architecture.
+
 ## Status
 Accepted
 

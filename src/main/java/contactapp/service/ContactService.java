@@ -1,10 +1,14 @@
 package contactapp.service;
 
+import contactapp.api.exception.DuplicateResourceException;
 import contactapp.config.ApplicationContextProvider;
 import contactapp.domain.Contact;
 import contactapp.domain.Validation;
 import contactapp.persistence.store.ContactStore;
 import contactapp.persistence.store.InMemoryContactStore;
+import contactapp.persistence.store.JpaContactStore;
+import contactapp.security.Role;
+import contactapp.security.User;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +16,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,16 +107,56 @@ public class ContactService {
     }
 
     /**
-     * Adds a new contact to the store.
+     * Gets the currently authenticated user from the Spring Security context.
      *
-     * <p>Uses database uniqueness constraint for atomic duplicate detection.
-     * If a contact with the same ID already exists, the database throws
-     * {@link DataIntegrityViolationException} which is caught and translated
-     * to a {@code false} return value (controller returns 409 Conflict).
+     * @return the authenticated user
+     * @throws IllegalStateException if no user is authenticated
+     */
+    private User getCurrentUser() {
+        final var context = SecurityContextHolder.getContext();
+        final Authentication authentication = context != null ? context.getAuthentication() : null;
+        if (authentication == null
+                || authentication instanceof AnonymousAuthenticationToken
+                || !authentication.isAuthenticated()) {
+            return handleMissingAuthentication();
+        }
+        final Object principal = authentication.getPrincipal();
+        if (!(principal instanceof User)) {
+            throw new IllegalStateException("Authenticated principal is not a User");
+        }
+        return (User) principal;
+    }
+
+    private User handleMissingAuthentication() {
+        if (legacyStore) {
+            throw new IllegalStateException(
+                    "Legacy in-memory store does not require authenticated users; "
+                            + "avoid user-scoped JPA operations until the security context is initialized.");
+        }
+        throw new IllegalStateException("No authenticated user found");
+    }
+
+    /**
+     * Checks if the current user has ADMIN role.
+     *
+     * @param user the user to check
+     * @return true if the user is an ADMIN
+     */
+    private boolean isAdmin(final User user) {
+        return user != null && user.getRole() == Role.ADMIN;
+    }
+
+    /**
+     * Adds a new contact to the store for the authenticated user.
+     *
+     * <p>Database uniqueness constraints act as the single source of truth for detecting duplicates.
+     * When a conflicting {@code contactId} exists, {@link DuplicateResourceException} propagates to
+     * the controller so the global exception handler can return a 409 Conflict response.
      *
      * @param contact the contact to add; must not be null
-     * @return true if the contact was added, false if a duplicate ID exists
+     * @return true if the contact was added
      * @throws IllegalArgumentException if contact is null
+     * @throws DuplicateResourceException if a contact with the same ID already exists
      */
     public boolean addContact(final Contact contact) {
         if (contact == null) {
@@ -118,20 +166,31 @@ public class ContactService {
         if (contactId == null) {
             throw new IllegalArgumentException("contactId must not be null");
         }
+
+        // Get authenticated user and use user-aware store methods if available
+        if (store instanceof JpaContactStore) {
+            final JpaContactStore jpaStore = (JpaContactStore) store;
+            final User currentUser = getCurrentUser();
+            try {
+                jpaStore.insert(contact, currentUser);
+                return true;
+            } catch (DataIntegrityViolationException e) {
+                throw new DuplicateResourceException(
+                        "Contact with id '" + contactId + "' already exists", e);
+            }
+        }
+
+        // Fallback for legacy in-memory store
         if (store.existsById(contactId)) {
-            return false;
+            throw new DuplicateResourceException(
+                    "Contact with id '" + contactId + "' already exists");
         }
-        try {
-            store.save(contact);
-            return true;
-        } catch (DataIntegrityViolationException e) {
-            // Duplicate ID - constraint violation from database
-            return false;
-        }
+        store.save(contact);
+        return true;
     }
 
     /**
-     * Deletes a contact by id.
+     * Deletes a contact by id for the authenticated user.
      *
      * <p>The provided id is validated and trimmed before removal so callers
      * can pass values like " 123 " and still target the stored entry for "123".
@@ -142,11 +201,19 @@ public class ContactService {
      */
     public boolean deleteContact(final String contactId) {
         Validation.validateNotBlank(contactId, "contactId");
-        return store.deleteById(contactId.trim());
+        final String trimmedId = contactId.trim();
+
+        if (store instanceof JpaContactStore) {
+            final JpaContactStore jpaStore = (JpaContactStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.deleteById(trimmedId, currentUser);
+        }
+
+        return store.deleteById(trimmedId);
     }
 
     /**
-     * Updates an existing contact's mutable fields by id.
+     * Updates an existing contact's mutable fields by id for the authenticated user.
      *
      * @param contactId the id of the contact to update
      * @param firstName new first name
@@ -165,6 +232,21 @@ public class ContactService {
         Validation.validateNotBlank(contactId, "contactId");
         final String normalizedId = contactId.trim();
 
+        if (store instanceof JpaContactStore) {
+            final JpaContactStore jpaStore = (JpaContactStore) store;
+            final User currentUser = getCurrentUser();
+
+            final Optional<Contact> contact = jpaStore.findById(normalizedId, currentUser);
+            if (contact.isEmpty()) {
+                return false;
+            }
+            final Contact existing = contact.get();
+            existing.update(firstName, lastName, phone, address);
+            jpaStore.save(existing, currentUser);
+            return true;
+        }
+
+        // Fallback for legacy in-memory store
         final Optional<Contact> contact = store.findById(normalizedId);
         if (contact.isEmpty()) {
             return false;
@@ -195,6 +277,9 @@ public class ContactService {
     /**
      * Returns all contacts as a list of defensive copies.
      *
+     * <p>For authenticated users: returns only their contacts.
+     * For ADMIN users: returns all contacts (when called from controllers with ?all=true).
+     *
      * <p>Encapsulates the internal storage structure so controllers don't
      * need to access getDatabase() directly.
      *
@@ -202,13 +287,42 @@ public class ContactService {
      */
     @Transactional(readOnly = true)
     public List<Contact> getAllContacts() {
+        if (store instanceof JpaContactStore) {
+            final JpaContactStore jpaStore = (JpaContactStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findAll(currentUser).stream()
+                    .map(Contact::copy)
+                    .toList();
+        }
+
         return store.findAll().stream()
                 .map(Contact::copy)
                 .toList();
     }
 
     /**
-     * Finds a contact by ID.
+     * Returns all contacts across all users (ADMIN only).
+     *
+     * <p>This method should only be called by controllers when ?all=true
+     * is specified and the authenticated user is an ADMIN.
+     *
+     * @return list of all contact defensive copies
+     * @throws AccessDeniedException if current user is not an ADMIN
+     */
+    @Transactional(readOnly = true)
+    public List<Contact> getAllContactsAllUsers() {
+        final User currentUser = getCurrentUser();
+        if (!isAdmin(currentUser)) {
+            throw new AccessDeniedException("Only ADMIN users can access all contacts");
+        }
+
+        return store.findAll().stream()
+                .map(Contact::copy)
+                .toList();
+    }
+
+    /**
+     * Finds a contact by ID for the authenticated user.
      *
      * <p>The ID is validated and trimmed before lookup so callers can pass
      * values like " 123 " and still find the contact stored as "123".
@@ -220,7 +334,15 @@ public class ContactService {
     @Transactional(readOnly = true)
     public Optional<Contact> getContactById(final String contactId) {
         Validation.validateNotBlank(contactId, "contactId");
-        return store.findById(contactId.trim()).map(Contact::copy);
+        final String trimmedId = contactId.trim();
+
+        if (store instanceof JpaContactStore) {
+            final JpaContactStore jpaStore = (JpaContactStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findById(trimmedId, currentUser).map(Contact::copy);
+        }
+
+        return store.findById(trimmedId).map(Contact::copy);
     }
 
     void clearAllContacts() {

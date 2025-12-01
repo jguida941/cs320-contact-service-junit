@@ -1,0 +1,78 @@
+# =============================================================================
+# Docker Ignore File
+# =============================================================================
+# Exclude files and directories from Docker build context to:
+# - Speed up builds by reducing context size
+# - Prevent sensitive files from being copied into the image
+# - Avoid copying build artifacts that will be regenerated
+# =============================================================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# IDE and editor files
+.idea
+.vscode
+*.iml
+*.swp
+*.swo
+*~
+
+# Build outputs
+target/
+*.class
+*.jar
+*.war
+
+# Maven wrapper (already copied explicitly in Dockerfile)
+# Uncomment if you want to re-download in container:
+# .mvn/
+# mvnw
+# mvnw.cmd
+
+# Test and coverage reports
+coverage/
+.nyc_output/
+*.log
+*.coverage
+
+# Dependencies
+node_modules/
+ui/contact-app/node_modules/
+ui/contact-app/dist/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+!README.md
+
+# OWASP dependency check cache
+.owasp-cache/
+
+# Docker files (no need to copy into build)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Static analysis reports
+spotbugs/
+checkstyle/
+jacoco/

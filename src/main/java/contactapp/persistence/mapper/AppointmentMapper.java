@@ -2,6 +2,7 @@ package contactapp.persistence.mapper;
 
 import contactapp.domain.Appointment;
 import contactapp.persistence.entity.AppointmentEntity;
+import contactapp.security.User;
 import java.time.Instant;
 import java.util.Date;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppointmentMapper {
 
-    public AppointmentEntity toEntity(final Appointment domain) {
+    /**
+     * Converts a domain Appointment to an entity, associating it with the given user.
+     *
+     * @param domain the domain appointment
+     * @param user the user who owns this appointment
+     * @return the entity representation
+     */
+    public AppointmentEntity toEntity(final Appointment domain, final User user) {
         if (domain == null) {
             return null;
         }
@@ -24,7 +32,24 @@ public class AppointmentMapper {
         return new AppointmentEntity(
                 domain.getAppointmentId(),
                 instant,
-                domain.getDescription());
+                domain.getDescription(),
+                user);
+    }
+
+    /**
+     * Converts a domain Appointment to an entity.
+     *
+     * @param domain the domain appointment
+     * @return the entity representation
+     * @deprecated Use {@link #toEntity(Appointment, User)} instead
+     */
+    @Deprecated
+    public AppointmentEntity toEntity(final Appointment domain) {
+        if (domain == null) {
+            return null;
+        }
+        throw new UnsupportedOperationException(
+                "Use toEntity(Appointment, User) instead. This method requires a User parameter.");
     }
 
     public Appointment toDomain(final AppointmentEntity entity) {
@@ -40,5 +65,26 @@ public class AppointmentMapper {
                 entity.getAppointmentId(),
                 date,
                 entity.getDescription());
+    }
+
+    /**
+     * Updates an existing entity with the latest appointment metadata.
+     *
+     * @param target entity to mutate
+     * @param source domain aggregate
+     */
+    public void updateEntity(final AppointmentEntity target, final Appointment source) {
+        if (target == null) {
+            throw new IllegalArgumentException("target entity must not be null");
+        }
+        if (source == null) {
+            throw new IllegalArgumentException("source appointment must not be null");
+        }
+        final Date appointmentDate = source.getAppointmentDate();
+        if (appointmentDate == null) {
+            throw new IllegalArgumentException("appointmentDate must not be null");
+        }
+        target.setAppointmentDate(appointmentDate.toInstant());
+        target.setDescription(source.getDescription());
     }
 }

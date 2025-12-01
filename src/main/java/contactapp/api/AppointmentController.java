@@ -3,7 +3,6 @@ package contactapp.api;
 import contactapp.api.dto.AppointmentRequest;
 import contactapp.api.dto.AppointmentResponse;
 import contactapp.api.dto.ErrorResponse;
-import contactapp.api.exception.DuplicateResourceException;
 import contactapp.api.exception.ResourceNotFoundException;
 import contactapp.domain.Appointment;
 import contactapp.service.AppointmentService;
@@ -14,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +21,10 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import static contactapp.domain.Validation.MAX_ID_LENGTH;
@@ -65,11 +70,13 @@ import static contactapp.domain.Validation.MAX_ID_LENGTH;
 @RestController
 @RequestMapping(value = "/api/v1/appointments", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Appointments", description = "Appointment CRUD operations")
+@SecurityRequirement(name = "bearerAuth")
 @Validated
 @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
         justification = "Spring-managed singleton service is intentionally stored without copy"
 )
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
@@ -88,7 +95,7 @@ public class AppointmentController {
      *
      * @param request the appointment data
      * @return the created appointment
-     * @throws DuplicateResourceException if an appointment with the given ID already exists
+     * @throws contactapp.api.exception.DuplicateResourceException if an appointment with the given ID already exists
      */
     @Operation(summary = "Create a new appointment")
     @ApiResponses({
@@ -108,23 +115,41 @@ public class AppointmentController {
                 request.description()
         );
 
-        if (!appointmentService.addAppointment(appointment)) {
-            throw new DuplicateResourceException(
-                    "Appointment with id '" + request.id() + "' already exists");
-        }
+        appointmentService.addAppointment(appointment);
 
         return AppointmentResponse.from(appointment);
     }
 
     /**
-     * Returns all appointments.
+     * Returns all appointments for the authenticated user.
      *
-     * @return list of all appointments
+     * <p>For regular users, returns only their appointments.
+     * For ADMIN users with {@code ?all=true}, returns all appointments across all users.
+     *
+     * @param all if true and user is ADMIN, returns all appointments across all users
+     * @return list of appointments
      */
-    @Operation(summary = "Get all appointments")
+    @Operation(summary = "Get all appointments",
+            description = "Returns appointments for the authenticated user. "
+                    + "ADMIN users can pass ?all=true to see all appointments across all users.")
     @ApiResponse(responseCode = "200", description = "List of appointments")
     @GetMapping
-    public List<AppointmentResponse> getAll() {
+    public List<AppointmentResponse> getAll(
+            @Parameter(description = "If true and user is ADMIN, returns all appointments")
+            @RequestParam(required = false, defaultValue = "false") final boolean all) {
+        if (all) {
+            // Verify caller has ADMIN role before returning all users' data
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            final boolean isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+            if (!isAdmin) {
+                throw new AccessDeniedException(
+                        "Only administrators can access all users' appointments");
+            }
+            return appointmentService.getAllAppointmentsAllUsers().stream()
+                    .map(AppointmentResponse::from)
+                    .toList();
+        }
         return appointmentService.getAllAppointments().stream()
                 .map(AppointmentResponse::from)
                 .toList();

@@ -1,8 +1,10 @@
 # ADR-0011: TaskService Singleton and CRUD Tests
 
-**Status**: Accepted  
-**Date**: 2025-11-24  
-**Owners**: Justin Guida  
+> **Note**: This ADR describes the legacy in-memory implementation. See [ADR-0024](ADR-0024-persistence-implementation.md) for the current JPA persistence architecture.
+
+**Status**: Accepted
+**Date**: 2025-11-24
+**Owners**: Justin Guida
 
 **Related**: [TaskService.java](../../src/main/java/contactapp/service/TaskService.java),
 [TaskServiceTest.java](../../src/test/java/contactapp/service/TaskServiceTest.java),

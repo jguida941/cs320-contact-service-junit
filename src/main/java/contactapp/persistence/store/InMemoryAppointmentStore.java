@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Fallback appointment store used prior to Spring context initialization.
@@ -31,11 +32,13 @@ public class InMemoryAppointmentStore implements AppointmentStore {
         if (appointmentId == null) {
             throw new IllegalArgumentException("appointmentId must not be null");
         }
-        final Appointment copy = aggregate.copy();
-        if (copy == null) {
-            throw new IllegalStateException("appointment copy must not be null");
+        final Appointment copy = Optional.ofNullable(aggregate.copy())
+                .orElseThrow(() -> new IllegalStateException("appointment copy must not be null"));
+        final Appointment existing = database.putIfAbsent(appointmentId, copy);
+        if (existing != null) {
+            throw new DataIntegrityViolationException(
+                    "Appointment with id '" + appointmentId + "' already exists");
         }
-        database.put(appointmentId, copy);
     }
 
     @Override

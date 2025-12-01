@@ -2,6 +2,8 @@ package contactapp.persistence.mapper;
 
 import contactapp.domain.Contact;
 import contactapp.persistence.entity.ContactEntity;
+import contactapp.security.User;
+import contactapp.support.TestUserFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,19 +19,27 @@ class ContactMapperTest {
     @Test
     void toEntityCopiesAllFields() {
         Contact contact = new Contact("1234567890", "Alice", "Smith", "1112223333", "123 Main St");
+        User owner = TestUserFactory.createUser("contact-mapper");
 
-        ContactEntity entity = mapper.toEntity(contact);
+        ContactEntity entity = mapper.toEntity(contact, owner);
 
         assertThat(entity.getContactId()).isEqualTo("1234567890");
         assertThat(entity.getFirstName()).isEqualTo("Alice");
         assertThat(entity.getLastName()).isEqualTo("Smith");
         assertThat(entity.getPhone()).isEqualTo("1112223333");
         assertThat(entity.getAddress()).isEqualTo("123 Main St");
+        assertThat(entity.getUser()).isEqualTo(owner);
     }
 
     @Test
     void toDomainReusesValidation() {
-        ContactEntity entity = new ContactEntity("abc", "Bob", "Jones", "1234567890", "456 Elm");
+        ContactEntity entity = new ContactEntity(
+                "abc",
+                "Bob",
+                "Jones",
+                "1234567890",
+                "456 Elm",
+                TestUserFactory.createUser("contact-mapper-domain"));
 
         Contact contact = mapper.toDomain(entity);
 
@@ -43,12 +53,18 @@ class ContactMapperTest {
      */
     @Test
     void toEntityReturnsNullWhenDomainIsNull() {
-        assertThat(mapper.toEntity(null)).isNull();
+        assertThat(mapper.toEntity(null, TestUserFactory.createUser())).isNull();
     }
 
     @Test
     void toDomainRejectsInvalidDatabaseData() {
-        ContactEntity entity = new ContactEntity("abc", "Bob", "Jones", "invalid-phone", "456 Elm");
+        ContactEntity entity = new ContactEntity(
+                "abc",
+                "Bob",
+                "Jones",
+                "invalid-phone",
+                "456 Elm",
+                TestUserFactory.createUser("contact-mapper-invalid"));
 
         assertThatThrownBy(() -> mapper.toDomain(entity))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -61,5 +77,38 @@ class ContactMapperTest {
     @Test
     void toDomainReturnsNullWhenEntityIsNull() {
         assertThat(mapper.toDomain(null)).isNull();
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void deprecatedToEntityReturnsNullWhenDomainNull() {
+        assertThat(mapper.toEntity((Contact) null)).isNull();
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void deprecatedToEntityThrowsWhenDomainProvided() {
+        Contact contact = new Contact("legacy", "Amy", "Lee", "1234567890", "Addr");
+        assertThatThrownBy(() -> mapper.toEntity(contact))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    void updateEntityCopiesMutableFields() {
+        ContactEntity entity = new ContactEntity(
+                "contact-1",
+                "Old",
+                "Name",
+                "0000000000",
+                "Old Address",
+                TestUserFactory.createUser("contact-mapper-update"));
+        Contact updated = new Contact("contact-1", "New", "Last", "1112223333", "New Address");
+
+        mapper.updateEntity(entity, updated);
+
+        assertThat(entity.getFirstName()).isEqualTo("New");
+        assertThat(entity.getLastName()).isEqualTo("Last");
+        assertThat(entity.getPhone()).isEqualTo("1112223333");
+        assertThat(entity.getAddress()).isEqualTo("New Address");
     }
 }

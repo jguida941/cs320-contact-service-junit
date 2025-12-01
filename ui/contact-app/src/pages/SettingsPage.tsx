@@ -19,7 +19,7 @@ const themeColors: Record<string, { primary: string; label: string }> = {
 
 export function SettingsPage() {
   const { theme, setTheme, themes, darkMode, toggleDarkMode } = useTheme();
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, resetProfile } = useProfile();
 
   const [name, setName] = useState(profile.name);
   const [email, setEmail] = useState(profile.email);
@@ -192,7 +192,11 @@ export function SettingsPage() {
             <Button
               variant="outline"
               onClick={() => {
-                localStorage.clear();
+                // Only clear settings-related items, preserve auth tokens
+                localStorage.removeItem('theme');
+                localStorage.removeItem('darkMode');
+                localStorage.removeItem('user_profile');
+                resetProfile();
                 window.location.reload();
               }}
             >

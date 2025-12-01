@@ -1,8 +1,10 @@
 package contactapp.service;
 
+import contactapp.api.exception.DuplicateResourceException;
 import contactapp.domain.Appointment;
 import contactapp.persistence.store.AppointmentStore;
 import contactapp.persistence.store.InMemoryAppointmentStore;
+import contactapp.security.TestUserSetup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -15,16 +17,28 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Ensures {@link AppointmentService#getInstance()} works outside Spring.
+ *
+ * <p>Note: These tests run with Spring context to get the TestUserSetup bean.
  */
+@SpringBootTest
+@ActiveProfiles("test")
 class AppointmentServiceLegacyTest {
+
+    @Autowired
+    private TestUserSetup testUserSetup;
 
     @BeforeEach
     void resetSingleton() throws Exception {
+        testUserSetup.setupTestUser();
         setInstance(null);
     }
 
@@ -64,6 +78,33 @@ class AppointmentServiceLegacyTest {
 
         assertThat(store.findById("A-55")).isPresent();
         assertThat(AppointmentService.getInstance()).isSameAs(springBean);
+    }
+
+    /**
+     * Validates the legacy fallback keeps the same duplicate-detection semantics as the JPA-backed path so PIT
+     * can't mutate the boolean return or omit the DuplicateResourceException.
+     */
+    @Test
+    void legacyInsertReturnsTrueAndDuplicateThrows() throws Exception {
+        AppointmentService legacy = createLegacyService();
+        Appointment appointment = new Appointment("LEG-A", futureDate(3), "Legacy branch");
+
+        assertThat(legacy.addAppointment(appointment)).isTrue();
+        assertThat(legacy.getAppointmentById("LEG-A")).isPresent();
+        assertThatThrownBy(() -> legacy.addAppointment(appointment))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("LEG-A");
+    }
+
+    @Test
+    void legacyAllUsersListingRemainsAccessibleWithoutSecurity() throws Exception {
+        AppointmentService legacy = createLegacyService();
+        legacy.addAppointment(new Appointment("LEG-A1", futureDate(1), "Legacy first"));
+        legacy.addAppointment(new Appointment("LEG-A2", futureDate(2), "Legacy second"));
+
+        assertThat(legacy.getAllAppointmentsAllUsers())
+                .extracting(Appointment::getAppointmentId)
+                .containsExactlyInAnyOrder("LEG-A1", "LEG-A2");
     }
 
     private static void setInstance(final AppointmentService newInstance) throws Exception {

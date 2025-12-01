@@ -2,6 +2,7 @@ package contactapp.domain;
 
 import java.time.Clock;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 /**
  * Utility methods for validating domain fields (Contact, Task, etc.).
@@ -46,6 +47,28 @@ public final class Validation {
     /** Required length for phone numbers (digits only). */
     public static final int PHONE_LENGTH = 10;
 
+    // ==================== User Field Constants (Phase 5: Security) ====================
+
+    /** Maximum length for username field. Allows SSO-style names while fitting UI layouts. */
+    public static final int MAX_USERNAME_LENGTH = 50;
+
+    /** Maximum length for email field. Covers long corporate aliases comfortably. */
+    public static final int MAX_EMAIL_LENGTH = 100;
+
+    /**
+     * Maximum length for password hash field.
+     * Bcrypt hashes are 60 chars; 255 provides headroom for future algorithms (Argon2, PBKDF2).
+     */
+    public static final int MAX_PASSWORD_LENGTH = 255;
+    /** Minimum length for raw passwords provided during registration. */
+    public static final int MIN_PASSWORD_LENGTH = 8;
+
+    /** Maximum length for role enum storage. Covers USER/ADMIN and future roles. */
+    public static final int MAX_ROLE_LENGTH = 20;
+
+    private static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,}$");
+
     private Validation() {
         // Utility class, not meant to be instantiated
     }
@@ -85,6 +108,20 @@ public final class Validation {
                     "%s length must be between %d and %d",
                     label, minLength, maxLength);
             throw new IllegalArgumentException(message);
+        }
+    }
+
+    /**
+     * Validates that a String is a syntactically valid email address
+     * within the configured length bounds.
+     *
+     * @param email the email to check
+     * @param label logical field name for error messages
+     */
+    public static void validateEmail(final String email, final String label) {
+        validateLength(email, label, 1, MAX_EMAIL_LENGTH);
+        if (!EMAIL_PATTERN.matcher(email.trim()).matches()) {
+            throw new IllegalArgumentException(label + " must be a valid email address");
         }
     }
 

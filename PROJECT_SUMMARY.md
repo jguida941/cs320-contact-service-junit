@@ -96,6 +96,7 @@ Built a complete React frontend with:
 - React Hook Form + Zod validation mirroring backend rules
 - TanStack Query for data fetching/caching
 - Global theme system (5 themes, light/dark mode)
+- Auth-aware routing with `/login`, `RequireAuth`, and `PublicOnlyRoute` to ensure JWTs are issued before the SPA hits `/api/v1/**`
 - Responsive sidebar navigation
 - shadcn/ui component library
 
@@ -103,9 +104,9 @@ Built a complete React frontend with:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tests** | 345 |
-| **Mutation Coverage (PITest)** | 99% (308/311 mutants killed) |
-| **Line Coverage (JaCoCo)** | 99% on mutated classes |
+| **Total Tests** | 571 (577 with ITs) |
+| **Mutation Coverage (PITest)** | 95% (594/626 mutants killed) |
+| **Line Coverage (JaCoCo)** | 96% on mutated classes |
 | **Static Analysis** | SpotBugs clean |
 | **API Fuzzing** | 30,668 Schemathesis tests |
 
@@ -136,7 +137,7 @@ Compile -> Unit Tests -> Checkstyle -> SpotBugs -> JaCoCo -> PITest -> OWASP Dep
 
 ## Why I Made These Decisions
 
-### 35 Architecture Decision Records (ADRs)
+### 39 Architecture Decision Records (ADRs)
 
 Every major decision is documented with context, rationale, and consequences:
 
@@ -176,12 +177,12 @@ Every major decision is documented with context, rationale, and consequences:
 
 | Category | Count |
 |----------|-------|
-| Java Production Classes | 45 |
-| Java Test Classes | 38 |
+| Java Production Classes | 62 |
+| Java Test Classes | 51 |
 | React Components | 40+ |
-| ADRs | 35 |
-| Database Migrations | 3 |
-| CI/CD Workflows | 4 |
+| ADRs | 42 |
+| Database Migrations | 5 |
+| CI/CD Workflows | 3 |
 | Documentation Files | 70+ |
 
 ---
@@ -192,14 +193,14 @@ Every major decision is documented with context, rationale, and consequences:
 - [x] Vitest + React Testing Library — 22 component tests (think “Jest for Vite”: it renders React components in jsdom and lets us assert on things like “does the Contact form show a validation message when fields are empty?”)
 - [x] Playwright E2E — 5 happy-path tests (Playwright launches a real browser, visits the running app, and clicks through the list/create/edit/delete flow the way a human user would)
 
-### Phase 5: Security + Observability
-- [ ] JWT authentication with Spring Security
-- [ ] Role-based authorization (`@PreAuthorize`)
-- [ ] CORS configuration for SPA
-- [ ] Security headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options)
-- [ ] Rate limiting for public exposure
-- [ ] Structured logging with correlation IDs
-- [ ] Metrics/tracing via Actuator/Micrometer
+### Phase 5: Security + Observability ✅
+- [x] JWT authentication with Spring Security
+- [x] Role-based authorization (`@PreAuthorize`)
+- [x] CORS configuration for SPA
+- [x] Security headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options)
+- [x] Rate limiting for public exposure
+- [x] Structured logging with correlation IDs
+- [x] Metrics/tracing via Actuator/Micrometer
 
 ### Phase 5.5: DAST + Runtime Security
 - [ ] OWASP ZAP baseline/API scan in CI
@@ -383,10 +384,10 @@ contact-suite-spring-react/
 │   ├── api/             # REST controllers, DTOs, exception handling
 │   ├── persistence/     # JPA entities, mappers, repositories, stores
 │   └── config/          # Spring configuration
-├── src/test/java/       # 345 tests (unit, integration, legacy)
+├── src/test/java/       # 444 tests (unit, integration, legacy, security)
 ├── ui/contact-app/      # React 19 + Vite + TypeScript frontend
 ├── docs/
-│   ├── adrs/            # 35 Architecture Decision Records
+│   ├── adrs/            # 39 Architecture Decision Records
 │   ├── requirements/    # Domain specifications
 │   └── REQUIREMENTS.md  # Master document with phased plan
 ├── .github/workflows/   # CI/CD pipelines

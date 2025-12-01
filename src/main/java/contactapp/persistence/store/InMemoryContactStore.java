@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Simple in-memory store used when {@link contactapp.service.ContactService#getInstance()}
@@ -32,11 +33,12 @@ public class InMemoryContactStore implements ContactStore {
         if (contactId == null) {
             throw new IllegalArgumentException("contactId must not be null");
         }
-        final Contact copy = aggregate.copy();
-        if (copy == null) {
-            throw new IllegalStateException("contact copy must not be null");
+        final Contact copy = Optional.ofNullable(aggregate.copy())
+                .orElseThrow(() -> new IllegalStateException("contact copy must not be null"));
+        final Contact existing = database.putIfAbsent(contactId, copy);
+        if (existing != null) {
+            throw new DataIntegrityViolationException("Contact with id '" + contactId + "' already exists");
         }
-        database.put(contactId, copy);
     }
 
     @Override

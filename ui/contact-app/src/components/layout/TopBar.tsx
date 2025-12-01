@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useTheme } from '@/hooks/useTheme';
 import { useProfile } from '@/hooks/useProfile';
+import { authApi } from '@/lib/api';
 
 interface TopBarProps {
   title: string;
@@ -29,6 +30,11 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode, theme, setTheme, themes } = useTheme();
   const { profile } = useProfile();
+
+  const handleLogout = async () => {
+    await authApi.logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-card px-4">
@@ -111,7 +117,11 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              Signed in as
+              <br />
+              <span className="font-semibold">{profile.name}</span>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate('/settings')}>
               Profile
@@ -122,6 +132,10 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate('/help')}>
               Help
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout}>
+              Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

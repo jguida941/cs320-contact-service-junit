@@ -7,6 +7,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Date;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -25,6 +27,7 @@ class ValidationTest {
     private static final int NAME_MAX = 10;
     private static final int ADDRESS_MAX = 30;
     private static final int PHONE_LENGTH = 10;
+    private static final String VALID_EMAIL = "user@example.com";
 
     /**
      * Ensures the helper allows inputs exactly at the configured min/max boundaries.
@@ -136,6 +139,27 @@ class ValidationTest {
                 Validation.validateDigits("12345", "phone", PHONE_LENGTH))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("phone must be exactly 10 digits");
+    }
+
+    @Test
+    void validateEmailAcceptsStandardAddress() {
+        assertThatNoException().isThrownBy(() ->
+                Validation.validateEmail(VALID_EMAIL, "email"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "plainaddress",
+            "missing-at.example.com",
+            "user@",
+            "user@domain",
+            "user@domain.",
+            "user@domain..com"
+    })
+    void validateEmailRejectsInvalidFormats(final String email) {
+        assertThatThrownBy(() -> Validation.validateEmail(email, "email"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("email must be a valid email address");
     }
 
     /**

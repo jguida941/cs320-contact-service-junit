@@ -1,5 +1,9 @@
 package contactapp;
 
+import contactapp.domain.Task;
+import contactapp.security.Role;
+import contactapp.security.TestUserSetup;
+import contactapp.security.WithMockAppUser;
 import contactapp.service.TaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,8 +48,12 @@ class TaskControllerTest {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private TestUserSetup testUserSetup;
+
     @BeforeEach
     void setUp() throws Exception {
+        testUserSetup.setupTestUser();
         // Clear data before each test for isolation using reflection
         // (clearAllTasks is package-private in contactapp.service)
         final Method clearMethod = TaskService.class.getDeclaredMethod("clearAllTasks");
@@ -89,6 +97,26 @@ class TaskControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    @WithMockAppUser
+    void getAllTasks_allFlagRequiresAdmin() throws Exception {
+        mockMvc.perform(get("/api/v1/tasks").param("all", "true"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Only administrators can access all users' tasks"));
+    }
+
+    @Test
+    @WithMockAppUser(username = "admin", role = Role.ADMIN)
+    void getAllTasks_allFlagReturnsAllForAdmin() throws Exception {
+        addTaskForUser("alpha", Role.USER, "alpha-task");
+        addTaskForUser("beta", Role.USER, "beta-task");
+        addTaskForUser("admin", Role.ADMIN, "admin-task");
+
+        mockMvc.perform(get("/api/v1/tasks").param("all", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
     }
 
     @Test
@@ -323,5 +351,10 @@ class TaskControllerTest {
                             }
                             """, id, name, description)))
                 .andExpect(status().isCreated());
+    }
+
+    private void addTaskForUser(final String username, final Role role, final String id) {
+        testUserSetup.setupTestUser(username, username + "@example.com", role);
+        taskService.addTask(new Task(id, "Name-" + id, "Desc-" + id));
     }
 }

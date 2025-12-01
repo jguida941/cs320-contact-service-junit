@@ -7,6 +7,9 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,6 +26,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   <li>{@link MethodArgumentNotValidException} → 400 Bad Request (Bean Validation on @RequestBody)</li>
  *   <li>{@link ConstraintViolationException} → 400 Bad Request (Bean Validation on @PathVariable)</li>
  *   <li>{@link HttpMessageNotReadableException} → 400 Bad Request (malformed JSON)</li>
+ *   <li>{@link AuthenticationException} → 401 Unauthorized (invalid credentials)</li>
+ *   <li>{@link AccessDeniedException} → 403 Forbidden (insufficient permissions)</li>
  *   <li>{@link ResourceNotFoundException} → 404 Not Found</li>
  *   <li>{@link DuplicateResourceException} → 409 Conflict</li>
  * </ul>
@@ -121,5 +126,37 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ErrorResponse> handleDuplicate(final DuplicateResourceException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex.getMessage()));
+    }
+
+    /**
+     * Handles authentication failures (bad credentials, locked accounts, etc.).
+     *
+     * <p>Returns a generic "Invalid credentials" message for security reasons;
+     * we don't reveal whether the username exists or the password was wrong.
+     *
+     * @param ex the authentication exception (BadCredentialsException, etc.)
+     * @return 401 Unauthorized with a generic error message
+     */
+    @SuppressWarnings("java:S1172") // Parameter required by Spring @ExceptionHandler contract
+    @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class})
+    public ResponseEntity<ErrorResponse> handleAuthenticationFailure(final AuthenticationException ex) {
+        // Intentionally return generic message - do not reveal specifics to clients
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Invalid credentials"));
+    }
+
+    /**
+     * Handles authorization failures (insufficient permissions).
+     *
+     * <p>Returns 403 Forbidden when a user attempts to access a resource
+     * they don't have permission for (e.g., non-ADMIN accessing ?all=true endpoints).
+     *
+     * @param ex the access denied exception
+     * @return 403 Forbidden with the error message
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(final AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(ex.getMessage()));
     }
 }

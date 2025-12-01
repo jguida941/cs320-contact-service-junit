@@ -3,7 +3,6 @@ package contactapp.api;
 import contactapp.api.dto.ContactRequest;
 import contactapp.api.dto.ContactResponse;
 import contactapp.api.dto.ErrorResponse;
-import contactapp.api.exception.DuplicateResourceException;
 import contactapp.api.exception.ResourceNotFoundException;
 import contactapp.domain.Contact;
 import contactapp.service.ContactService;
@@ -14,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +21,9 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,6 +64,7 @@ import static contactapp.domain.Validation.MAX_ID_LENGTH;
 @RestController
 @RequestMapping(value = "/api/v1/contacts", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Contacts", description = "Contact CRUD operations")
+@SecurityRequirement(name = "bearerAuth")
 @Validated
 @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
@@ -82,9 +86,11 @@ public class ContactController {
     /**
      * Creates a new contact.
      *
+     * <p>Requires USER or ADMIN role.
+     *
      * @param request the contact data
      * @return the created contact
-     * @throws DuplicateResourceException if a contact with the given ID already exists
+     * @throws contactapp.api.exception.DuplicateResourceException if a contact with the given ID already exists
      */
     @Operation(summary = "Create a new contact")
     @ApiResponses({
@@ -92,11 +98,14 @@ public class ContactController {
                     content = @Content(schema = @Schema(implementation = ContactResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "Contact with this ID already exists",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ContactResponse create(@Valid @RequestBody final ContactRequest request) {
         // Domain constructor validates via Validation.java
         final Contact contact = new Contact(
@@ -107,10 +116,7 @@ public class ContactController {
                 request.address()
         );
 
-        if (!contactService.addContact(contact)) {
-            throw new DuplicateResourceException(
-                    "Contact with id '" + request.id() + "' already exists");
-        }
+        contactService.addContact(contact);
 
         return ContactResponse.from(contact);
     }
@@ -118,12 +124,34 @@ public class ContactController {
     /**
      * Returns all contacts.
      *
-     * @return list of all contacts
+     * <p>Requires USER or ADMIN role.
+     * <p>For USER role: returns only the user's contacts.
+     * <p>For ADMIN role: with ?all=true, returns all contacts across all users.
+     *
+     * @param all if true and user is ADMIN, returns all contacts (optional, defaults to false)
+     * @return list of contacts
      */
     @Operation(summary = "Get all contacts")
-    @ApiResponse(responseCode = "200", description = "List of contacts")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of contacts"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping
-    public List<ContactResponse> getAll() {
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public List<ContactResponse> getAll(
+            @Parameter(description = "If true (ADMIN only), returns all contacts across all users")
+            @org.springframework.web.bind.annotation.RequestParam(required = false, defaultValue = "false")
+            final boolean all,
+            final Authentication authentication) {
+        if (all) {
+            if (!isAdmin(authentication)) {
+                throw new AccessDeniedException("Only ADMIN users can access all contacts");
+            }
+            return contactService.getAllContactsAllUsers().stream()
+                    .map(ContactResponse::from)
+                    .toList();
+        }
         return contactService.getAllContacts().stream()
                 .map(ContactResponse::from)
                 .toList();
@@ -131,6 +159,8 @@ public class ContactController {
 
     /**
      * Returns a contact by ID.
+     *
+     * <p>Requires USER or ADMIN role.
      *
      * @param id the contact ID
      * @return the contact
@@ -142,10 +172,13 @@ public class ContactController {
                     content = @Content(schema = @Schema(implementation = ContactResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid ID format",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Contact not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ContactResponse getById(
             @Parameter(
                     description = "Contact ID",
@@ -163,6 +196,8 @@ public class ContactController {
     /**
      * Updates an existing contact.
      *
+     * <p>Requires USER or ADMIN role.
+     *
      * @param id      the contact ID (from path)
      * @param request the updated contact data
      * @return the updated contact
@@ -174,10 +209,13 @@ public class ContactController {
                     content = @Content(schema = @Schema(implementation = ContactResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Contact not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ContactResponse update(
             @Parameter(
                     description = "Contact ID",
@@ -203,6 +241,8 @@ public class ContactController {
     /**
      * Deletes a contact by ID.
      *
+     * <p>Requires USER or ADMIN role.
+     *
      * @param id the contact ID
      * @throws ResourceNotFoundException if no contact with the given ID exists
      */
@@ -211,11 +251,14 @@ public class ContactController {
             @ApiResponse(responseCode = "204", description = "Contact deleted"),
             @ApiResponse(responseCode = "400", description = "Invalid ID format",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Not authenticated",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Contact not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public void delete(
             @Parameter(
                     description = "Contact ID",
@@ -227,5 +270,11 @@ public class ContactController {
         if (!contactService.deleteContact(id)) {
             throw new ResourceNotFoundException("Contact not found: " + id);
         }
+    }
+
+    private boolean isAdmin(final Authentication authentication) {
+        return authentication != null
+                && authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
     }
 }

@@ -152,14 +152,40 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _resolve_compose_command() -> List[str]:
+    """Return the docker compose command supported on this machine."""
+    candidates = (["docker", "compose"], ["docker-compose"])
+    errors = []
+    for candidate in candidates:
+        try:
+            subprocess.run(
+                candidate + ["version"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True,
+            )
+            return candidate
+        except FileNotFoundError:
+            errors.append(" ".join(candidate))
+        except subprocess.CalledProcessError:
+            # compose plugin missing or command unsupported
+            errors.append(" ".join(candidate))
+    joined = ", ".join(errors)
+    raise RuntimeError(
+        "Docker Compose CLI not found. Install Docker Desktop (with `docker compose`) or `docker-compose`. "
+        f"Tried: {joined}"
+    )
+
+
 def _ensure_postgres(compose_file: Path) -> None:
     """Start the dockerized Postgres dev database if requested."""
     if not compose_file.exists():
         raise FileNotFoundError(f"Docker compose file not found: {compose_file}")
     print(f"[dev-stack] Ensuring Postgres is running via {compose_file}...", flush=True)
+    compose_cmd = _resolve_compose_command()
     try:
         subprocess.run(
-            ["docker", "compose", "-f", str(compose_file), "up", "-d"],
+            compose_cmd + ["-f", str(compose_file), "up", "-d"],
             cwd=str(ROOT),
             check=True,
         )

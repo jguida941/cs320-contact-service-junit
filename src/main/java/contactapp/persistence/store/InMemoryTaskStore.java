@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Fallback task store used before Spring wires the JPA layer.
@@ -31,11 +32,12 @@ public class InMemoryTaskStore implements TaskStore {
         if (taskId == null) {
             throw new IllegalArgumentException("taskId must not be null");
         }
-        final Task copy = aggregate.copy();
-        if (copy == null) {
-            throw new IllegalStateException("task copy must not be null");
+        final Task copy = Optional.ofNullable(aggregate.copy())
+                .orElseThrow(() -> new IllegalStateException("task copy must not be null"));
+        final Task existing = database.putIfAbsent(taskId, copy);
+        if (existing != null) {
+            throw new DataIntegrityViolationException("Task with id '" + taskId + "' already exists");
         }
-        database.put(taskId, copy);
     }
 
     @Override

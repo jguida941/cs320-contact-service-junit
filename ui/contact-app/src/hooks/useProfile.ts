@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { authApi } from '@/lib/api';
 
 export interface Profile {
   name: string;
@@ -8,11 +9,16 @@ export interface Profile {
 
 const PROFILE_KEY = 'contact-app-profile';
 
-const defaultProfile: Profile = {
-  name: 'User',
-  email: '',
-  initials: 'U',
-};
+function buildDefaultProfile(): Profile {
+  const user = authApi.getCurrentUser();
+  const name = user?.username ?? 'User';
+  const email = user?.email ?? '';
+  return {
+    name,
+    email,
+    initials: getInitials(name),
+  };
+}
 
 function getInitials(name: string): string {
   if (!name.trim()) return 'U';
@@ -30,10 +36,10 @@ export function useProfile() {
       try {
         return JSON.parse(stored);
       } catch {
-        return defaultProfile;
+        return buildDefaultProfile();
       }
     }
-    return defaultProfile;
+    return buildDefaultProfile();
   });
 
   useEffect(() => {
@@ -52,7 +58,7 @@ export function useProfile() {
   };
 
   const resetProfile = () => {
-    setProfileState(defaultProfile);
+    setProfileState(buildDefaultProfile());
   };
 
   return {

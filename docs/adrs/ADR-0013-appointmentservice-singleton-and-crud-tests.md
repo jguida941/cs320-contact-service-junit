@@ -1,8 +1,10 @@
 # ADR-0013: AppointmentService Singleton and CRUD Tests
 
-**Status**: Accepted  
-**Date**: 2025-11-24  
-**Owners**: Justin Guida  
+> **Note**: This ADR describes the legacy in-memory implementation. See [ADR-0024](ADR-0024-persistence-implementation.md) for the current JPA persistence architecture.
+
+**Status**: Accepted
+**Date**: 2025-11-24
+**Owners**: Justin Guida
 
 **Related**: [AppointmentService.java](../../src/main/java/contactapp/service/AppointmentService.java),
 [AppointmentServiceTest.java](../../src/test/java/contactapp/service/AppointmentServiceTest.java),

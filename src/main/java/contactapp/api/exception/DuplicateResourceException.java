@@ -18,4 +18,14 @@ public class DuplicateResourceException extends RuntimeException {
     public DuplicateResourceException(final String message) {
         super(message);
     }
+
+    /**
+     * Creates a new DuplicateResourceException with the given message and cause.
+     *
+     * @param message descriptive message indicating which resource ID is duplicated
+     * @param cause the underlying exception that triggered the conflict
+     */
+    public DuplicateResourceException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 }

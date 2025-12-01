@@ -24,16 +24,23 @@
 | [ADR-0020](ADR-0020-spring-boot-scaffold.md)                        | Spring Boot Scaffold                            | Accepted |
 | [ADR-0021](ADR-0021-rest-api-implementation.md)                     | REST API Implementation                         | Accepted |
 | [ADR-0022](ADR-0022-custom-error-controller.md)                     | Custom Error Controller for JSON Errors         | Accepted |
-| [ADR-0023](ADR-0023-api-fuzzing-schema-compliance.md)              | API Fuzzing Findings & Schema Compliance        | Accepted |
-| [ADR-0024](ADR-0024-persistence-implementation.md)                 | Persistence Implementation Strategy             | Accepted |
-| [ADR-0025](ADR-0025-ui-component-library.md)                       | UI Component Library Selection                  | Accepted |
-| [ADR-0026](ADR-0026-theme-system-and-design-tokens.md)             | Theme System and Design Tokens                  | Accepted |
-| [ADR-0027](ADR-0027-application-shell-layout.md)                   | Application Shell Layout Pattern                | Accepted |
-| [ADR-0028](ADR-0028-frontend-backend-build-integration.md)         | Frontend-Backend Build Integration              | Accepted |
-| [ADR-0029](ADR-0029-ci-as-quality-gate.md)                         | CI as Quality Gate Philosophy                   | Accepted |
-| [ADR-0030](ADR-0030-pattern-first-development.md)                  | Pattern-First Development with AI Assistance    | Accepted |
-| [ADR-0031](ADR-0031-mutation-testing-for-test-quality.md)          | Mutation Testing to Validate Test Strength      | Accepted |
-| [ADR-0032](ADR-0032-two-layer-validation.md)                       | Two-Layer Validation Strategy                   | Accepted |
-| [ADR-0033](ADR-0033-transaction-management.md)                     | Transaction Management with @Transactional      | Accepted |
-| [ADR-0034](ADR-0034-mapper-pattern.md)                             | Mapper Pattern for Entity-Domain Separation     | Accepted |
-| [ADR-0035](ADR-0035-boolean-return-api.md)                         | Boolean Return API for Service Methods          | Accepted |
+| [ADR-0023](ADR-0023-api-fuzzing-schema-compliance.md)               | API Fuzzing Findings & Schema Compliance        | Accepted |
+| [ADR-0024](ADR-0024-persistence-implementation.md)                  | Persistence Implementation Strategy             | Accepted |
+| [ADR-0025](ADR-0025-ui-component-library.md)                        | UI Component Library Selection                  | Accepted |
+| [ADR-0026](ADR-0026-theme-system-and-design-tokens.md)              | Theme System and Design Tokens                  | Accepted |
+| [ADR-0027](ADR-0027-application-shell-layout.md)                    | Application Shell Layout Pattern                | Accepted |
+| [ADR-0028](ADR-0028-frontend-backend-build-integration.md)          | Frontend-Backend Build Integration              | Accepted |
+| [ADR-0029](ADR-0029-ci-as-quality-gate.md)                          | CI as Quality Gate Philosophy                   | Accepted |
+| [ADR-0030](ADR-0030-pattern-first-development.md)                   | Pattern-First Development with AI Assistance    | Accepted |
+| [ADR-0031](ADR-0031-mutation-testing-for-test-quality.md)           | Mutation Testing to Validate Test Strength      | Accepted |
+| [ADR-0032](ADR-0032-two-layer-validation.md)                        | Two-Layer Validation Strategy                   | Accepted |
+| [ADR-0033](ADR-0033-transaction-management.md)                      | Transaction Management with @Transactional      | Accepted |
+| [ADR-0034](ADR-0034-mapper-pattern.md)                              | Mapper Pattern for Entity-Domain Separation     | Accepted |
+| [ADR-0035](ADR-0035-boolean-return-api.md)                          | Boolean Return API for Service Methods          | Accepted |
+| [ADR-0036](ADR-0036-admin-dashboard-role-based-ui.md)               | Admin Dashboard and Role-Based UI               | Accepted |
+| [ADR-0037](ADR-0037-user-entity-validation-and-tests.md)            | User Entity Validation and Test Coverage        | Accepted |
+| [ADR-0038](ADR-0038-authentication-implementation.md)               | Authentication Implementation (Phase 5)         | Accepted |
+| [ADR-0039](ADR-0039-phase5-security-observability.md)               | Phase 5 Security and Observability              | Accepted |
+| [ADR-0040](ADR-0040-request-tracing-and-logging.md)                 | Request Tracing and Logging Infrastructure      | Accepted |
+| [ADR-0041](ADR-0041-pii-masking-in-logs.md)                         | PII Masking in Log Output                       | Accepted |
+| [ADR-0042](ADR-0042-docker-containerization-strategy.md)            | Docker Containerization Strategy                | Accepted |

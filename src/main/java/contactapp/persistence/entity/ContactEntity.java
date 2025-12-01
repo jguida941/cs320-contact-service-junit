@@ -1,10 +1,17 @@
 package contactapp.persistence.entity;
 
 import contactapp.domain.Validation;
+import contactapp.security.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 /**
  * JPA entity mirroring the {@link contactapp.domain.Contact} structure.
@@ -14,10 +21,17 @@ import jakarta.persistence.Table;
  * schema always matches domain constraints.
  */
 @Entity
-@Table(name = "contacts")
+@Table(
+        name = "contacts",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_contacts_contact_id_user_id",
+                columnNames = {"contact_id", "user_id"}))
 public class ContactEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(name = "contact_id", length = Validation.MAX_ID_LENGTH, nullable = false)
     private String contactId;
 
@@ -33,6 +47,10 @@ public class ContactEntity {
     @Column(name = "address", length = Validation.MAX_ADDRESS_LENGTH, nullable = false)
     private String address;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     /** Protected no-arg constructor required by JPA. */
     protected ContactEntity() {
         // JPA only
@@ -43,12 +61,18 @@ public class ContactEntity {
             final String firstName,
             final String lastName,
             final String phone,
-            final String address) {
+            final String address,
+            final User user) {
         this.contactId = contactId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
         this.address = address;
+        this.user = user;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getContactId() {
@@ -85,5 +109,13 @@ public class ContactEntity {
 
     public void setAddress(final String address) {
         this.address = address;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(final User user) {
+        this.user = user;
     }
 }

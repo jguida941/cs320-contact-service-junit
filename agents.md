@@ -9,26 +9,23 @@ Quick links and context for automation/assistant workflows implementing this pla
 | **Requirements** | `docs/REQUIREMENTS.md` | **START HERE** - Master document with scope, phases, checklist, code examples |
 | **Roadmap** | `docs/ROADMAP.md` | Quick phase overview |
 | **Index** | `docs/INDEX.md` | Full file/folder navigation |
-| **ADR Index** | `docs/adrs/README.md` | Stack decisions (ADR-0014–0024) |
+| **ADR Index** | `docs/adrs/README.md` | Stack decisions (ADR-0001–0042) |
 | **CI/CD Plan** | `docs/ci-cd/ci_cd_plan.md` | Pipeline phases including security testing |
 | **Backlog** | `docs/logs/backlog.md` | Deferred decisions (do not implement yet) |
 
 ## Current State
 
-- **Phase 3 complete**: Persistence layer (Spring Data JPA + Flyway + Testcontainers) with legacy singleton fallbacks intact
+- **Phase 5 complete**: All `/api/v1/**` endpoints require JWT auth with Spring Security; per-user data isolation enforced via `user_id` foreign keys, controller-level ADMIN checks for `?all=true`, sanitized request logging (masked IP/query + user agent), and bucket4j rate limiting around auth/API paths.
 - Spring Boot 3.4.12 with layered packages (`contactapp.domain`, `contactapp.service`, `contactapp.api`, `contactapp.persistence`)
 - Services annotated with `@Service` for Spring DI while retaining `getInstance()` for backward compatibility
 - Legacy `getInstance()` access shares the same Spring proxy once the context starts (or an in-memory fallback before boot), so no proxy unwrapping is required and tests focus on shared behavior/state instead of object identity; backlog tracks the follow-up to delete the static entry points once every caller uses DI.
-- REST controllers at `/api/v1/contacts`, `/api/v1/tasks`, `/api/v1/appointments`
-- DTOs with Bean Validation mapped to domain objects; constraints use `Validation.MAX_*` constants
-- Global exception handler (`GlobalExceptionHandler`) maps exceptions to JSON responses (400, 404, 409)
-- Custom error controller (`CustomErrorController`) ensures ALL errors return JSON (including Tomcat-level errors)
-- JsonErrorReportValve in `contactapp.config` intercepts Tomcat container-level errors with explicit Content-Length (ADR-0022)
-- JacksonConfig disables type coercion for strict OpenAPI schema compliance (ADR-0023)
-- OpenAPI/Swagger UI at `/swagger-ui.html` and `/v3/api-docs` (springdoc-openapi)
-- Health/info actuator endpoints available; other actuator endpoints locked down
+- REST controllers at `/api/v1/contacts`, `/api/v1/tasks`, `/api/v1/appointments`, plus `/api/auth` for login/register/logout backed by DTOs with Bean Validation mapped to domain objects using `Validation.MAX_*` constants
+- React SPA gained a `/login` route, `RequireAuth` guard, and profile/token helpers so it can fetch JWTs before calling the secured APIs; logout pathways clear TanStack Query caches and local profile state.
+- Global exception handler (`GlobalExceptionHandler`) maps exceptions to JSON responses (400, 401, 403, 404, 409) and the custom error controller (`CustomErrorController`) plus `JsonErrorReportValve` ensure ALL errors return JSON (including Tomcat-level errors)
+- JacksonConfig disables type coercion for strict OpenAPI schema compliance (ADR-0023); Swagger UI/OpenAPI docs still live at `/swagger-ui.html` and `/v3/api-docs`
+- Health/info actuator endpoints available; other actuator endpoints locked down; Prometheus/metrics, correlation IDs, and security headers enabled per ADR-0039
 - Local dev can persist data via `docker-compose.dev.yml` (Postgres 16) + `dev` Spring profile (`SPRING_DATASOURCE_*` env vars)
-- Latest CI run: **345 tests passing** (unit + slice + Testcontainers), **99% mutation score** (308/311 mutants killed; remaining ones are PIT's constant `return true` mutations in the `add*` success paths), **99% line coverage on mutated classes**, SpotBugs clean
+- Latest CI run: **571 tests passing** (577 with ITs; unit + slice + MockMvc + Testcontainers + security + config filters), **95% mutation score** (594/626 mutants killed), **96% line coverage on mutated classes**, SpotBugs clean
 - All Schemathesis API fuzzing phases pass (Coverage, Fuzzing, Stateful: 30,668 test cases, 0 failures)
 - Persistence implemented via Spring Data JPA repositories + Flyway migrations (Postgres dev/prod, H2/Testcontainers tests)
 - Mapper and JPA entity tests cover null guards plus the protected constructors so Hibernate proxies and legacy in-memory stores stay mutation-proof.
@@ -77,7 +74,7 @@ See `docs/REQUIREMENTS.md` for the full checklist. Definition of done for each p
 - **Phase 2.5 ✅ (complete)**: Schemathesis runs in CI against spec, workflow hardened (pyyaml, jq, JAR validation)
 - **Phase 3 ✅ (complete)**: Data persists in Postgres, Flyway migrations work
 - **Phase 4 ✅ (complete)**: React UI can CRUD all entities; Vitest (22 tests) + Playwright E2E (5 tests) added
-- **Phase 5**: JWT auth protects endpoints, security headers applied
+- **Phase 5 ✅ (complete)**: JWT auth protects endpoints, rate limiting/request logging/Prometheus added, SPA login route guards enforced
 - **Phase 5.5**: ZAP runs in CI, auth tests assert 401/403
 - **Phase 6**: Docker images build, compose works
 

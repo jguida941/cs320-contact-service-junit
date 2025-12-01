@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Set;
 
@@ -99,5 +100,16 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("getById.id: size must be between 0 and 10", response.getBody().message());
+    }
+
+    @Test
+    void handleAccessDenied_returnsForbidden() {
+        final AccessDeniedException ex = new AccessDeniedException("Only ADMIN users can access all contacts");
+
+        final ResponseEntity<ErrorResponse> response = handler.handleAccessDenied(ex);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Only ADMIN users can access all contacts", response.getBody().message());
     }
 }

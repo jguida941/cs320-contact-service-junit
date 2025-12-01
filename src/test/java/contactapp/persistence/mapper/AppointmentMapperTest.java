@@ -2,6 +2,7 @@ package contactapp.persistence.mapper;
 
 import contactapp.domain.Appointment;
 import contactapp.persistence.entity.AppointmentEntity;
+import contactapp.support.TestUserFactory;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Date;
@@ -22,7 +23,7 @@ class AppointmentMapperTest {
         Date futureDate = Date.from(Instant.now().plusSeconds(3_600));
         Appointment appointment = new Appointment("appt-1", futureDate, "Check-in");
 
-        AppointmentEntity entity = mapper.toEntity(appointment);
+        AppointmentEntity entity = mapper.toEntity(appointment, TestUserFactory.createUser("appointment-mapper"));
 
         assertThat(entity.getAppointmentId()).isEqualTo("appt-1");
         assertThat(entity.getAppointmentDate()).isEqualTo(futureDate.toInstant());
@@ -32,7 +33,11 @@ class AppointmentMapperTest {
     @Test
     void toDomainConvertsInstantToDate() {
         Instant instant = Instant.now().plusSeconds(7_200);
-        AppointmentEntity entity = new AppointmentEntity("appt-1", instant, "Check-in");
+        AppointmentEntity entity = new AppointmentEntity(
+                "appt-1",
+                instant,
+                "Check-in",
+                TestUserFactory.createUser("appointment-mapper-domain"));
 
         Appointment appointment = mapper.toDomain(entity);
 
@@ -48,7 +53,7 @@ class AppointmentMapperTest {
      */
     @Test
     void toEntityReturnsNullWhenDomainIsNull() {
-        assertThat(mapper.toEntity(null)).isNull();
+        assertThat(mapper.toEntity(null, TestUserFactory.createUser())).isNull();
     }
 
     /**
@@ -65,12 +70,51 @@ class AppointmentMapperTest {
      */
     @Test
     void toDomainThrowsWhenEntityDateMissing() throws Exception {
-        AppointmentEntity entity = new AppointmentEntity("appt-3", Instant.now(), "Missing instant");
+        AppointmentEntity entity = new AppointmentEntity(
+                "appt-3",
+                Instant.now(),
+                "Missing instant",
+                TestUserFactory.createUser("appointment-mapper-null"));
         setField(entity, "appointmentDate", null);
 
         assertThatThrownBy(() -> mapper.toDomain(entity))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("appointmentDate");
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void deprecatedToEntityReturnsNullWhenDomainNull() {
+        assertThat(mapper.toEntity((Appointment) null)).isNull();
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void deprecatedToEntityThrowsWhenDomainProvided() {
+        Appointment appointment = new Appointment(
+                "legacy",
+                new Date(System.currentTimeMillis() + 1_000),
+                "Desc");
+        assertThatThrownBy(() -> mapper.toEntity(appointment))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    void updateEntityCopiesMutableFields() {
+        AppointmentEntity entity = new AppointmentEntity(
+                "appt-77",
+                Instant.now().plusSeconds(600),
+                "Old Desc",
+                TestUserFactory.createUser("appointment-mapper-update"));
+        Appointment updated = new Appointment(
+                "appt-77",
+                new Date(System.currentTimeMillis() + 3_600_000),
+                "New Desc");
+
+        mapper.updateEntity(entity, updated);
+
+        assertThat(entity.getAppointmentDate()).isEqualTo(updated.getAppointmentDate().toInstant());
+        assertThat(entity.getDescription()).isEqualTo("New Desc");
     }
 
     private static void setField(final Object target, final String fieldName, final Object value) {

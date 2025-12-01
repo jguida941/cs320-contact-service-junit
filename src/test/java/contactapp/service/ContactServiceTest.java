@@ -1,12 +1,15 @@
 package contactapp.service;
 
+import contactapp.api.exception.DuplicateResourceException;
 import contactapp.domain.Contact;
+import contactapp.security.Role;
+import contactapp.security.TestUserSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -20,17 +23,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 public class ContactServiceTest {
 
     @Autowired
     private ContactService service;
 
+    @Autowired
+    private TestUserSetup testUserSetup;
+
     /**
-     * Clears the singleton map before each test run to keep scenarios isolated.
+     * Sets up test user and clears data before each test.
      */
     @BeforeEach
     void clearBeforeTest() {
+        testUserSetup.setupTestUser();
         service.clearAllContacts();
     }
 
@@ -203,11 +209,10 @@ public class ContactServiceTest {
         Contact contact1 = new Contact("100", "Justin", "Guida", "1234567890", "7622 Main Street");
         Contact contact2 = new Contact("100", "Other", "Person", "1112223333", "Other Address");
 
-        boolean firstAdd = service.addContact(contact1);
-        boolean secondAdd = service.addContact(contact2);
-
-        assertThat(firstAdd).isTrue();
-        assertThat(secondAdd).isFalse();  // duplicate id rejected
+        assertThat(service.addContact(contact1)).isTrue();
+        assertThatThrownBy(() -> service.addContact(contact2))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("100");
         // Verify original data is still stored
         Contact stored = service.getDatabase().get("100");
         assertThat(stored.getFirstName()).isEqualTo("Justin");
@@ -380,5 +385,71 @@ public class ContactServiceTest {
         var result = service.getAllContacts();
 
         assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void getAllContactsAllUsers_requiresAdminRole() {
+        runAs("limited", Role.USER, () ->
+                service.addContact(new Contact("limited-1", "A", "B", "1234567890", "Street")));
+
+        assertThatThrownBy(service::getAllContactsAllUsers)
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("Only ADMIN users");
+    }
+
+    @Test
+    void getAllContactsAllUsers_returnsDataForAdmins() {
+        runAs("user-one", Role.USER, () ->
+                service.addContact(new Contact("u-1", "User", "One", "1112223333", "User Lane")));
+        runAs("user-two", Role.USER, () ->
+                service.addContact(new Contact("u-2", "User", "Two", "2223334444", "User Road")));
+
+        runAs("admin-user", Role.ADMIN, () -> assertThat(service.getAllContactsAllUsers())
+                .extracting(Contact::getContactId)
+                .contains("u-1", "u-2"));
+    }
+
+    @Test
+    void getContactById_onlyReturnsCurrentUsersRecords() {
+        runAs("owner", Role.USER, () ->
+                service.addContact(new Contact("shared01", "Owner", "Only", "2223334444", "Owner St")));
+
+        runAs("other-user", Role.USER, () ->
+                assertThat(service.getContactById("shared01")).isEmpty());
+    }
+
+    @Test
+    void addContact_duplicateIdsReturnFalseForSameUser() {
+        runAs("dup-user", Role.USER, () -> {
+            assertThat(service.addContact(new Contact("dup-1", "Name", "One", "5556667777", "Addr"))).isTrue();
+            assertThatThrownBy(() -> service.addContact(
+                    new Contact("dup-1", "Name", "Two", "5556667777", "Addr")))
+                    .isInstanceOf(DuplicateResourceException.class)
+                    .hasMessageContaining("dup-1");
+        });
+    }
+
+    @Test
+    void deleteContact_doesNotRemoveOtherUsersData() {
+        runAs("owner", Role.USER, () ->
+                service.addContact(new Contact("live-1", "Owner", "One", "7778889999", "Lane")));
+
+        runAs("other", Role.USER, () ->
+                assertThat(service.deleteContact("live-1")).isFalse());
+    }
+
+    @Test
+    void updateContact_doesNotAffectOtherUserRecords() {
+        runAs("owner", Role.USER, () ->
+                service.addContact(new Contact("stay-1", "Stay", "Put", "1010101010", "Original")));
+
+        runAs("other", Role.USER, () ->
+                assertThat(service.updateContact("stay-1", "Hack", "Attempt", "0101010101", "Hacker"))
+                        .isFalse());
+    }
+
+    private void runAs(final String username, final Role role, final Runnable action) {
+        testUserSetup.setupTestUser(username, username + "@example.com", role);
+        action.run();
     }
 }

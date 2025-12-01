@@ -1,13 +1,16 @@
 package contactapp.service;
 
+import contactapp.api.exception.DuplicateResourceException;
 import contactapp.domain.Appointment;
+import contactapp.security.Role;
+import contactapp.security.TestUserSetup;
 import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -20,17 +23,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 public class AppointmentServiceTest {
 
     @Autowired
     private AppointmentService service;
 
+    @Autowired
+    private TestUserSetup testUserSetup;
+
     /**
-     * Clears AppointmentService so each test operates on a clean in-memory store.
+     * Sets up test user and clears data before each test.
      */
     @BeforeEach
     void reset() {
+        testUserSetup.setupTestUser();
         service.clearAllAppointments();
     }
 
@@ -116,7 +122,9 @@ public class AppointmentServiceTest {
         Appointment duplicate = new Appointment("300", futureDate, "Duplicate Date");
 
         assertThat(service.addAppointment(original)).isTrue();
-        assertThat(service.addAppointment(duplicate)).isFalse();
+        assertThatThrownBy(() -> service.addAppointment(duplicate))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("300");
         Appointment stored = service.getDatabase().get("300");
         assertThat(stored.getAppointmentDate()).isEqualTo(futureDate);
         assertThat(stored.getDescription()).isEqualTo("Document Date");
@@ -248,6 +256,59 @@ public class AppointmentServiceTest {
 
         Date futureDate = futureDate(30);
         assertThat(service.updateAppointment("missing", futureDate, "Desc")).isFalse();
+    }
+
+    @Test
+    void getAllAppointmentsAllUsers_requiresAdminRole() {
+        runAs("limited", Role.USER, () ->
+                service.addAppointment(new Appointment("apt-1", futureDate(5), "User only")));
+
+        assertThatThrownBy(service::getAllAppointmentsAllUsers)
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void getAllAppointmentsAllUsers_returnsDataForAdmins() {
+        runAs("user-one", Role.USER, () ->
+                service.addAppointment(new Appointment("au-1", futureDate(3), "First")));
+        runAs("user-two", Role.USER, () ->
+                service.addAppointment(new Appointment("au-2", futureDate(4), "Second")));
+
+        runAs("admin", Role.ADMIN, () -> assertThat(service.getAllAppointmentsAllUsers())
+                .extracting(Appointment::getAppointmentId)
+                .contains("au-1", "au-2"));
+    }
+
+    @Test
+    void getAppointmentById_onlyReturnsCurrentUsersAppointments() {
+        runAs("owner", Role.USER, () ->
+                service.addAppointment(new Appointment("shared-apt", futureDate(2), "Owner entry")));
+
+        runAs("other", Role.USER, () ->
+                assertThat(service.getAppointmentById("shared-apt")).isEmpty());
+    }
+
+    @Test
+    void deleteAppointment_doesNotAllowCrossUserDeletion() {
+        runAs("owner", Role.USER, () ->
+                service.addAppointment(new Appointment("locked-apt", futureDate(1), "Locked")));
+
+        runAs("other", Role.USER, () ->
+                assertThat(service.deleteAppointment("locked-apt")).isFalse());
+    }
+
+    @Test
+    void updateAppointment_doesNotAllowCrossUserModification() {
+        runAs("owner", Role.USER, () ->
+                service.addAppointment(new Appointment("owned-apt", futureDate(7), "Owned")));
+
+        runAs("other", Role.USER, () ->
+                assertThat(service.updateAppointment("owned-apt", futureDate(8), "Hacker")).isFalse());
+    }
+
+    private void runAs(final String username, final Role role, final Runnable action) {
+        testUserSetup.setupTestUser(username, username + "@example.com", role);
+        action.run();
     }
 
     /**

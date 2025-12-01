@@ -33,32 +33,50 @@ spring:
         format_sql: true
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    locations: classpath:db/migration/{vendor},classpath:db/migration/common
 
 # -----------------------------------------------------------------------------
 # Actuator Configuration (applies to all profiles unless overridden)
 # -----------------------------------------------------------------------------
-# Only expose health and info endpoints to minimize attack surface.
-# Health endpoint provides liveness/readiness probes for orchestrators.
-# Info endpoint exposes build metadata for operational visibility.
+# Expose health, info, prometheus, and metrics endpoints for monitoring.
+# - health: Provides liveness/readiness probes for K8s/Docker orchestrators
+# - info: Exposes build metadata for operational visibility
+# - prometheus: Metrics in Prometheus format for scraping (port 8080/actuator/prometheus)
+# - metrics: Detailed metrics endpoint for debugging
 #
-# All other actuator endpoints (env, beans, metrics, etc.) are disabled
-# by default to prevent information disclosure vulnerabilities.
+# Security note: Prometheus endpoint should be protected by network policies
+# in production (e.g., only accessible from monitoring namespace in K8s).
 # -----------------------------------------------------------------------------
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
       base-path: /actuator
   endpoint:
     health:
       show-details: when-authorized
       probes:
-        enabled: true
+        enabled: true  # Enable /actuator/health/liveness and /actuator/health/readiness
+    prometheus:
+      enabled: true
+  health:
+    livenessState:
+      enabled: true  # Kubernetes liveness probe support
+    readinessState:
+      enabled: true  # Kubernetes readiness probe support
   info:
     env:
       enabled: true
+  # Metrics configuration with common tags for all metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${ENVIRONMENT:local}
+    distribution:
+      # Configure histogram buckets for better percentile accuracy
+      percentiles-histogram:
+        http.server.requests: true
 
 # -----------------------------------------------------------------------------
 # Server Configuration
@@ -75,10 +93,54 @@ server:
 # -----------------------------------------------------------------------------
 # Logging Configuration (default: INFO level)
 # -----------------------------------------------------------------------------
+# Structured logging with correlation IDs and PII masking is configured
+# in logback-spring.xml. These properties control additional behaviors:
+#   - logging.request.enabled: Enable/disable request/response audit logging
+#   - logging.level.*: Control log levels per package
+# -----------------------------------------------------------------------------
 logging:
   level:
     root: INFO
     contactapp: INFO
+  request:
+    # Enable request/response logging for audit trail (disabled by default)
+    # Set to true in dev/staging for debugging, false in prod for performance
+    enabled: false
+
+# -----------------------------------------------------------------------------
+# JWT Configuration
+# -----------------------------------------------------------------------------
+# SECURITY: jwt.secret MUST be configured via environment variable in production.
+# The default value below is for testing only and will fail in prod profile.
+# Generate a secure secret: openssl rand -base64 32
+# -----------------------------------------------------------------------------
+jwt:
+  secret: ${JWT_SECRET:dGVzdC1zZWNyZXQta2V5LWZvci1kZXZlbG9wbWVudC1vbmx5LWRvLW5vdC11c2UtaW4tcHJvZA==}
+  expiration: 86400000  # 24 hours in milliseconds
+
+# -----------------------------------------------------------------------------
+# Rate Limiting Configuration
+# -----------------------------------------------------------------------------
+# Protects high-risk API endpoints from abuse using token bucket algorithm.
+# Each endpoint pattern has independent limits based on its risk profile:
+#
+# - login: Limit per IP address to prevent brute force credential attacks
+# - register: Limit per IP address to prevent automated account creation
+# - api: Limit per authenticated user to prevent DoS on CRUD operations
+#
+# Adjust these values based on legitimate usage patterns and security requirements.
+# Lower values increase security but may impact user experience during peak usage.
+# -----------------------------------------------------------------------------
+rate-limit:
+  login:
+    requests: 5           # Max requests per time window
+    duration-seconds: 60  # Time window in seconds
+  register:
+    requests: 3
+    duration-seconds: 60
+  api:
+    requests: 100
+    duration-seconds: 60
 
 ---
 # =============================================================================
@@ -93,6 +155,7 @@ spring:
       on-profile: dev
   datasource:
     url: jdbc:postgresql://localhost:5432/contactapp
+    driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME:contactapp}
     password: ${DB_PASSWORD:contactapp}
   jpa:
@@ -106,6 +169,8 @@ management:
 logging:
   level:
     contactapp: DEBUG
+  request:
+    enabled: true  # Enable request/response logging in dev for debugging
 
 ---
 # =============================================================================
@@ -166,6 +231,10 @@ spring:
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
+
+# Production JWT secret - REQUIRED, no default (fails fast if not set)
+jwt:
+  secret: ${JWT_SECRET}
 
 management:
   endpoint:

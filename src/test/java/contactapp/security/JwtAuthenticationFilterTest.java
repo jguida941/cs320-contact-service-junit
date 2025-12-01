@@ -1,0 +1,82 @@
+package contactapp.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+class JwtAuthenticationFilterTest {
+
+    private JwtService jwtService;
+    private UserDetailsService userDetailsService;
+    private JwtAuthenticationFilter filter;
+    private FilterChain filterChain;
+
+    @BeforeEach
+    void setUp() {
+        jwtService = mock(JwtService.class);
+        userDetailsService = mock(UserDetailsService.class);
+        filter = new JwtAuthenticationFilter(jwtService, userDetailsService);
+        filterChain = mock(FilterChain.class);
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void skipsFilterWhenAuthorizationHeaderMissing() throws ServletException, IOException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    @Test
+    void proceedsWhenTokenInvalid() throws ServletException, IOException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer invalid");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        doThrow(new RuntimeException("bad token")).when(jwtService).extractUsername("invalid");
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    @Test
+    void setsAuthenticationWhenTokenValid() throws ServletException, IOException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer validtoken");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        UserDetails userDetails = User.withUsername("tester").password("ignored").roles("USER").build();
+
+        when(jwtService.extractUsername("validtoken")).thenReturn("tester");
+        when(userDetailsService.loadUserByUsername("tester")).thenReturn(userDetails);
+        when(jwtService.isTokenValid("validtoken", userDetails)).thenReturn(true);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("tester");
+    }
+}

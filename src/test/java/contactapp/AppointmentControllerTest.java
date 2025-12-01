@@ -1,5 +1,9 @@
 package contactapp;
 
+import contactapp.domain.Appointment;
+import contactapp.security.Role;
+import contactapp.security.TestUserSetup;
+import contactapp.security.WithMockAppUser;
 import contactapp.service.AppointmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +21,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -49,6 +54,9 @@ class AppointmentControllerTest {
     @Autowired
     private AppointmentService appointmentService;
 
+    @Autowired
+    private TestUserSetup testUserSetup;
+
     /** Future date for valid appointments (1 day from now). */
     private String futureDate;
 
@@ -61,6 +69,7 @@ class AppointmentControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        testUserSetup.setupTestUser();
         // Clear data before each test for isolation using reflection
         // (clearAllAppointments is package-private in contactapp.service)
         final Method clearMethod = AppointmentService.class.getDeclaredMethod("clearAllAppointments");
@@ -108,6 +117,26 @@ class AppointmentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    @WithMockAppUser
+    void getAllAppointments_allFlagRequiresAdmin() throws Exception {
+        mockMvc.perform(get("/api/v1/appointments").param("all", "true"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Only administrators can access all users' appointments"));
+    }
+
+    @Test
+    @WithMockAppUser(username = "admin", role = Role.ADMIN)
+    void getAllAppointments_allFlagReturnsAllForAdmin() throws Exception {
+        addAppointmentForUser("alpha", Role.USER, "alpha-apt");
+        addAppointmentForUser("beta", Role.USER, "beta-apt");
+        addAppointmentForUser("admin", Role.ADMIN, "admin-apt");
+
+        mockMvc.perform(get("/api/v1/appointments").param("all", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
     }
 
     @Test
@@ -351,5 +380,11 @@ class AppointmentControllerTest {
                             }
                             """, id, futureDate, description)))
                 .andExpect(status().isCreated());
+    }
+
+    private void addAppointmentForUser(final String username, final Role role, final String id) {
+        testUserSetup.setupTestUser(username, username + "@example.com", role);
+        appointmentService.addAppointment(
+                new Appointment(id, new Date(System.currentTimeMillis() + 86_400_000L), "Desc-" + id));
     }
 }

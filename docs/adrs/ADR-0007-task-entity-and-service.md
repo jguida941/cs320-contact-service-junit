@@ -1,8 +1,10 @@
 # ADR-0007: Task Entity and Service
 
-**Status**: Accepted  
-**Date**: 2025-11-19  
-**Owners**: Justin Guida  
+> **Note**: This ADR describes the legacy in-memory implementation. See [ADR-0024](ADR-0024-persistence-implementation.md) for the current JPA persistence architecture.
+
+**Status**: Accepted
+**Date**: 2025-11-19
+**Owners**: Justin Guida
 
 **Related**: [Task plan](../architecture/2025-11-19-task-entity-and-service.md), [Task requirements](../requirements/task-requirements/requirements.md)
 

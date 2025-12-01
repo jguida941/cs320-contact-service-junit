@@ -1,5 +1,9 @@
 package contactapp;
 
+import contactapp.domain.Contact;
+import contactapp.security.Role;
+import contactapp.security.TestUserSetup;
+import contactapp.security.WithMockAppUser;
 import contactapp.service.ContactService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,8 +49,14 @@ class ContactControllerTest {
     @Autowired
     private ContactService contactService;
 
+    @Autowired
+    private TestUserSetup testUserSetup;
+
     @BeforeEach
     void setUp() throws Exception {
+        // Set up test user (persisted to DB and in SecurityContext)
+        testUserSetup.setupTestUser();
+
         // Clear data before each test for isolation using reflection
         // (clearAllContacts is package-private in contactapp.service)
         final Method clearMethod = ContactService.class.getDeclaredMethod("clearAllContacts");
@@ -95,6 +105,26 @@ class ContactControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    @WithMockAppUser
+    void getAllContacts_allFlagRequiresAdmin() throws Exception {
+        mockMvc.perform(get("/api/v1/contacts").param("all", "true"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Only ADMIN users can access all contacts"));
+    }
+
+    @Test
+    @WithMockAppUser(username = "admin", role = Role.ADMIN)
+    void getAllContacts_allFlagReturnsAllForAdmin() throws Exception {
+        addContactForUser("alpha", Role.USER, "alpha-1");
+        addContactForUser("beta", Role.USER, "beta-1");
+        addContactForUser("admin", Role.ADMIN, "admin-1");
+
+        mockMvc.perform(get("/api/v1/contacts").param("all", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
     }
 
     @Test
@@ -437,5 +467,10 @@ class ContactControllerTest {
                             }
                             """, id, firstName, lastName, phone, address)))
                 .andExpect(status().isCreated());
+    }
+
+    private void addContactForUser(final String username, final Role role, final String id) {
+        testUserSetup.setupTestUser(username, username + "@example.com", role);
+        contactService.addContact(new Contact(id, "FN" + id.charAt(0), "LN" + id.charAt(0), "5551234567", "Addr " + id));
     }
 }

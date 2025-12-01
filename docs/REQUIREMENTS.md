@@ -28,20 +28,20 @@
 
 ## Current State
 
-- **Phase 3 complete**: Persistence layer (Spring Data JPA + Flyway + Postgres) implemented; legacy singletons still available for backward compatibility.
-- Spring Boot 3.4.12 Maven project with layered packages (`domain`, `service`, `api`, `persistence`).
+- **Phase 5 complete**: Spring Security protects every `/api/v1/**` endpoint with JWT bearer auth, per-user data isolation lives in the database (`user_id` foreign keys), controllers enforce ADMIN checks on `?all=true`, bucket4j rate limiting shields `/api/auth/*` + API calls, and the React SPA now exposes `/login` + auth guards before any data fetch.
+- Spring Boot 3.4.12 Maven project with layered packages (`domain`, `service`, `api`, `persistence`, `security`, `config`).
 - Domain classes (`Contact`, `Task`, `Appointment`) with validation rules preserved; `appointmentDate` serialized as ISO 8601 with millis + offset (`yyyy-MM-dd'T'HH:mm:ss.SSSXXX`, UTC).
 - Services annotated with `@Service` for Spring DI while retaining `getInstance()` fallbacks powered by in-memory stores that migrate into the JPA-backed stores once Spring initializes; `getInstance()` now simply returns the Spring proxy when available so no manual proxy unwrapping is needed, and the backlog tracks their eventual removal once DI-only usage is confirmed.
-- REST controllers expose CRUD at `/api/v1/contacts`, `/api/v1/tasks`, `/api/v1/appointments`.
+- REST controllers expose CRUD at `/api/v1/contacts`, `/api/v1/tasks`, `/api/v1/appointments` plus `/api/auth` for login/register/logout; controllers validate input via Bean Validation DTOs and rely on domain constructors for business rules.
 - DTOs with Bean Validation (`@NotBlank`, `@Size`, `@Pattern`, `@FutureOrPresent`) mapped to domain objects.
-- Global exception handler (`GlobalExceptionHandler`) maps exceptions to JSON error responses (400, 404, 409).
-- Custom error controller (`CustomErrorController`) ensures ALL errors return JSON, including container-level errors.
-- Persistence implemented via Spring Data repositories + mapper components; schema managed by Flyway migrations targeting Postgres (dev/prod) and H2/Testcontainers (tests). The default (no profile) run uses in-memory H2 in PostgreSQL compatibility mode so `mvn spring-boot:run` works out of the box; `dev`/`integration`/`prod` profiles point at Postgres.
-- Testcontainers-based integration suites cover Contact/Task/Appointment services against real Postgres.
+- Global exception handler (`GlobalExceptionHandler`) maps exceptions to JSON error responses (400, 401, 403, 404, 409).
+- Custom error controller (`CustomErrorController`) ensures ALL errors return JSON, including container-level errors, and `RequestLoggingFilter` logs masked IP/query data + user agents whenever request logging is enabled.
+- Persistence implemented via Spring Data repositories + mapper components; schema managed by Flyway migrations targeting Postgres (dev/prod) and H2/Testcontainers (tests). The default (no profile) run uses in-memory H2 in PostgreSQL compatibility mode so `mvn spring-boot:run` works out of the box; `dev`/`integration`/`prod` profiles point at Postgres. Shared migrations now live under `db/migration/common`, with profile-specific overrides under `db/migration/h2` and `db/migration/postgresql`.
+- Testcontainers-based integration suites cover Contact/Task/Appointment services against real Postgres, while new JWT/config/filter/unit tests push total coverage to 571 backend tests (577 with ITs).
 - Mapper/unit suites now include null-guard coverage plus JPA entity accessor tests to keep persistence mutation-safe even when Hibernate instantiates proxies through the protected constructors.
 - OpenAPI/Swagger UI available at `/swagger-ui.html` and `/v3/api-docs` (springdoc-openapi).
 - Health/info actuator endpoints available; other actuator endpoints locked down.
-- Latest CI: 345 tests passing (unit + slice + Testcontainers integration), 99% mutation score (308/311 mutants killed; PIT cannot eliminate the constant `return true` success-path mutants in the `add*` methods), 99% line coverage on mutated classes, SpotBugs clean.
+- Latest CI: 571 tests passing (577 with ITs; unit + slice + Testcontainers + security + filter + config tests), 95% mutation score (594/626 mutants killed), 96% line coverage on mutated classes, SpotBugs clean.
 - Controller tests (71 tests): ContactControllerTest (30), TaskControllerTest (21), AppointmentControllerTest (20).
 - Exception handler tests (5 tests): GlobalExceptionHandlerTest validates direct handler coverage (including ConstraintViolationException for path variable validation).
 - Error controller tests (34 tests): CustomErrorControllerTest (17) + JsonErrorReportValveTest (17) validate container-level error handling.
@@ -66,18 +66,18 @@
 
 ## Stack Decisions (ADRs)
 
-| Component | Decision | ADR |
-|-----------|----------|-----|
-| Backend | Spring Boot 3 | ADR-0014 |
-| Scaffold | Spring Boot 3.4.12 + layered packages | ADR-0020 |
-| ORM | Spring Data JPA/Hibernate | ADR-0014 |
-| Migrations | Flyway | ADR-0014 |
-| Database | Postgres (prod), H2/Testcontainers (test) | ADR-0015 |
-| API | REST `/api/v1`, OpenAPI via springdoc | ADR-0016 |
-| Frontend | React + Vite + TypeScript, TanStack Query | ADR-0017 |
-| Auth | JWT, Spring Security, @PreAuthorize | ADR-0018 |
-| Secrets | Env vars (dev), Vault/secret manager (prod) | ADR-0018 |
-| Packaging | Docker, GHCR | ADR-0019 |
+| Component  | Decision                                    | ADR      |
+|------------|---------------------------------------------|----------|
+| Backend    | Spring Boot 3                               | ADR-0014 |
+| Scaffold   | Spring Boot 3.4.12 + layered packages       | ADR-0020 |
+| ORM        | Spring Data JPA/Hibernate                   | ADR-0014 |
+| Migrations | Flyway                                      | ADR-0014 |
+| Database   | Postgres (prod), H2/Testcontainers (test)   | ADR-0015 |
+| API        | REST `/api/v1`, OpenAPI via springdoc       | ADR-0016 |
+| Frontend   | React + Vite + TypeScript, TanStack Query   | ADR-0017 |
+| Auth       | JWT, Spring Security, @PreAuthorize         | ADR-0018 |
+| Secrets    | Env vars (dev), Vault/secret manager (prod) | ADR-0018 |
+| Packaging  | Docker, GHCR                                | ADR-0019 |
 
 ---
 
@@ -179,17 +179,17 @@ Implementation details:
   - Mapper unit tests and `@DataJpaTest` slices running Flyway migrations.
   - Testcontainers-based Postgres integration tests verifying persistence wiring and DB constraints.
 
-### Phase 4: UI
-- Scaffold `ui/contact-app` (React + TypeScript) with routing for Contacts/Tasks/Appointments.
-- Build list + filter/sort views; create/edit forms with inline validation; delete confirmations; optimistic updates.
-- Add API client wrapper (env-based base URL), loading/error states, and component + E2E smoke tests (Vitest/RTL + Playwright/Cypress).
+### Phase 4: UI ✅ (Completed)
+- Scaffolded `ui/contact-app` (React + TypeScript + Vite + Tailwind v4 + shadcn/ui) with full routing for Contacts/Tasks/Appointments/Overview/Settings/Help.
+- Built list + filter views, create/edit forms with React Hook Form + Zod validation mirroring `Validation.java`, delete confirmations, optimistic updates, and theme-aware layout (`AppShell`, `Sidebar`, `TopBar`).
+- Added API client wrapper (`lib/api.ts`) and TanStack Query caching; Settings/Help pages document workflows; Login route added later in Phase 5 to integrate with JWT auth.
+- Added component tests (Vitest/RTL, 22 tests) and Playwright CRUD smoke tests (5 tests). `frontend-maven-plugin` builds UI during `mvn package`, bundling into the Spring Boot JAR.
 
-### Phase 5: Security + Observability
-- Add JWT auth with Spring Security, `@PreAuthorize` for role-based method security, and CORS for the SPA.
-- Add structured logging, tracing, and metrics (Micrometer/Actuator + Prometheus); propagate correlation IDs.
-- Add security headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options).
-- Add rate limiting or gateway throttles if exposed publicly.
-- Document secrets strategy: env vars for dev; vault/secret manager for prod.
+### Phase 5: Security + Observability ✅ (Completed)
+- Added Spring Security JWT stack (AuthController, `JwtAuthenticationFilter`, `SecurityConfig`, `@PreAuthorize` usage); enforced `/api/v1/**` protection and controller-level ADMIN checks for `?all=true`.
+- Added SPA auth flow: `/login` page, `RequireAuth`/`PublicOnlyRoute` guards, token/profile synchronization, selective cache clearing on logout. AuthResponse docs now mandate httpOnly cookies and CSRF safeguards.
+- Added structured logging (`logback-spring.xml`), correlation IDs, sanitized `RequestLoggingFilter` (masked IPs/query/user-agent), and rate limiting via bucket4j/Caffeine.
+- Enabled Prometheus metrics, secure headers (CSP/HSTS/X-Content-Type-Options/X-Frame-Options), and secrets strategy (env vars for dev/test, vault in prod). Added rate-limit, correlation, logging, and request utility tests.
 
 ### Phase 5.5: DAST + Runtime Security
 - Run OWASP ZAP (API/baseline) in CI against the running test instance; fail on high/critical findings.
@@ -203,6 +203,18 @@ Implementation details:
 ### Phase 7: UX polish and backlog
 - Add search/pagination/sorting for large datasets; empty states, toasts, and responsive layout.
 - Harden accessibility; instrument feature usage and errors for future iterations.
+
+### Future Phase: Project/Task Tracker Evolution (Option C)
+- **Status**: Planned once Phases 5–7 (security, packaging, UX polish) and CI security stages are complete.
+- **Scope summary** (see `docs/IMPLEMENTATION_PLAN_OPTION_C.md` for full breakdown):
+  - Introduce first-class Project aggregate (domain/entity/repository/service/controller/DTO/tests + Flyway `V7__create_projects_table.sql`).
+  - Enrich Task domain with status/due dates/audit metadata and filters (`V8__enhance_tasks_with_status_and_duedate.sql`), then link tasks to projects (`V9__add_project_fk_to_tasks.sql`) and appointments (`V10__link_appointments_to_tasks_projects.sql`).
+  - Add task assignment features (`V11__add_assignee_to_tasks.sql`) plus optional project-contact links (`V12__project_contacts.sql`).
+  - Extend API/query surface area (filters, PATCH endpoints) and React UI (status badges, project views, calendar filtering).
+- **Guards**:
+  - Requires new ADR(s) covering the expanded domain model and any updates to `Validation.java`; those changes remain prohibited until the ADRs are approved.
+  - Must maintain the `getInstance()` bridge/backward compatibility for any new services the same way existing Contact/Task/Appointment services do.
+  - All documentation/test update checklists from this file still apply per feature slice.
 
 ### CI/CD Security Stages (Phases 8-10)
 > See `docs/ci-cd/ci_cd_plan.md` for details. These align with implementation phases:
@@ -352,9 +364,20 @@ Implementation details:
 
 ### Phase 7: UX Polish + Backlog
 - [ ] Search/pagination/sorting for large datasets
+- [ ] Admin dashboard with role-based views (admins see metrics/management panels beyond standard users)
 - [ ] Empty states and toast notifications
 - [ ] Accessibility hardening
 - [ ] Feature usage instrumentation
+
+### Future Phase: Project/Task Tracker Evolution (Option C)
+- [ ] ADR(s) approved for new Project aggregate, Task lifecycle fields, validation constants, and cross-entity links
+- [ ] Projects domain/service/API stack implemented (domain → persistence → service → controller/tests)
+- [ ] Task enhancements + filters delivered (status/due dates/audit metadata + REST/query updates)
+- [ ] Task ↔ Project ↔ Appointment linking complete with migrations and service-layer helpers
+- [ ] Task assignment features (assignee FK, filters, PATCH endpoints, rate-limited operations)
+- [ ] Optional project-contact linking for client/stakeholder views
+- [ ] React UI extended with projects dashboard, task board filters, calendar overlays, and assignment UX
+- [ ] Documentation/diagram updates reflecting the expanded data model and ADR references
 
 ### CI/CD Security Stages
 - [ ] Phase 8: ZAP baseline/API scan in CI (fail on high/critical)

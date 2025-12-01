@@ -10,7 +10,7 @@
 | [ADR-0006](ADR-0006-docs-structure.md)                              | Documentation Structure                         | Accepted |
 | [ADR-0007](ADR-0007-task-entity-and-service.md)                     | Task Entity and Service                         | Accepted |
 | [ADR-0008](ADR-0008-ci-metrics-summary-script.md)                   | CI Metrics Summary Script                       | Accepted |
-| [ADR-0009](ADR-0009-test-strategy.md)                               | Test Strategy, Tooling, and Full Range Coverage | Accepted |
+| [ADR-0009](ADR-0009-test-strategy.md)                               | Test Strategy and Tooling                       | Accepted |
 | [ADR-0010](ADR-0010-task-validation-and-tests.md)                   | Task Validation and Test Coverage               | Accepted |
 | [ADR-0011](ADR-0011-taskservice-singleton-and-crud-tests.md)        | TaskService Singleton and CRUD Tests            | Accepted |
 | [ADR-0012](ADR-0012-appointment-validation-and-tests.md)            | Appointment Validation and Test Coverage        | Accepted |

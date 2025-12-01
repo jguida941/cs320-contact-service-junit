@@ -1,6 +1,6 @@
 # Appointment entity and service notes
 
-Related: [Appointment.java](../../src/main/java/contactapp/Appointment.java), [AppointmentService.java](../../src/main/java/contactapp/AppointmentService.java), ADR-0012, ADR-0013
+Related: [Appointment.java](../../../src/main/java/contactapp/Appointment.java), [AppointmentService.java](../../../src/main/java/contactapp/AppointmentService.java), [ADR-0012](../../adrs/ADR-0012-appointment-validation-and-tests.md), [ADR-0013](../../adrs/ADR-0013-appointmentservice-singleton-and-crud-tests.md)
 
 ## Why Appointment exists
 - Adds the appointment domain (id/date/description) alongside Contact/Task while reusing shared validation patterns.

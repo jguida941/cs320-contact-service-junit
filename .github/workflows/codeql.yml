@@ -2,7 +2,7 @@ name: CodeQL
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, original-cs320]
     paths-ignore:
       - '**/*.md'
       - '**/*.txt'
@@ -12,7 +12,7 @@ on:
       - '**/*.gif'
       - '**/*.svg'
   pull_request:
-    branches: [main, master]
+    branches: [main, master, original-cs320]
     paths-ignore:
       - '**/*.md'
       - '**/*.txt'

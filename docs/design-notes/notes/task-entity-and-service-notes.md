@@ -1,6 +1,6 @@
 # Task entity and service notes
 
-Related: [Task.java](../../src/main/java/contactapp/Task.java), [TaskService.java](../../src/main/java/contactapp/TaskService.java), ADR-0010, ADR-0011
+Related: [Task.java](../../../src/main/java/contactapp/Task.java), [TaskService.java](../../../src/main/java/contactapp/TaskService.java), [ADR-0010](../../adrs/ADR-0010-task-validation-and-tests.md), [ADR-0011](../../adrs/ADR-0011-taskservice-singleton-and-crud-tests.md)
 
 ## Why Task exists
 - Mirrors the Contact model for a simpler domain (id/name/description) and reuses the shared `Validation` helpers.

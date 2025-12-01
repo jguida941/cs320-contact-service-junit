@@ -24,3 +24,8 @@ Implements Task (id, name, description) and TaskService with a singleton store a
 - Reusing familiar patterns should minimize implementation risk and keep code style uniform, but we must ensure Task-specific constraints (max lengths) are well-covered by tests.
 - Singleton service plus shared Validation keeps footprint small but requires diligent testing to avoid cross-test contamination; `clearAllTasks()` must be used in tests.
 - Additional tooling gates (mutation, CodeQL, Dependency Check) will extend CI time; plan the schedule accordingly.
+
+## Alternatives considered
+1. **Separate TaskValidation class** – Rejected; shared `Validation` already handles string length and not-blank checks, so duplicating would add drift risk without benefit.
+2. **Non-singleton TaskService** – Rejected; singleton mirrors ContactService, simplifies state management, and matches milestone requirements for in-memory storage.
+3. **Mutable task IDs** – Rejected; immutable IDs keep map keys stable and align with Contact precedent.

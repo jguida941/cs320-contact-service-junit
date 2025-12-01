@@ -1,14 +1,14 @@
-# CS320 Milestone 1 - Contact Service
-[![Java CI](https://img.shields.io/github/actions/workflow/status/jguida941/contact-service-junit/java-ci.yml?branch=master&label=Java%20CI&style=for-the-badge&logo=githubactions&logoColor=white&color=16A34A)](https://github.com/jguida941/contact-service-junit/actions/workflows/java-ci.yml)
-[![CodeQL](https://img.shields.io/github/actions/workflow/status/jguida941/contact-service-junit/codeql.yml?branch=master&label=CodeQL&style=for-the-badge&logo=github&logoColor=white&color=16A34A)](https://github.com/jguida941/contact-service-junit/actions/workflows/codeql.yml)
-[![Codecov](https://img.shields.io/codecov/c/github/jguida941/contact-service-junit/master?label=Codecov&style=for-the-badge&logo=codecov&logoColor=white&color=CA8A04)](https://codecov.io/gh/jguida941/contact-service-junit)
-[![JaCoCo](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-service-junit/master/badges/jacoco.json&style=for-the-badge)](#qa-summary)
-[![PITest](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-service-junit/master/badges/mutation.json&style=for-the-badge)](#qa-summary)
-[![SpotBugs](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-service-junit/master/badges/spotbugs.json&style=for-the-badge)](#static-analysis--quality-gates)
-[![OWASP Dependency-Check](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-service-junit/master/badges/dependency.json&style=for-the-badge)](#static-analysis--quality-gates)
+# Contact, Task, and Appointment Service (Original)
+[![Java CI](https://img.shields.io/github/actions/workflow/status/jguida941/contact-suite-spring-react/java-ci.yml?branch=original-cs320&label=Java%20CI&style=for-the-badge&logo=githubactions&logoColor=white&color=16A34A)](https://github.com/jguida941/contact-suite-spring-react/actions/workflows/java-ci.yml?query=branch%3Aoriginal-cs320)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/jguida941/contact-suite-spring-react/codeql.yml?branch=original-cs320&label=CodeQL&style=for-the-badge&logo=github&logoColor=white&color=16A34A)](https://github.com/jguida941/contact-suite-spring-react/actions/workflows/codeql.yml?query=branch%3Aoriginal-cs320)
+[![Codecov](https://img.shields.io/codecov/c/github/jguida941/contact-suite-spring-react/original-cs320?label=Codecov&style=for-the-badge&logo=codecov&logoColor=white&color=CA8A04)](https://app.codecov.io/gh/jguida941/contact-suite-spring-react/tree/original-cs320)
+[![JaCoCo](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-suite-spring-react/original-cs320/badges/jacoco.json&style=for-the-badge)](#qa-summary)
+[![PITest](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-suite-spring-react/original-cs320/badges/mutation.json&style=for-the-badge)](#qa-summary)
+[![SpotBugs](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-suite-spring-react/original-cs320/badges/spotbugs.json&style=for-the-badge)](#static-analysis--quality-gates)
+[![OWASP Dependency-Check](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-suite-spring-react/original-cs320/badges/dependency.json&style=for-the-badge)](#static-analysis--quality-gates)
 [![License](https://img.shields.io/badge/License-MIT-1D4ED8?style=for-the-badge)](LICENSE)
 
-Small Java project for the CS320 Contact Service milestone, now expanded to Task and Appointment. The work breaks down into four pieces:
+Small Java project for CS320, now expanded to Task and Appointment. The work breaks down into four pieces:
 1. Build the `Contact` and `ContactService` classes exactly as described in the requirements.
 2. Prove every rule with unit tests (length limits, null checks, unique IDs, and add/update/delete behavior) using the shared `Validation` helper so exceptions surface clear messages.
 3. Mirror the same patterns for the `Task` entity/service (ID/name/description) so both domains share validation, atomic updates, and singleton storage.
@@ -30,9 +30,12 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 - [Self-Hosted Mutation Runner Setup](#self-hosted-mutation-runner-setup)
 
 ## Getting Started
-1. Install Java 17 and Apache Maven (3.9+).
+1. Install Java 17+ (tested with 17 and 21) and Apache Maven (3.9+).
 2. Run `mvn verify` from the project root to compile everything, execute the JUnit suite, and run Checkstyle/SpotBugs/JaCoCo quality gates.
 3. Open the folder in IntelliJ/VS Code if you want IDE assistance—the Maven project model is auto-detected.
+4. *(Optional)* Install Node.js 20+ to build and view the interactive QA dashboard locally.
+
+> **Note:** This milestone uses in-memory storage (`ConcurrentHashMap`); data does not persist between runs. Persistence is documented as a future extension point in the architecture notes.
 
 ## Folder Highlights
 | Path                                                                                                                 | Description                                                                                     |
@@ -102,7 +105,7 @@ Everything is packaged under `contactapp`; production classes live in `src/main/
 | delete    | O(1)    | O(n)  | O(1)  |
 - This strategy meets the course requirements while documenting the upgrade path (DAO, repository pattern, etc.).
 
-  <br>
+<br>
 
 ## [Contact.java](src/main/java/contactapp/Contact.java) / [ContactTest.java](src/test/java/contactapp/ContactTest.java)
 
@@ -447,6 +450,8 @@ flowchart TD
 - `testSetDescriptionValidation` covers invalid description setter inputs.
 - `testUpdateRejectsInvalidValuesAtomically` enumerates invalid update inputs and asserts state remains unchanged.
 
+<br>
+
 ## [AppointmentService.java](src/main/java/contactapp/AppointmentService.java) / [AppointmentServiceTest.java](src/test/java/contactapp/AppointmentServiceTest.java)
 
 ### Service Snapshot
@@ -561,7 +566,7 @@ mvn spotbugs:gui
 > CI already runs SpotBugs inside `mvn verify`; these commands help when iterating locally.
 
 ## Sonatype OSS Index (optional)
-Dependency-Check also pings the Sonatype OSS Index service. When requests are anonymous the analyzer often rate-limits, which is why CI prints warnings like “An error occurred while analyzing … (Sonatype OSS Index Analyzer)”. To receive full results:
+Dependency-Check also pings the Sonatype OSS Index service. When requests are anonymous, the analyzer often rate-limits, which is why CI prints warnings like "An error occurred while analyzing … (Sonatype OSS Index Analyzer)". To receive full results:
 1. Create a free account at [ossindex.sonatype.org](https://ossindex.sonatype.org/) and generate an API token.
 2. Add the credentials to your Maven `settings.xml`:
    ```xml
@@ -595,6 +600,7 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 ### Local Command Cheat Sheet
 | Command                                                   | Purpose                                                                                  |
 |-----------------------------------------------------------|------------------------------------------------------------------------------------------|
+| `mvn test`                                                | Quick unit tests only (no quality gates).                                                |
 | `mvn verify`                                              | Full build: compile, unit tests, Checkstyle, SpotBugs, JaCoCo, PITest, Dependency-Check. |
 | `mvn -Ddependency.check.skip=true -Dpit.skip=true verify` | Fast local build when Dependency-Check feed is slow/unavailable.                         |
 | `mvn spotbugs:check`                                      | Run only SpotBugs and fail on findings.                                                  |
@@ -630,7 +636,7 @@ If you skip these steps, the OSS Index analyzer simply logs warnings while the r
 - The `release-artifacts` job is intentionally gated with `if: github.event_name == 'release' && github.event.action == 'published'`, so you will see it marked as “skipped” on normal pushes or pull requests. It only runs when a GitHub release/tag is published.
 
 ### Coverage Publishing (Codecov)
-- After JaCoCo generates `target/site/jacoco/jacoco.xml`, the workflow uploads it to [Codecov](https://codecov.io/gh/jguida941/contact-service-junit) so the coverage badge stays current.
+- After JaCoCo generates `target/site/jacoco/jacoco.xml`, the workflow uploads it to [Codecov](https://codecov.io/gh/jguida941/contact-suite-spring-react) so the coverage badge stays current.
 - Setup steps (once per repository):
   1. Sign in to Codecov with GitHub and add this repo.
   2. Generate a repository token in Codecov and save it as the GitHub secret `CODECOV_TOKEN`.
@@ -672,7 +678,9 @@ Each GitHub Actions matrix job writes a QA table (tests, coverage, mutation scor
 
 ## GitHub Actions QA Metrics Table
 
-<img width="1271" height="970" alt="Screenshot 2025-11-20 at 4 41 19 AM" src="https://github.com/user-attachments/assets/69495c27-8e44-4383-8a41-192543384526" />
+<img width="843" height="760" alt="Screenshot 2025-12-01 at 1 40 45 AM" src="https://github.com/user-attachments/assets/4c021e64-1946-484f-91f7-9c12ffd75952" />
+
+
 
 ## QA Console React Dashboard
 
@@ -686,10 +694,11 @@ python serve_quality_dashboard.py --path site
 
 (If the artifact retains the `target/site` structure, change `--path site` to `--path target/site`.) <br>
 Modern browsers block ES modules when loaded directly from `file://` URLs <br>
-So the helper launches a tiny HTTP server, opens `http://localhost:<port>/qa-dashboard/index.html`, and serves the React dashboard with the correct `metrics.json`. <br> 
+So the helper launches a tiny HTTP server, opens `http://localhost:<port>/qa-dashboard/index.html`, and serves the React dashboard with the correct `metrics.json`. <br>
 You’ll see the same KPIs, inline progress bars, and quick links over to the JaCoCo, SpotBugs, Dependency-Check, and PITest HTML reports, all sourced from the exact results of that build.
 
-<img width="1029" height="769" alt="Screenshot 2025-11-19 at 10 07 25 PM" src="https://github.com/user-attachments/assets/d1fc1a3e-844d-4a7a-9e84-d78abcb248f3" />
+<img width="1676" height="950" alt="Screenshot 2025-12-01 at 1 39 06 AM" src="https://github.com/user-attachments/assets/21863e81-f12f-43bb-bd95-1693594cbe42" />
+
 
 <br>
 
@@ -698,16 +707,16 @@ You’ll see the same KPIs, inline progress bars, and quick links over to the Ja
 <table>
   <tr>
     <td width="300" valign="middle">
-      <a href="https://app.codecov.io/gh/jguida941/contact-service-junit">
+      <a href="https://app.codecov.io/gh/jguida941/contact-suite-spring-react/tree/original-cs320">
         <img
-          src="https://codecov.io/gh/jguida941/contact-service-junit/graphs/sunburst.svg?token=WUWITZ797X"
+          src="https://codecov.io/gh/jguida941/contact-suite-spring-react/branch/original-cs320/graphs/sunburst.svg?token=WUWITZ797X"
           alt="Codecov coverage sunburst"
         />
       </a>
     </td>
     <td valign="middle">
       The sunburst shows which packages and classes are covered by tests.<br/>
-      <a href="https://app.codecov.io/gh/jguida941/contact-service-junit">
+      <a href="https://app.codecov.io/gh/jguida941/contact-suite-spring-react/tree/original-cs320">
         Open the full-screen interactive sunburst on Codecov »
       </a>
     </td>
@@ -739,7 +748,7 @@ You’ll see the same KPIs, inline progress bars, and quick links over to the Ja
   tar xzf ./actions-runner-osx-*.tar.gz
 
   # Configure the runner (get token from GitHub UI)
-  ./config.sh --url https://github.com/jguida941/contact-service-junit --token YOUR_TOKEN_FROM_GITHUB
+  ./config.sh --url https://github.com/jguida941/contact-suite-spring-react --token YOUR_TOKEN_FROM_GITHUB
 
   # Set MAVEN_OPTS permanently (choose based on your shell)
   # For zsh (default on modern macOS):

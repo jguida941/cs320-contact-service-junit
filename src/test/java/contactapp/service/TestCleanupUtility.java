@@ -161,6 +161,7 @@ public class TestCleanupUtility {
      * Complete cleanup + setup in one call.
      * Equivalent to: cleanAll() + setupFreshTestUser()
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void resetTestEnvironment() {
         cleanAll();
         setupFreshTestUser();

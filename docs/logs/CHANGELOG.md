@@ -9,6 +9,9 @@ All notable changes to this project will be documented here. Follow the
 - **RateLimitingFilter log sanitizer helper restored (2025-12-02)**:
   - Reintroduced `getSafeLogValue` with whitelist/length guards and shared it across log helpers
   - Fixes `RateLimitingFilterTest` reflection coverage and keeps log injection defenses centralized
+- **TestCleanupUtility transactional reset (2025-12-02)**:
+  - Annotated `resetTestEnvironment()` with `REQUIRES_NEW` so cleanup flushes run inside a real transaction
+  - Prevents `TransactionRequiredException` during pre-test cleanup in service tests
 
 - **Parallel Test Execution Fix (2025-12-02)**:
   - Disabled JUnit Platform parallel execution to prevent singleton state collisions in @Isolated tests

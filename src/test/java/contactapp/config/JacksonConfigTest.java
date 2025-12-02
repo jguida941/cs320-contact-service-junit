@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,16 +15,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class JacksonConfigTest {
 
-    private JacksonConfig config;
+    private ObjectMapper mapper;
 
     @BeforeEach
     void setUp() {
-        config = new JacksonConfig();
+        JacksonConfig config = new JacksonConfig();
+        Jackson2ObjectMapperBuilderCustomizer customizer = config.strictCoercionCustomizer();
+        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+        customizer.customize(builder);
+        mapper = builder.build();
     }
 
     @Test
-    void objectMapperRejectsBooleanCoercion() throws Exception {
-        ObjectMapper mapper = config.objectMapper(new Jackson2ObjectMapperBuilder());
+    void objectMapperRejectsBooleanCoercion() {
         assertThat(mapper).isNotNull();
 
         String payload = """
@@ -35,8 +39,7 @@ class JacksonConfigTest {
     }
 
     @Test
-    void objectMapperRejectsNumericCoercion() throws Exception {
-        ObjectMapper mapper = config.objectMapper(new Jackson2ObjectMapperBuilder());
+    void objectMapperRejectsNumericCoercion() {
         String payload = """
                 {"value": 42}
                 """;

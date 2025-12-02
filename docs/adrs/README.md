@@ -46,3 +46,5 @@
 | [ADR-0042](ADR-0042-docker-containerization-strategy.md)            | Docker Containerization Strategy                | Accepted |
 | [ADR-0043](ADR-0043-httponly-cookie-authentication.md)              | HttpOnly Cookie Authentication                  | Accepted |
 | [ADR-0044](ADR-0044-optimistic-locking.md)                          | Optimistic Locking for Concurrent Updates       | Accepted |
+| [ADR-0045](ADR-0045-project-task-tracker-evolution.md)              | Project/Task Tracker Evolution (6 Phases)       | Accepted |
+| [ADR-0046](ADR-0046-test-coverage-improvements.md)                  | Test Coverage Improvements - Store and Mapper   | Accepted |

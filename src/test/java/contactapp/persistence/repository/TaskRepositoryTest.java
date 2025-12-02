@@ -1,15 +1,16 @@
 package contactapp.persistence.repository;
 
+import contactapp.domain.TaskStatus;
 import contactapp.persistence.entity.TaskEntity;
 import contactapp.security.UserRepository;
 import contactapp.support.TestUserFactory;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -20,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ImportAutoConfiguration(FlywayAutoConfiguration.class)
 class TaskRepositoryTest {
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -31,7 +31,8 @@ class TaskRepositoryTest {
     @Test
     void saveAndFindTask() {
         var owner = userRepository.save(TestUserFactory.createUser("task-repo"));
-        TaskEntity entity = new TaskEntity("task-101", "Repo Task", "Persist via repository", owner);
+        TaskEntity entity = new TaskEntity("task-101", "Repo Task", "Persist via repository",
+                TaskStatus.TODO, LocalDate.now().plusDays(7), owner);
 
         repository.saveAndFlush(entity);
 
@@ -47,8 +48,10 @@ class TaskRepositoryTest {
         var ownerOne = userRepository.save(TestUserFactory.createUser("task-owner-1"));
         var ownerTwo = userRepository.save(TestUserFactory.createUser("task-owner-2"));
 
-        repository.saveAndFlush(new TaskEntity("shrd-task", "First", "Desc", ownerOne));
-        repository.saveAndFlush(new TaskEntity("shrd-task", "Second", "Desc", ownerTwo));
+        repository.saveAndFlush(new TaskEntity("shrd-task", "First", "Desc",
+                TaskStatus.TODO, null, ownerOne));
+        repository.saveAndFlush(new TaskEntity("shrd-task", "Second", "Desc",
+                TaskStatus.TODO, null, ownerTwo));
 
         assertThat(repository.findByTaskIdAndUser("shrd-task", ownerOne)).isPresent();
         assertThat(repository.findByTaskIdAndUser("shrd-task", ownerTwo)).isPresent();
@@ -57,10 +60,12 @@ class TaskRepositoryTest {
     @Test
     void duplicateTaskIdForSameUserFails() {
         var owner = userRepository.save(TestUserFactory.createUser("task-owner-dup"));
-        repository.saveAndFlush(new TaskEntity("uniq-task", "One", "Desc", owner));
+        repository.saveAndFlush(new TaskEntity("uniq-task", "One", "Desc",
+                TaskStatus.TODO, null, owner));
 
         assertThatThrownBy(() -> repository.saveAndFlush(
-                new TaskEntity("uniq-task", "Two", "Desc", owner)))
+                new TaskEntity("uniq-task", "Two", "Desc",
+                        TaskStatus.TODO, null, owner)))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 }

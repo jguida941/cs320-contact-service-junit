@@ -108,8 +108,12 @@ public class TaskController {
         final Task task = new Task(
                 request.id(),
                 request.name(),
-                request.description()
+                request.description(),
+                request.status(),
+                request.dueDate()
         );
+        task.setProjectId(request.projectId());
+        task.setAssigneeId(request.assigneeId());
 
         taskService.addTask(task);
 
@@ -122,17 +126,75 @@ public class TaskController {
      * <p>For regular users, returns only their tasks.
      * For ADMIN users with {@code ?all=true}, returns all tasks across all users.
      *
+     * <p>Supports filtering by:
+     * <ul>
+     *   <li>{@code ?status=TODO|IN_PROGRESS|DONE} - filter by status</li>
+     *   <li>{@code ?dueBefore=2024-12-31} - filter by due date</li>
+     *   <li>{@code ?overdue=true} - show only overdue tasks</li>
+     *   <li>{@code ?projectId=proj-1} - filter by associated project</li>
+     *   <li>{@code ?assigneeId=123} - filter by assignee user ID</li>
+     * </ul>
+     *
      * @param all if true and user is ADMIN, returns all tasks across all users
+     * @param status filter by task status
+     * @param dueBefore filter tasks due before this date
+     * @param overdue if true, show only overdue tasks
+     * @param projectId filter by associated project ID
+     * @param assigneeId filter by assignee user ID
      * @return list of tasks
      */
     @Operation(summary = "Get all tasks",
             description = "Returns tasks for the authenticated user. "
-                    + "ADMIN users can pass ?all=true to see all tasks across all users.")
+                    + "ADMIN users can pass ?all=true to see all tasks across all users. "
+                    + "Supports filtering by status, dueBefore date, overdue flag, projectId, and assigneeId.")
     @ApiResponse(responseCode = "200", description = "List of tasks")
     @GetMapping
     public List<TaskResponse> getAll(
             @Parameter(description = "If true and user is ADMIN, returns all tasks")
-            @RequestParam(required = false, defaultValue = "false") final boolean all) {
+            @RequestParam(required = false, defaultValue = "false") final boolean all,
+            @Parameter(description = "Filter by task status")
+            @RequestParam(required = false) final contactapp.domain.TaskStatus status,
+            @Parameter(description = "Filter tasks due before this date (ISO 8601 format: YYYY-MM-DD)")
+            @RequestParam(required = false) final java.time.LocalDate dueBefore,
+            @Parameter(description = "If true, show only overdue tasks")
+            @RequestParam(required = false, defaultValue = "false") final boolean overdue,
+            @Parameter(description = "Filter by associated project ID")
+            @RequestParam(required = false) @Size(max = MAX_ID_LENGTH) final String projectId,
+            @Parameter(description = "Filter by assignee user ID")
+            @RequestParam(required = false) final Long assigneeId) {
+
+        // Handle filtering
+        if (status != null) {
+            return taskService.getTasksByStatus(status).stream()
+                    .map(TaskResponse::from)
+                    .toList();
+        }
+
+        if (dueBefore != null) {
+            return taskService.getTasksDueBefore(dueBefore).stream()
+                    .map(TaskResponse::from)
+                    .toList();
+        }
+
+        if (overdue) {
+            return taskService.getOverdueTasks().stream()
+                    .map(TaskResponse::from)
+                    .toList();
+        }
+
+        if (projectId != null) {
+            return taskService.getTasksByProjectId(projectId).stream()
+                    .map(TaskResponse::from)
+                    .toList();
+        }
+
+        if (assigneeId != null) {
+            return taskService.getTasksByAssigneeId(assigneeId).stream()
+                    .map(TaskResponse::from)
+                    .toList();
+        }
+
+        // No filters - return all tasks
         if (all) {
             // Verify caller has ADMIN role before returning all users' data
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -212,7 +274,11 @@ public class TaskController {
         if (!taskService.updateTask(
                 id,
                 request.name(),
-                request.description())) {
+                request.description(),
+                request.status(),
+                request.dueDate(),
+                request.projectId(),
+                request.assigneeId())) {
             throw new ResourceNotFoundException("Task not found: " + id);
         }
 

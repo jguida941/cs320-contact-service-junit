@@ -55,6 +55,12 @@ public class AppointmentEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "project_id", length = Validation.MAX_ID_LENGTH)
+    private String projectId;
+
+    @Column(name = "task_id", length = Validation.MAX_ID_LENGTH)
+    private String taskId;
+
     protected AppointmentEntity() {
         // JPA only
     }
@@ -108,5 +114,21 @@ public class AppointmentEntity {
 
     public Long getVersion() {
         return version;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(final String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(final String taskId) {
+        this.taskId = taskId;
     }
 }

@@ -2,16 +2,20 @@ package contactapp.persistence.store;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import contactapp.domain.Task;
+import contactapp.domain.TaskStatus;
 import contactapp.persistence.entity.TaskEntity;
 import contactapp.persistence.mapper.TaskMapper;
 import contactapp.persistence.repository.TaskRepository;
 import contactapp.security.User;
 import contactapp.support.TestUserFactory;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -264,5 +268,116 @@ class JpaTaskStoreTest {
         store.deleteAll();
 
         verify(repository).deleteAll();
+    }
+
+    // ==================== Phase 2 Status Query Tests ====================
+
+    @Test
+    void save_withStatusField() {
+        final User owner = TestUserFactory.createUser("task-store-status");
+        final Task task = new Task("t-status", "Status Task", "With status",
+                TaskStatus.IN_PROGRESS, null);
+        final TaskEntity entity = mock(TaskEntity.class);
+        when(repository.findByTaskIdAndUser("t-status", owner)).thenReturn(Optional.empty());
+        when(mapper.toEntity(task, owner)).thenReturn(entity);
+
+        store.save(task, owner);
+
+        verify(repository).save(entity);
+    }
+
+    @Test
+    void save_withDueDate() {
+        final User owner = TestUserFactory.createUser("task-store-due");
+        final LocalDate dueDate = LocalDate.of(2026, 1, 15);
+        final Task task = new Task("t-due", "Due Task", "With due date",
+                TaskStatus.TODO, dueDate);
+        final TaskEntity entity = mock(TaskEntity.class);
+        when(repository.findByTaskIdAndUser("t-due", owner)).thenReturn(Optional.empty());
+        when(mapper.toEntity(task, owner)).thenReturn(entity);
+
+        store.save(task, owner);
+
+        verify(repository).save(entity);
+    }
+
+    @Test
+    void insert_withPhase2Fields() {
+        final User owner = TestUserFactory.createUser("task-store-insert-p2");
+        final LocalDate dueDate = LocalDate.of(2026, 3, 1);
+        final Task task = new Task("t-p2", "Phase 2 Task", "With all fields",
+                TaskStatus.DONE, dueDate);
+        final TaskEntity entity = mock(TaskEntity.class);
+        when(mapper.toEntity(task, owner)).thenReturn(entity);
+
+        store.insert(task, owner);
+
+        verify(repository).save(entity);
+    }
+
+    @Test
+    void findById_returnsTaskWithStatus() {
+        final User owner = TestUserFactory.createUser("task-store-find-status");
+        final TaskEntity entity = mock(TaskEntity.class);
+        final Task domain = new Task("t-6", "Task", "Desc",
+                TaskStatus.IN_PROGRESS, null);
+        when(repository.findByTaskIdAndUser("t-6", owner)).thenReturn(Optional.of(entity));
+        when(mapper.toDomain(entity)).thenReturn(domain);
+
+        Optional<Task> result = store.findById("t-6", owner);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void findById_returnsTaskWithDueDate() {
+        final User owner = TestUserFactory.createUser("task-store-find-due");
+        final LocalDate dueDate = LocalDate.of(2026, 2, 14);
+        final TaskEntity entity = mock(TaskEntity.class);
+        final Task domain = new Task("t-7", "Task", "Desc",
+                TaskStatus.TODO, dueDate);
+        when(repository.findByTaskIdAndUser("t-7", owner)).thenReturn(Optional.of(entity));
+        when(mapper.toDomain(entity)).thenReturn(domain);
+
+        Optional<Task> result = store.findById("t-7", owner);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getDueDate()).isEqualTo(dueDate);
+    }
+
+    @Test
+    void save_updatesStatusAndDueDate() {
+        final User owner = TestUserFactory.createUser("task-store-update-p2");
+        final LocalDate newDate = LocalDate.of(2026, 6, 1);
+        final Task task = new Task("t-upd-p2", "Updated", "New Desc",
+                TaskStatus.DONE, newDate);
+        final TaskEntity existingEntity = mock(TaskEntity.class);
+        when(repository.findByTaskIdAndUser("t-upd-p2", owner)).thenReturn(Optional.of(existingEntity));
+
+        store.save(task, owner);
+
+        verify(mapper).updateEntity(existingEntity, task);
+        verify(repository).save(existingEntity);
+    }
+
+    @Test
+    void findAll_returnsTasksWithPhase2Fields() {
+        final User owner = TestUserFactory.createUser("task-store-findall-p2");
+        final TaskEntity entity1 = mock(TaskEntity.class);
+        final TaskEntity entity2 = mock(TaskEntity.class);
+        final Task task1 = new Task("t-1", "Task1", "Desc1",
+                TaskStatus.TODO, LocalDate.of(2026, 1, 1));
+        final Task task2 = new Task("t-2", "Task2", "Desc2",
+                TaskStatus.IN_PROGRESS, LocalDate.of(2026, 2, 1));
+        when(repository.findByUser(owner)).thenReturn(List.of(entity1, entity2));
+        when(mapper.toDomain(entity1)).thenReturn(task1);
+        when(mapper.toDomain(entity2)).thenReturn(task2);
+
+        final List<Task> result = store.findAll(owner);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getStatus()).isEqualTo(TaskStatus.TODO);
+        assertThat(result.get(1).getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
     }
 }

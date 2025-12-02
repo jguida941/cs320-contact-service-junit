@@ -1,8 +1,11 @@
 package contactapp.persistence.entity;
 
+import contactapp.domain.TaskStatus;
 import contactapp.support.TestUserFactory;
 import contactapp.security.User;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,11 +17,15 @@ class TaskEntityTest {
     @Test
     void constructorInitializesAllFields() {
         User owner = TestUserFactory.createUser("task-entity-user");
-        TaskEntity entity = new TaskEntity("T-5", "Write docs", "Explain persistence layer", owner);
+        LocalDate dueDate = LocalDate.now().plusDays(7);
+        TaskEntity entity = new TaskEntity("T-5", "Write docs", "Explain persistence layer",
+                TaskStatus.TODO, dueDate, owner);
 
         assertThat(entity.getTaskId()).isEqualTo("T-5");
         assertThat(entity.getName()).isEqualTo("Write docs");
         assertThat(entity.getDescription()).isEqualTo("Explain persistence layer");
+        assertThat(entity.getStatus()).isEqualTo(TaskStatus.TODO);
+        assertThat(entity.getDueDate()).isEqualTo(dueDate);
         assertThat(entity.getUser()).isEqualTo(owner);
     }
 

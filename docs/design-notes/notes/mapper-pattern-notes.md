@@ -47,5 +47,43 @@ public class Contact {
 
 Hibernate creates objects through the no-arg constructor, bypassing validation entirely.
 
+## Reconstitution Constructor Pattern (Task)
+Task has timestamps (createdAt, updatedAt) that must stay in sync between domain and entity layers.
+
+Standard constructor:
+```java
+public Task(String taskId, String name, String description,
+            TaskStatus status, LocalDate dueDate) {
+    // Sets createdAt = updatedAt = Instant.now()
+}
+```
+
+Reconstitution constructor (for loading from persistence):
+```java
+public Task(String taskId, String name, String description,
+            TaskStatus status, LocalDate dueDate,
+            Instant createdAt, Instant updatedAt) {
+    // Accepts timestamps from entity, preserves original values
+}
+```
+
+TaskMapper.toDomain() uses the 7-arg constructor:
+```java
+public Task toDomain(TaskEntity entity) {
+    return new Task(
+        entity.getTaskId(),
+        entity.getName(),
+        entity.getDescription(),
+        entity.getStatus(),
+        entity.getDueDate(),
+        entity.getCreatedAt(),    // From entity!
+        entity.getUpdatedAt());   // From entity!
+}
+```
+
+This prevents timestamp drift. Without this, loading would generate fresh timestamps that don't match the entity's persisted values.
+
+Contact and Appointment don't track timestamps, so they use simpler constructors.
+
 ## Simple explanation
-"Domain stays pure, entity handles database stuff, mapper bridges them. Loading from DB still validates because mapper calls the domain constructor."
+"Domain stays pure, entity handles database stuff, mapper bridges them. Loading from DB still validates because mapper calls the domain constructor. For Task, a special reconstitution constructor preserves timestamps from the entity."

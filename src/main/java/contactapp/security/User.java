@@ -178,8 +178,7 @@ public class User implements UserDetails {
     }
 
     private static String normalizeUsername(final String username) {
-        Validation.validateLength(username, "Username", 1, Validation.MAX_USERNAME_LENGTH);
-        return username.trim();
+        return Validation.validateTrimmedLength(username, "Username", 1, Validation.MAX_USERNAME_LENGTH);
     }
 
     private static String normalizeEmail(final String email) {
@@ -197,9 +196,6 @@ public class User implements UserDetails {
     }
 
     private static Role requireRole(final Role role) {
-        if (role == null) {
-            throw new IllegalArgumentException("Role must not be null");
-        }
-        return role;
+        return Validation.validateNotNull(role, "Role");
     }
 }

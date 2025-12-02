@@ -16,7 +16,7 @@ The challenge is to introduce Spring Boot infrastructure without breaking existi
 ## Decision
 
 ### Spring Boot Version
-Use Spring Boot 3.4.12 (latest 3.4.x patch) via parent POM to inherit dependency management, plugin configuration, and sensible defaults.
+Use Spring Boot 4.0.0 via parent POM to inherit dependency management, plugin configuration, and sensible defaults.
 
 ### Package Structure
 Reorganize into layered architecture:

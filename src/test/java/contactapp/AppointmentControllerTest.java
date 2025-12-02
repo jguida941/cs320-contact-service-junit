@@ -1,20 +1,19 @@
 package contactapp;
 
+import contactapp.config.RateLimitingFilter;
 import contactapp.domain.Appointment;
 import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import contactapp.security.WithMockAppUser;
 import contactapp.service.AppointmentService;
+import contactapp.support.SecuredMockMvcTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -45,19 +44,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *   <li>Duplicate ID conflicts (409)</li>
  * </ul>
  */
-@SpringBootTest
-@AutoConfigureMockMvc
 @WithMockAppUser
-class AppointmentControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+class AppointmentControllerTest extends SecuredMockMvcTest {
 
     @Autowired
     private AppointmentService appointmentService;
 
     @Autowired
     private TestUserSetup testUserSetup;
+
+    @Autowired
+    private RateLimitingFilter rateLimitingFilter;
 
     /** Future date for valid appointments (1 day from now). */
     private String futureDate;
@@ -72,6 +69,8 @@ class AppointmentControllerTest {
     @BeforeEach
     void setUp() throws Exception {
         testUserSetup.setupTestUser();
+        // Clear rate limit buckets between tests to prevent 429 collisions
+        rateLimitingFilter.clearBuckets();
         // Clear data before each test for isolation using reflection
         // (clearAllAppointments is package-private in contactapp.service)
         final Method clearMethod = AppointmentService.class.getDeclaredMethod("clearAllAppointments");

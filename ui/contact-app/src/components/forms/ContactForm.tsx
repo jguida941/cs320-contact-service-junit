@@ -33,7 +33,11 @@ export function ContactForm({ contact, onSubmit, onCancel, isLoading }: ContactF
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-4"
+      aria-label={isEdit ? 'Edit contact form' : 'Create contact form'}
+    >
       {isEdit ? (
         // Hidden input to include ID in edit submissions
         <input type="hidden" {...register('id')} />
@@ -45,9 +49,13 @@ export function ContactForm({ contact, onSubmit, onCancel, isLoading }: ContactF
             {...register('id')}
             placeholder="Unique ID (max 10 chars)"
             maxLength={ValidationLimits.MAX_ID_LENGTH}
+            aria-invalid={errors.id ? 'true' : 'false'}
+            aria-describedby={errors.id ? 'id-error' : undefined}
           />
           {errors.id && (
-            <p className="text-sm text-destructive">{errors.id.message}</p>
+            <p id="id-error" className="text-sm text-destructive" role="alert">
+              {errors.id.message}
+            </p>
           )}
         </div>
       )}
@@ -59,9 +67,14 @@ export function ContactForm({ contact, onSubmit, onCancel, isLoading }: ContactF
           {...register('firstName')}
           placeholder="Enter first name"
           maxLength={ValidationLimits.MAX_NAME_LENGTH}
+          aria-invalid={errors.firstName ? 'true' : 'false'}
+          aria-describedby={errors.firstName ? 'firstName-error' : undefined}
+          required
         />
         {errors.firstName && (
-          <p className="text-sm text-destructive">{errors.firstName.message}</p>
+          <p id="firstName-error" className="text-sm text-destructive" role="alert">
+            {errors.firstName.message}
+          </p>
         )}
       </div>
 
@@ -72,9 +85,14 @@ export function ContactForm({ contact, onSubmit, onCancel, isLoading }: ContactF
           {...register('lastName')}
           placeholder="Enter last name"
           maxLength={ValidationLimits.MAX_NAME_LENGTH}
+          aria-invalid={errors.lastName ? 'true' : 'false'}
+          aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+          required
         />
         {errors.lastName && (
-          <p className="text-sm text-destructive">{errors.lastName.message}</p>
+          <p id="lastName-error" className="text-sm text-destructive" role="alert">
+            {errors.lastName.message}
+          </p>
         )}
       </div>
 
@@ -82,14 +100,20 @@ export function ContactForm({ contact, onSubmit, onCancel, isLoading }: ContactF
         <Label htmlFor="phone">Phone</Label>
         <Input
           id="phone"
+          type="tel"
           {...register('phone')}
           placeholder="1234567890"
           maxLength={ValidationLimits.PHONE_LENGTH}
+          aria-invalid={errors.phone ? 'true' : 'false'}
+          aria-describedby={errors.phone ? 'phone-error phone-help' : 'phone-help'}
+          required
         />
         {errors.phone && (
-          <p className="text-sm text-destructive">{errors.phone.message}</p>
+          <p id="phone-error" className="text-sm text-destructive" role="alert">
+            {errors.phone.message}
+          </p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p id="phone-help" className="text-xs text-muted-foreground">
           Must be exactly {ValidationLimits.PHONE_LENGTH} digits
         </p>
       </div>
@@ -101,9 +125,14 @@ export function ContactForm({ contact, onSubmit, onCancel, isLoading }: ContactF
           {...register('address')}
           placeholder="Enter address"
           maxLength={ValidationLimits.MAX_ADDRESS_LENGTH}
+          aria-invalid={errors.address ? 'true' : 'false'}
+          aria-describedby={errors.address ? 'address-error' : undefined}
+          required
         />
         {errors.address && (
-          <p className="text-sm text-destructive">{errors.address.message}</p>
+          <p id="address-error" className="text-sm text-destructive" role="alert">
+            {errors.address.message}
+          </p>
         )}
       </div>
 

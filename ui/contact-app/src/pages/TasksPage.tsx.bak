@@ -1,0 +1,296 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Pencil, Trash2, CheckSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { useToast } from '@/hooks/useToast';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
+import { TaskForm } from '@/components/forms/TaskForm';
+import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
+import { tasksApi } from '@/lib/api';
+import type { Task, TaskRequest } from '@/lib/schemas';
+
+type SheetMode = 'view' | 'create' | 'edit';
+
+export function TasksPage() {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [sheetMode, setSheetMode] = useState<SheetMode>('view');
+  const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
+
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const { data: tasks = [], isLoading, error } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: tasksApi.getAll,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: tasksApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      closeSheet();
+      toast.success('Task created successfully');
+    },
+    onError: (error) => {
+      toast.error(error);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<TaskRequest> }) =>
+      tasksApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      closeSheet();
+      toast.success('Task updated successfully');
+    },
+    onError: (error) => {
+      toast.error(error);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: tasksApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      setDeleteTarget(null);
+      if (selectedTask?.id === deleteTarget?.id) {
+        closeSheet();
+      }
+      toast.success('Task deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(error);
+    },
+  });
+
+  const openCreateSheet = () => {
+    setSelectedTask(null);
+    setSheetMode('create');
+  };
+
+  const openEditSheet = (task: Task) => {
+    setSelectedTask(task);
+    setSheetMode('edit');
+  };
+
+  const openViewSheet = (task: Task) => {
+    setSelectedTask(task);
+    setSheetMode('view');
+  };
+
+  const closeSheet = () => {
+    setSelectedTask(null);
+    setSheetMode('view');
+  };
+
+  const handleCreate = (data: TaskRequest) => {
+    createMutation.mutate(data);
+  };
+
+  const handleUpdate = (data: TaskRequest) => {
+    if (selectedTask) {
+      updateMutation.mutate({ id: selectedTask.id, data });
+    }
+  };
+
+  const handleDelete = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate(deleteTarget.id);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-destructive">Failed to load tasks</p>
+      </div>
+    );
+  }
+
+  const isSheetOpen = sheetMode === 'create' || !!selectedTask;
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Tasks</h2>
+          <p className="text-muted-foreground">
+            Manage your tasks and to-do items.
+          </p>
+        </div>
+        <Button onClick={openCreateSheet}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Task
+        </Button>
+      </div>
+
+      {/* Table */}
+      {tasks.length === 0 && !isLoading ? (
+        <EmptyState
+          icon={CheckSquare}
+          title="No tasks yet"
+          description="Stay organized by creating your first task. Add tasks to keep track of your to-do items."
+          action={{
+            label: 'Add Task',
+            onClick: openCreateSheet,
+          }}
+        />
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : (
+                tasks.map((task) => (
+                <TableRow
+                  key={task.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => openViewSheet(task)}
+                >
+                  <TableCell>
+                    <Badge variant="outline">{task.id}</Badge>
+                  </TableCell>
+                  <TableCell className="font-medium">{task.name}</TableCell>
+                  <TableCell>{task.description}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEditSheet(task)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteTarget(task)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Create/Edit/View Sheet */}
+      <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>
+              {sheetMode === 'create'
+                ? 'New Task'
+                : sheetMode === 'edit'
+                ? 'Edit Task'
+                : 'Task Details'}
+            </SheetTitle>
+            <SheetDescription>
+              {sheetMode === 'create'
+                ? 'Add a new task to your list.'
+                : sheetMode === 'edit'
+                ? 'Update the task information.'
+                : 'View task information.'}
+            </SheetDescription>
+          </SheetHeader>
+
+          {sheetMode === 'create' && (
+            <div className="mt-6">
+              <TaskForm
+                onSubmit={handleCreate}
+                onCancel={closeSheet}
+                isLoading={createMutation.isPending}
+              />
+            </div>
+          )}
+
+          {sheetMode === 'edit' && selectedTask && (
+            <div className="mt-6">
+              <TaskForm
+                task={selectedTask}
+                onSubmit={handleUpdate}
+                onCancel={closeSheet}
+                isLoading={updateMutation.isPending}
+              />
+            </div>
+          )}
+
+          {sheetMode === 'view' && selectedTask && (
+            <div className="mt-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">ID</label>
+                <p className="text-sm">{selectedTask.id}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Name</label>
+                <p className="text-sm">{selectedTask.name}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Description</label>
+                <p className="text-sm">{selectedTask.description}</p>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button onClick={() => openEditSheet(selectedTask)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setDeleteTarget(selectedTask)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Task"
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        isLoading={deleteMutation.isPending}
+      />
+    </div>
+  );
+}

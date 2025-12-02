@@ -41,8 +41,13 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
       {/* Left side */}
       <div className="flex items-center gap-4">
         {showMenuButton && (
-          <Button variant="ghost" size="icon" onClick={onMenuClick}>
-            <Menu className="h-5 w-5" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMenuClick}
+            aria-label="Toggle navigation menu"
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Toggle menu</span>
           </Button>
         )}
@@ -50,13 +55,17 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
       </div>
 
       {/* Right side */}
-      <div className="flex items-center gap-2">
-        {/* Search trigger */}
+      <div className="flex items-center gap-2" role="toolbar" aria-label="Application controls">
+        {/* A11y: Search trigger with descriptive label */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Search className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Search (Ctrl+K)"
+              >
+                <Search className="h-4 w-4" aria-hidden="true" />
                 <span className="sr-only">Search</span>
               </Button>
             </TooltipTrigger>
@@ -66,15 +75,21 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
           </Tooltip>
         </TooltipProvider>
 
-        {/* Dark mode toggle */}
+        {/* A11y: Dark mode toggle with descriptive label and state */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleDarkMode}
+                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                aria-pressed={darkMode}
+              >
                 {darkMode ? (
-                  <Sun className="h-4 w-4" />
+                  <Sun className="h-4 w-4" aria-hidden="true" />
                 ) : (
-                  <Moon className="h-4 w-4" />
+                  <Moon className="h-4 w-4" aria-hidden="true" />
                 )}
                 <span className="sr-only">Toggle dark mode</span>
               </Button>
@@ -85,10 +100,15 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
           </Tooltip>
         </TooltipProvider>
 
-        {/* Theme selector */}
+        {/* A11y: Theme selector with descriptive label */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              aria-label={`Current theme: ${theme}. Click to change theme`}
+            >
               {theme.charAt(0).toUpperCase() + theme.slice(1)}
             </Button>
           </DropdownMenuTrigger>
@@ -100,6 +120,7 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
                 key={t}
                 onClick={() => setTheme(t)}
                 className={theme === t ? 'bg-accent' : ''}
+                aria-current={theme === t ? 'true' : undefined}
               >
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </DropdownMenuItem>
@@ -107,10 +128,15 @@ export function TopBar({ title, onMenuClick, showMenuButton = false }: TopBarPro
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Avatar */}
+        {/* A11y: User menu with descriptive label */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              aria-label={`User menu for ${profile.name}`}
+            >
               <Avatar className="h-8 w-8">
                 <AvatarFallback>{profile.initials}</AvatarFallback>
               </Avatar>

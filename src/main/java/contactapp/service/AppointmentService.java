@@ -199,6 +199,26 @@ public class AppointmentService {
             final String appointmentId,
             final Date appointmentDate,
             final String description) {
+        return updateAppointment(appointmentId, appointmentDate, description, null, null);
+    }
+
+    /**
+     * Updates an existing appointment's mutable fields for the authenticated user.
+     *
+     * @param appointmentId the id of the appointment to update
+     * @param appointmentDate new appointment date
+     * @param description new description
+     * @param projectId new project ID (nullable, can unlink from project)
+     * @param taskId new task ID (nullable, can unlink from task)
+     * @return true if the appointment exists and was updated, false if not found
+     * @throws IllegalArgumentException if any new field value is invalid
+     */
+    public boolean updateAppointment(
+            final String appointmentId,
+            final Date appointmentDate,
+            final String description,
+            final String projectId,
+            final String taskId) {
         final String normalizedId = normalizeAndValidateId(appointmentId);
 
         if (store instanceof JpaAppointmentStore) {
@@ -210,7 +230,7 @@ public class AppointmentService {
                 return false;
             }
             final Appointment existing = appointment.get();
-            existing.update(appointmentDate, description);
+            existing.update(appointmentDate, description, projectId, taskId);
             jpaStore.save(existing, currentUser);
             return true;
         }
@@ -221,7 +241,7 @@ public class AppointmentService {
             return false;
         }
         final Appointment existing = appointment.get();
-        existing.update(appointmentDate, description);
+        existing.update(appointmentDate, description, projectId, taskId);
         store.save(existing);
         return true;
     }
@@ -312,6 +332,60 @@ public class AppointmentService {
         }
 
         return store.findById(normalizedId).map(Appointment::copy);
+    }
+
+    /**
+     * Returns all appointments associated with the specified project for the authenticated user.
+     *
+     * @param projectId the project ID to filter by
+     * @return list of appointments for the specified project
+     * @throws IllegalArgumentException if projectId is null or blank
+     */
+    @Transactional(readOnly = true)
+    public List<Appointment> getAppointmentsByProjectId(final String projectId) {
+        Validation.validateNotBlank(projectId, "projectId");
+        final String trimmedProjectId = projectId.trim();
+
+        if (store instanceof JpaAppointmentStore) {
+            final JpaAppointmentStore jpaStore = (JpaAppointmentStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findAll(currentUser).stream()
+                    .filter(appointment -> trimmedProjectId.equals(appointment.getProjectId()))
+                    .map(Appointment::copy)
+                    .toList();
+        }
+
+        return store.findAll().stream()
+                .filter(appointment -> trimmedProjectId.equals(appointment.getProjectId()))
+                .map(Appointment::copy)
+                .toList();
+    }
+
+    /**
+     * Returns all appointments associated with the specified task for the authenticated user.
+     *
+     * @param taskId the task ID to filter by
+     * @return list of appointments for the specified task
+     * @throws IllegalArgumentException if taskId is null or blank
+     */
+    @Transactional(readOnly = true)
+    public List<Appointment> getAppointmentsByTaskId(final String taskId) {
+        Validation.validateNotBlank(taskId, "taskId");
+        final String trimmedTaskId = taskId.trim();
+
+        if (store instanceof JpaAppointmentStore) {
+            final JpaAppointmentStore jpaStore = (JpaAppointmentStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findAll(currentUser).stream()
+                    .filter(appointment -> trimmedTaskId.equals(appointment.getTaskId()))
+                    .map(Appointment::copy)
+                    .toList();
+        }
+
+        return store.findAll().stream()
+                .filter(appointment -> trimmedTaskId.equals(appointment.getTaskId()))
+                .map(Appointment::copy)
+                .toList();
     }
 
     void clearAllAppointments() {

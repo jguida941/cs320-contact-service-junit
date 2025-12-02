@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Focused unit tests that exercise {@link TaskController#getAll(boolean)} so
+ * Focused unit tests that exercise {@link TaskController#getAll} so
  * PIT observes both the admin and non-admin branches.
  */
 class TaskControllerUnitTest {
@@ -36,7 +36,7 @@ class TaskControllerUnitTest {
     void getAll_withAllFlagThrowsForNonAdmins() {
         authenticate(false);
 
-        assertThatThrownBy(() -> controller.getAll(true))
+        assertThatThrownBy(() -> controller.getAll(true, null, null, false, null, null))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("Only administrators");
     }
@@ -47,7 +47,7 @@ class TaskControllerUnitTest {
         when(taskService.getAllTasksAllUsers()).thenReturn(List.of(
                 new Task("t-1", "Admin Task", "Visible to admins")));
 
-        final List<TaskResponse> responses = controller.getAll(true);
+        final List<TaskResponse> responses = controller.getAll(true, null, null, false, null, null);
 
         verify(taskService).getAllTasksAllUsers();
         assertThat(responses).singleElement().satisfies(response ->

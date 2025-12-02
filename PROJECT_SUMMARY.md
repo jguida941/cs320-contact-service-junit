@@ -10,7 +10,7 @@
 **What It Became:** A full-stack app with Spring Boot, React, PostgreSQL, tests, and GitHub Actions CI
 
 **Tech Stack:**
-- **Backend:** Spring Boot 3, Spring Data JPA, Hibernate, Flyway
+- **Backend:** Spring Boot 4.0, Spring Data JPA, Hibernate, Flyway
 - **Frontend:** React, Vite, TypeScript, Tailwind CSS, shadcn/ui
 - **Database:** PostgreSQL (prod), H2/Testcontainers (tests)
 - **Testing:** JUnit 5, PITest (mutation testing), JaCoCo, Schemathesis (API fuzzing)
@@ -27,7 +27,7 @@ Built three fully validated domain entities following fail-fast principles:
 | Entity          | Purpose           | Validation Rules                                                             |
 |-----------------|-------------------|------------------------------------------------------------------------------|
 | **Contact**     | Person management | ID (1-10 chars), Names (1-10 chars), Phone (10 digits), Address (1-30 chars) |
-| **Task**        | Task tracking     | ID (1-10 chars), Name (1-20 chars), Description (1-50 chars)                 |
+| **Task**        | Task tracking     | ID (1-10 chars), Name (1-20 chars), Description (1-50 chars), Status (enum), Due Date (optional) |
 | **Appointment** | Scheduling        | ID (1-10 chars), Date (not in past), Description (1-50 chars)                |
 
 **Key Design Decisions:**
@@ -52,7 +52,7 @@ Controller -> Service -> Store Interface -> JPA/In-Memory Implementation
 
 ### 3. REST API Layer - Production-Ready Endpoints
 
-Built a complete REST API at `/api/v1/{contacts,tasks,appointments}`:
+Built a complete REST API at `/api/v1/{contacts,tasks,appointments,projects}`:
 
 | Endpoint     | Operations                 | Features                           |
 |--------------|----------------------------|------------------------------------|
@@ -104,7 +104,7 @@ Built a complete React frontend with:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tests** | 642 (648 with ITs) |
+| **Total Tests** | 949 |
 | **Mutation Coverage (PITest)** | 94% (615/656 mutants killed) |
 | **Line Coverage (JaCoCo)** | 96%+ stores, 95%+ mappers |
 | **Static Analysis** | SpotBugs clean |
@@ -137,7 +137,7 @@ Compile -> Unit Tests -> Checkstyle -> SpotBugs -> JaCoCo -> PITest -> OWASP Dep
 
 ## Why I Made These Decisions
 
-### 44 Architecture Decision Records (ADRs)
+### 46 Architecture Decision Records (ADRs)
 
 Every major decision is documented with context, rationale, and consequences:
 
@@ -146,7 +146,7 @@ Every major decision is documented with context, rationale, and consequences:
 | ADR-0001 | Centralized validation | Eliminated duplicate logic, consistent error messages, easier mutation testing |
 | ADR-0002 | Store abstraction | Decoupled services from storage implementation, enables testing |
 | ADR-0003 | Atomic updates | Prevents partial state corruption, all-or-nothing semantics |
-| ADR-0014 | Spring Boot 3 | Mature ecosystem, auto-configured REST, observability hooks |
+| ADR-0014 | Spring Boot 4.0 | Latest ecosystem, auto-configured REST, observability hooks |
 | ADR-0015 | PostgreSQL + H2/Testcontainers | Production-grade DB with fast test execution |
 | ADR-0016 | REST + OpenAPI | Industry standard, auto-documented, consumer-friendly |
 | ADR-0017 | React + Vite + TypeScript | Fast dev cycle, type safety, modern tooling |
@@ -177,13 +177,13 @@ Every major decision is documented with context, rationale, and consequences:
 
 | Category | Count |
 |----------|-------|
-| Java Production Classes | 62 |
-| Java Test Classes | 51 |
+| Java Production Classes | 75 |
+| Java Test Classes | 76 |
 | React Components | 40+ |
-| ADRs | 44 |
-| Database Migrations | 7 |
-| CI/CD Workflows | 3 |
-| Documentation Files | 70+ |
+| ADRs | 46 |
+| Database Migrations | 11 |
+| CI/CD Workflows | 4 |
+| Documentation Files | 84 |
 
 ---
 
@@ -229,7 +229,7 @@ Every major decision is documented with context, rationale, and consequences:
 ## Skills Demonstrated
 
 **Backend Development:**
-- Spring Boot 3, Spring Data JPA, Hibernate
+- Spring Boot 4.0, Spring Data JPA, Hibernate
 - RESTful API design with OpenAPI/Swagger
 - Database migrations with Flyway
 - Multi-environment configuration

@@ -22,11 +22,16 @@ public class TaskMapper {
         if (domain == null) {
             return null;
         }
-        return new TaskEntity(
+        final TaskEntity entity = new TaskEntity(
                 domain.getTaskId(),
                 domain.getName(),
                 domain.getDescription(),
+                domain.getStatus(),
+                domain.getDueDate(),
                 user);
+        entity.setProjectId(domain.getProjectId());
+        entity.setAssigneeId(domain.getAssigneeId());
+        return entity;
     }
 
     /**
@@ -52,7 +57,13 @@ public class TaskMapper {
         return new Task(
                 entity.getTaskId(),
                 entity.getName(),
-                entity.getDescription());
+                entity.getDescription(),
+                entity.getStatus(),
+                entity.getDueDate(),
+                entity.getProjectId(),
+                entity.getAssigneeId(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt());
     }
 
     /**
@@ -70,5 +81,9 @@ public class TaskMapper {
         }
         target.setName(source.getName());
         target.setDescription(source.getDescription());
+        target.setStatus(source.getStatus());
+        target.setDueDate(source.getDueDate());
+        target.setProjectId(source.getProjectId());
+        target.setAssigneeId(source.getAssigneeId());
     }
 }

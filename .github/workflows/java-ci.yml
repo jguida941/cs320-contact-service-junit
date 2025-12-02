@@ -335,7 +335,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Start application with docker-compose
+      - name: Start application with docker compose
         env:
           POSTGRES_PASSWORD: test_password_123
           JWT_SECRET: test_jwt_secret_minimum_32_characters_long_for_hs512
@@ -362,7 +362,7 @@ jobs:
           EOF
 
           # Start the stack
-          docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+          docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
 
       - name: Wait for application health
         run: |
@@ -386,7 +386,7 @@ jobs:
           done
 
           echo "::error::Application failed to become healthy after $MAX_ATTEMPTS attempts"
-          docker-compose logs app
+          docker compose logs app
           exit 1
 
       - name: Run smoke test
@@ -402,11 +402,11 @@ jobs:
             exit 1
           fi
 
-      - name: Capture docker-compose logs on failure
+      - name: Capture docker compose logs on failure
         if: failure()
         run: |
-          echo "Capturing docker-compose logs..."
-          docker-compose logs > docker-build-logs.txt
+          echo "Capturing docker compose logs..."
+          docker compose logs > docker-build-logs.txt
           cat docker-build-logs.txt
 
       - name: Upload docker build logs
@@ -417,11 +417,11 @@ jobs:
           path: docker-build-logs.txt
           if-no-files-found: ignore
 
-      - name: Tear down docker-compose stack
+      - name: Tear down docker compose stack
         if: always()
         run: |
-          echo "Tearing down docker-compose stack..."
-          docker-compose down -v
+          echo "Tearing down docker compose stack..."
+          docker compose down -v
 
       - name: Push Docker image
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')

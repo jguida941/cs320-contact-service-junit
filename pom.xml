@@ -6,12 +6,12 @@
 
     <!--
         Spring Boot parent provides sensible defaults for plugins, dependency versions,
-        and configuration. Using 3.4.x for Java 17+ compatibility and latest features.
+        and configuration. Using 4.0.x for Java 17+ compatibility and latest features.
     -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.12</version>
+        <version>4.0.0</version>
         <relativePath/>
     </parent>
 
@@ -51,7 +51,7 @@
         -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
         <!--
@@ -65,14 +65,23 @@
         </dependency>
 
         <!--
-            Micrometer Prometheus Registry (SimpleClient): Exposes metrics in Prometheus format
+            Spring Boot Jackson 2: In Spring Boot 4.0, Jackson 3 is the default.
+            This module provides Jackson 2 compatibility for existing code.
+            Deprecated - will be removed in 4.2.0.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-jackson2</artifactId>
+        </dependency>
+
+        <!--
+            Micrometer Prometheus Registry: Exposes metrics in Prometheus format
             at /actuator/prometheus for scraping by monitoring systems.
-            Uses simpleclient variant for Micrometer 1.13+ compatibility with Spring Boot 3.4.
-            See: https://github.com/micrometer-metrics/micrometer/issues/5103
+            Uses the new Prometheus Java client (1.x) required by Spring Boot 3.5+.
         -->
         <dependency>
             <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
         <!--
@@ -151,18 +160,18 @@
         </dependency>
 
         <!--
-            Flyway Core + Postgres extension: Versioned SQL migrations stand up
-            schema consistently across dev/test/prod environments (Phase 3).
+            Spring Boot Flyway Starter: Provides auto-configuration for Flyway
+            database migrations. In Spring Boot 4.0, this starter is required
+            (previously flyway-core alone was sufficient).
         -->
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
-
         <!--
             PostgreSQL JDBC driver used by dev/prod profiles.
             Scope runtime so it isn't required for compilation.
@@ -177,12 +186,11 @@
             SpringDoc OpenAPI: Auto-generates OpenAPI 3.0 specification from
             Spring MVC controllers. Provides Swagger UI at /swagger-ui.html
             and OpenAPI JSON at /v3/api-docs. Required for Phase 2 API docs.
-            Staying on 2.8.7 - springdoc 3.x requires Spring Boot 3.5+.
         -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.7</version>
+            <version>3.0.0</version>
         </dependency>
 
         <!--
@@ -241,6 +249,21 @@
         </dependency>
 
         <!--
+            Spring Boot 4.0 modularized test starters - required for test annotations.
+            See: https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
             Spring Security Test: Provides @WithMockUser, SecurityMockMvcRequestPostProcessors,
             and other utilities for testing secured endpoints.
         -->
@@ -261,11 +284,13 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
+            <version>1.20.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <version>1.20.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>

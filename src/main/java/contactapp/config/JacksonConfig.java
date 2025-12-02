@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.type.LogicalType;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 /**
  * Jackson configuration to enforce strict type checking.
@@ -30,18 +30,19 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 public class JacksonConfig {
 
     /**
-     * Configures Jackson to reject type coercion for string fields.
+     * Customizes Jackson to reject type coercion for string fields.
      *
      * <p>This ensures that boolean, integer, and float values are not silently
      * converted to strings, enforcing strict schema compliance.
      *
-     * @param builder the Spring-provided ObjectMapper builder
-     * @return configured ObjectMapper instance
+     * @return customizer for the ObjectMapper builder
      */
     @Bean
-    public ObjectMapper objectMapper(final Jackson2ObjectMapperBuilder builder) {
-        final ObjectMapper mapper = builder.build();
+    public Jackson2ObjectMapperBuilderCustomizer strictCoercionCustomizer() {
+        return builder -> builder.postConfigurer(this::configureStrictCoercion);
+    }
 
+    private void configureStrictCoercion(final ObjectMapper mapper) {
         // Disable coercion of boolean to String
         mapper.coercionConfigFor(LogicalType.Textual)
                 .setCoercion(CoercionInputShape.Boolean, CoercionAction.Fail);
@@ -53,7 +54,5 @@ public class JacksonConfig {
         // Disable coercion of float to String
         mapper.coercionConfigFor(LogicalType.Textual)
                 .setCoercion(CoercionInputShape.Float, CoercionAction.Fail);
-
-        return mapper;
     }
 }

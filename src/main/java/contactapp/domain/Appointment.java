@@ -33,6 +33,8 @@ public final class Appointment {
     private final String appointmentId;
     private Date appointmentDate;
     private String description;
+    private String projectId;
+    private String taskId;
 
 
     /**
@@ -44,12 +46,40 @@ public final class Appointment {
      * @throws IllegalArgumentException if any field violates the constraints
      */
     public Appointment(final String appointmentId, final Date appointmentDate, final String description) {
-        // Use Validation utility for constructor field checks (matches Contact/Task pattern)
-        Validation.validateLength(appointmentId, "appointmentId", MIN_LENGTH, ID_MAX_LENGTH);
-        this.appointmentId = appointmentId.trim();
+        // Use Validation utility for constructor field checks (validates and trims in one call)
+        this.appointmentId = Validation.validateTrimmedLength(
+                appointmentId, "appointmentId", MIN_LENGTH, ID_MAX_LENGTH);
 
         setAppointmentDate(appointmentDate);
         setDescription(description);
+    }
+
+    /**
+     * Reconstitutes an Appointment from persistence with project/task associations.
+     *
+     * <p>Use this constructor when loading from database to preserve associations.
+     * For new appointments, use the simpler constructor which omits these optional fields.
+     *
+     * @param appointmentId   unique identifier (required, length 1-10)
+     * @param appointmentDate required date, must not be null or in the past
+     * @param description     required description (length 1-50)
+     * @param projectId       associated project ID (optional, nullable)
+     * @param taskId          associated task ID (optional, nullable)
+     * @throws IllegalArgumentException if any required argument is null or violates constraints
+     */
+    public Appointment(
+            final String appointmentId,
+            final Date appointmentDate,
+            final String description,
+            final String projectId,
+            final String taskId) {
+        this.appointmentId = Validation.validateTrimmedLength(
+                appointmentId, "appointmentId", MIN_LENGTH, ID_MAX_LENGTH);
+
+        setAppointmentDate(appointmentDate);
+        setDescription(description);
+        this.projectId = projectId != null ? projectId.trim() : null;
+        this.taskId = taskId != null ? taskId.trim() : null;
     }
 
     /**
@@ -63,15 +93,35 @@ public final class Appointment {
      * @throws IllegalArgumentException if either value violates the constraints
      */
     public void update(final Date newDate, final String newDescription) {
+        update(newDate, newDescription, this.projectId, this.taskId);
+    }
+
+    /**
+     * Atomically updates the mutable fields after validation.
+     *
+     * <p>If any value is invalid, this method throws and leaves the
+     * existing values unchanged.
+     *
+     * @param newDate        new appointment date (not null, not in the past)
+     * @param newDescription new description (length 1-50)
+     * @param newProjectId   new project ID (nullable, can unlink from project)
+     * @param newTaskId      new task ID (nullable, can unlink from task)
+     * @throws IllegalArgumentException if any value violates the constraints
+     */
+    public void update(
+            final Date newDate,
+            final String newDescription,
+            final String newProjectId,
+            final String newTaskId) {
         // Validate both inputs before mutating state to keep the update atomic
         Validation.validateDateNotPast(newDate, "appointmentDate");
-        Validation.validateLength(newDescription, "description", MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
+        final String validatedDescription = Validation.validateTrimmedLength(
+                newDescription, "description", DESCRIPTION_MAX_LENGTH);
 
-        final Date copiedDate = new Date(newDate.getTime());
-        final String trimmedDescription = newDescription.trim();
-
-        this.appointmentDate = copiedDate;
-        this.description = trimmedDescription;
+        this.appointmentDate = new Date(newDate.getTime());
+        this.description = validatedDescription;
+        this.projectId = newProjectId != null ? newProjectId.trim() : null;
+        this.taskId = newTaskId != null ? newTaskId.trim() : null;
     }
 
     /**
@@ -84,8 +134,7 @@ public final class Appointment {
      * @throws IllegalArgumentException if description is null, blank, or too long
      */
     public void setDescription(final String description) {
-        Validation.validateLength(description, "description", MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
-        this.description = description.trim();
+        this.description = Validation.validateTrimmedLength(description, "description", DESCRIPTION_MAX_LENGTH);
     }
 
     /**
@@ -127,6 +176,32 @@ public final class Appointment {
         return description;
     }
 
+    public String getProjectId() {
+        return projectId;
+    }
+
+    /**
+     * Sets the associated project ID.
+     *
+     * @param projectId the project ID to associate with (nullable, can unlink from project)
+     */
+    public void setProjectId(final String projectId) {
+        this.projectId = projectId != null ? projectId.trim() : null;
+    }
+
+    public String getTaskId() {
+        return taskId;
+    }
+
+    /**
+     * Sets the associated task ID.
+     *
+     * @param taskId the task ID to associate with (nullable, can unlink from task)
+     */
+    public void setTaskId(final String taskId) {
+        this.taskId = taskId != null ? taskId.trim() : null;
+    }
+
     /**
      * Creates a defensive copy of this Appointment.
      *
@@ -138,7 +213,12 @@ public final class Appointment {
      */
     public Appointment copy() {
         validateCopySource(this);
-        return new Appointment(this.appointmentId, new Date(this.appointmentDate.getTime()), this.description);
+        return new Appointment(
+                this.appointmentId,
+                new Date(this.appointmentDate.getTime()),
+                this.description,
+                this.projectId,
+                this.taskId);
     }
 
     /**

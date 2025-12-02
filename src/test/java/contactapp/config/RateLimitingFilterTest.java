@@ -10,6 +10,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.EstimationProbe;
@@ -20,10 +24,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,6 +59,8 @@ class RateLimitingFilterTest {
     private HttpServletResponse response;
     private FilterChain filterChain;
     private StringWriter responseWriter;
+    private Logger rateLimitLogger;
+    private ListAppender<ILoggingEvent> logAppender;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -72,6 +83,17 @@ class RateLimitingFilterTest {
 
         // Clear security context
         SecurityContextHolder.clearContext();
+
+        rateLimitLogger = (Logger) LoggerFactory.getLogger(RateLimitingFilter.class);
+    }
+
+    @AfterEach
+    void tearDownLogger() {
+        if (logAppender != null) {
+            rateLimitLogger.detachAppender(logAppender);
+            logAppender.stop();
+            rateLimitLogger.setLevel(null);
+        }
     }
 
     @Test
@@ -426,6 +448,68 @@ class RateLimitingFilterTest {
         assertThat(sanitized).isEqualTo("[unsafe-value]");
     }
 
+    @Test
+    void getSafeLogValue_handlesBoundaries() throws Exception {
+        final Method method = RateLimitingFilter.class.getDeclaredMethod("getSafeLogValue", String.class);
+        method.setAccessible(true);
+        final Field field = RateLimitingFilter.class.getDeclaredField("MAX_LOG_LENGTH");
+        field.setAccessible(true);
+        final int maxLength = field.getInt(null);
+
+        assertThat((String) method.invoke(filter, (Object) null)).isEqualTo("[null]");
+        assertThat((String) method.invoke(filter, "   ")).isEqualTo("[empty]");
+
+        final String exact = "a".repeat(maxLength);
+        assertThat((String) method.invoke(filter, exact)).isEqualTo(exact);
+
+        final String longer = "b".repeat(maxLength + 5);
+        assertThat((String) method.invoke(filter, longer))
+                .isEqualTo("b".repeat(maxLength) + "...");
+    }
+
+    @Test
+    void calculateWaitTimeShortCircuitsWhenTokenAvailable() throws Exception {
+        final Bucket bucket = mock(Bucket.class);
+        final EstimationProbe probe = mock(EstimationProbe.class);
+        when(bucket.estimateAbilityToConsume(1)).thenReturn(probe);
+        when(probe.getRemainingTokens()).thenReturn(1L);
+        when(probe.getNanosToWaitForRefill()).thenReturn(1_000_000_000L);
+
+        final long waitSeconds = invokeCalculateWaitTime(bucket);
+
+        assertThat(waitSeconds).isEqualTo(1);
+        verify(probe, never()).getNanosToWaitForRefill();
+    }
+
+    @Test
+    void doFilterInternal_logsSanitizedClientIp() throws ServletException, IOException {
+        attachLogAppender(Level.DEBUG);
+        when(request.getRequestURI()).thenReturn("/api/auth/login");
+        when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1\r\n10.0.0.2");
+        when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(logAppender.list)
+                .anyMatch(event -> event.getFormattedMessage().contains("[unsafe-value]"));
+    }
+
+    @Test
+    void doFilterInternal_logsSanitizedPathWhenRateLimitExceeded() throws ServletException, IOException {
+        attachLogAppender(Level.WARN);
+        // Use unsafe char that survives trim() - ! is not in SAFE_LOG_PATTERN
+        when(request.getRequestURI()).thenReturn("/api/auth/login!");
+        when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+
+        // Exceed limit
+        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(logAppender.list)
+                .anyMatch(event -> event.getFormattedMessage().contains("[unsafe-value]"));
+    }
+
     /**
      * Invokes the private {@code calculateWaitTime} helper via reflection to
      * keep PIT from mutating the Retry-After math unchecked.
@@ -449,5 +533,12 @@ class RateLimitingFilterTest {
         final SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
+    }
+
+    private void attachLogAppender(final Level level) {
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        rateLimitLogger.setLevel(level);
+        rateLimitLogger.addAppender(logAppender);
     }
 }

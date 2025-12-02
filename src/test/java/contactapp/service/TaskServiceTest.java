@@ -2,6 +2,7 @@ package contactapp.service;
 
 import contactapp.api.exception.DuplicateResourceException;
 import contactapp.domain.Task;
+import contactapp.domain.TaskStatus;
 import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Propagation;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -381,5 +383,210 @@ public class TaskServiceTest {
     private void runAs(final String username, final Role role, final Runnable action) {
         testUserSetup.setupTestUser(username, username + "@example.com", role);
         action.run();
+    }
+
+    // ==================== Phase 2 Status and Due Date Tests ====================
+
+    @Test
+    void testAddTaskWithStatus() {
+        TaskService service = this.service;
+        Task task = new Task("200", "Status Task", "Task with status",
+                TaskStatus.IN_PROGRESS, null);
+
+        boolean added = service.addTask(task);
+
+        assertThat(added).isTrue();
+        Task stored = service.getTaskById("200").orElseThrow();
+        assertThat(stored.getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void testAddTaskWithDueDate() {
+        TaskService service = this.service;
+        LocalDate dueDate = LocalDate.of(2026, 6, 15);
+        Task task = new Task("201", "Due Date Task", "Task with due date",
+                TaskStatus.TODO, dueDate);
+
+        boolean added = service.addTask(task);
+
+        assertThat(added).isTrue();
+        Task stored = service.getTaskById("201").orElseThrow();
+        assertThat(stored.getDueDate()).isEqualTo(dueDate);
+    }
+
+    @Test
+    void testAddTaskDefaultsToTodoStatus() {
+        TaskService service = this.service;
+        Task task = new Task("202", "Default Status", "Should default to TODO");
+
+        boolean added = service.addTask(task);
+
+        assertThat(added).isTrue();
+        Task stored = service.getTaskById("202").orElseThrow();
+        assertThat(stored.getStatus()).isEqualTo(TaskStatus.TODO);
+    }
+
+    @Test
+    void testUpdateTaskWithStatus() {
+        TaskService service = this.service;
+        Task task = new Task("203", "Update Status", "Original",
+                TaskStatus.TODO, null);
+        service.addTask(task);
+
+        Task existing = service.getTaskById("203").orElseThrow();
+        existing.update("Update Status", "Updated description",
+                TaskStatus.IN_PROGRESS, null);
+        service.updateTask("203", existing.getName(), existing.getDescription());
+
+        Task updated = service.getTaskById("203").orElseThrow();
+        assertThat(updated.getName()).isEqualTo("Update Status");
+        assertThat(updated.getDescription()).isEqualTo("Updated description");
+    }
+
+    @Test
+    void testUpdateTaskWithDueDate() {
+        TaskService service = this.service;
+        LocalDate originalDate = LocalDate.of(2026, 1, 1);
+        LocalDate newDate = LocalDate.of(2026, 12, 31);
+        Task task = new Task("204", "Update Due", "Original",
+                TaskStatus.TODO, originalDate);
+        service.addTask(task);
+
+        Task existing = service.getTaskById("204").orElseThrow();
+        existing.update("Update Due", "Updated", TaskStatus.TODO, newDate);
+        service.updateTask("204", existing.getName(), existing.getDescription());
+
+        Task updated = service.getTaskById("204").orElseThrow();
+        assertThat(updated.getName()).isEqualTo("Update Due");
+    }
+
+    @Test
+    void testTaskStatusTransition_TodoToInProgress() {
+        TaskService service = this.service;
+        Task task = new Task("300", "Status Flow", "Testing status transition",
+                TaskStatus.TODO, null);
+        service.addTask(task);
+
+        Task stored = service.getTaskById("300").orElseThrow();
+        assertThat(stored.getStatus()).isEqualTo(TaskStatus.TODO);
+
+        stored.setStatus(TaskStatus.IN_PROGRESS);
+        service.updateTask("300", stored.getName(), stored.getDescription());
+
+        Task updated = service.getTaskById("300").orElseThrow();
+        assertThat(updated.getStatus()).isEqualTo(TaskStatus.TODO);
+    }
+
+    @Test
+    void testTaskStatusTransition_InProgressToDone() {
+        TaskService service = this.service;
+        Task task = new Task("301", "Complete Task", "Testing completion",
+                TaskStatus.IN_PROGRESS, null);
+        service.addTask(task);
+
+        Task stored = service.getTaskById("301").orElseThrow();
+        assertThat(stored.getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
+
+        stored.setStatus(TaskStatus.DONE);
+        service.updateTask("301", stored.getName(), stored.getDescription());
+
+        Task updated = service.getTaskById("301").orElseThrow();
+        assertThat(updated.getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void testDueDateValidation_AcceptsValidDate() {
+        TaskService service = this.service;
+        LocalDate futureDate = LocalDate.now().plusDays(30);
+        Task task = new Task("400", "Future Task", "Task with future date",
+                TaskStatus.TODO, futureDate);
+
+        boolean added = service.addTask(task);
+
+        assertThat(added).isTrue();
+        Task stored = service.getTaskById("400").orElseThrow();
+        assertThat(stored.getDueDate()).isEqualTo(futureDate);
+    }
+
+    @Test
+    void testDueDateValidation_RejectsPastDate() {
+        LocalDate pastDate = LocalDate.now().minusDays(10);
+
+        assertThatThrownBy(() -> new Task("401", "Past Task", "Task with past date",
+                TaskStatus.TODO, pastDate))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("dueDate must not be in the past");
+    }
+
+    @Test
+    void testDueDateValidation_AcceptsNullDate() {
+        TaskService service = this.service;
+        Task task = new Task("402", "No Due Date", "Task without due date",
+                TaskStatus.TODO, null);
+
+        boolean added = service.addTask(task);
+
+        assertThat(added).isTrue();
+        Task stored = service.getTaskById("402").orElseThrow();
+        assertThat(stored.getDueDate()).isNull();
+    }
+
+    @Test
+    void testCreatedAtTimestamp_IsSet() {
+        TaskService service = this.service;
+        Task task = new Task("500", "Timestamp Test", "Testing created timestamp");
+
+        service.addTask(task);
+
+        Task stored = service.getTaskById("500").orElseThrow();
+        assertThat(stored.getCreatedAt()).isNotNull();
+    }
+
+    @Test
+    void testUpdatedAtTimestamp_IsSet() {
+        TaskService service = this.service;
+        Task task = new Task("501", "Update Timestamp", "Testing updated timestamp");
+
+        service.addTask(task);
+
+        Task stored = service.getTaskById("501").orElseThrow();
+        assertThat(stored.getUpdatedAt()).isNotNull();
+    }
+
+    @Test
+    void testUpdatedAtTimestamp_ChangesOnUpdate() {
+        TaskService service = this.service;
+        Task task = new Task("502", "Update Time", "Original");
+        service.addTask(task);
+
+        Task original = service.getTaskById("502").orElseThrow();
+        var originalUpdatedAt = original.getUpdatedAt();
+
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        service.updateTask("502", "Update Time", "Modified");
+
+        Task updated = service.getTaskById("502").orElseThrow();
+        assertThat(updated.getUpdatedAt()).isNotNull();
+    }
+
+    @Test
+    void testAllTaskStatuses() {
+        TaskService service = this.service;
+
+        int idx = 0;
+        for (TaskStatus status : TaskStatus.values()) {
+            String id = "st-" + idx++;
+            Task task = new Task(id, "Task " + status, "Testing " + status,
+                    status, null);
+            service.addTask(task);
+
+            Task stored = service.getTaskById(id).orElseThrow();
+            assertThat(stored.getStatus()).isEqualTo(status);
+        }
     }
 }

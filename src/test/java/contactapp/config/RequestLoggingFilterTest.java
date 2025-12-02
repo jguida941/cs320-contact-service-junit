@@ -95,6 +95,16 @@ class RequestLoggingFilterTest {
         assertThat(sanitizedBlank).isNull();
     }
 
+    @Test
+    void sanitizeQueryString_dropsBlankSegments() {
+        final RequestLoggingFilter filter = new RequestLoggingFilter(true);
+        final String sanitized = ReflectionTestUtils.invokeMethod(
+                filter,
+                "sanitizeQueryString",
+                "limit=5&&token=secret&");
+        assertThat(sanitized).isEqualTo("limit=5&token=***");
+    }
+
     /**
      * Ensures sanitizeUserAgent strips control characters so PIT cannot remove the replacement without tests failing.
      */
@@ -106,6 +116,37 @@ class RequestLoggingFilterTest {
                 "sanitizeUserAgent",
                 "TestAgent\r\nMalicious");
         assertThat(sanitized).isEqualTo("TestAgentMalicious");
+    }
+
+    @Test
+    void getSafeLogValue_appliesDefaultsAndTrims() {
+        final RequestLoggingFilter filter = new RequestLoggingFilter(true);
+        final String sanitized = ReflectionTestUtils.invokeMethod(
+                filter,
+                "getSafeLogValue",
+                " value\r\n",
+                "fallback");
+        assertThat(sanitized).isEqualTo("value");
+
+        final String blank = ReflectionTestUtils.invokeMethod(filter, "getSafeLogValue", "   ", "fallback");
+        assertThat(blank).isEqualTo("fallback");
+
+        final String nullValue = ReflectionTestUtils.invokeMethod(filter, "getSafeLogValue", (Object) null, "fallback");
+        assertThat(nullValue).isEqualTo("fallback");
+    }
+
+    @Test
+    void getSafeUserAgent_truncatesLongValues() throws Exception {
+        final RequestLoggingFilter filter = new RequestLoggingFilter(true);
+        final int maxLength = (int) ReflectionTestUtils.getField(RequestLoggingFilter.class, "MAX_USER_AGENT_LENGTH");
+        final String longUa = "X".repeat(maxLength + 10);
+
+        final String sanitized = ReflectionTestUtils.invokeMethod(filter, "getSafeUserAgent", longUa);
+        assertThat(sanitized).endsWith("...");
+        assertThat(sanitized.length()).isEqualTo(maxLength + 3);
+
+        final String blank = ReflectionTestUtils.invokeMethod(filter, "getSafeUserAgent", "   ");
+        assertThat(blank).isEqualTo("unknown");
     }
 
     /**

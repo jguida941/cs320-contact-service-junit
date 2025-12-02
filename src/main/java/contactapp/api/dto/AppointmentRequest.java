@@ -26,6 +26,8 @@ import static contactapp.domain.Validation.MAX_ID_LENGTH;
  *   <li>id: required, 1-10 characters</li>
  *   <li>appointmentDate: required, must be in the future or present (ISO 8601 format)</li>
  *   <li>description: required, 1-50 characters</li>
+ *   <li>projectId: optional, max 10 characters</li>
+ *   <li>taskId: optional, max 10 characters</li>
  * </ul>
  *
  * <h2>Date Format</h2>
@@ -35,6 +37,8 @@ import static contactapp.domain.Validation.MAX_ID_LENGTH;
  * @param id              unique identifier for the appointment
  * @param appointmentDate appointment date/time (must be now or in future)
  * @param description     appointment description
+ * @param projectId       associated project ID (optional)
+ * @param taskId          associated task ID (optional)
  */
 public record AppointmentRequest(
         @Schema(description = "Appointment ID")
@@ -50,7 +54,15 @@ public record AppointmentRequest(
         @Schema(description = "Appointment description")
         @NotBlank(message = "description must not be null or blank")
         @Size(min = 1, max = MAX_DESCRIPTION_LENGTH, message = "description length must be between {min} and {max}")
-        String description
+        String description,
+
+        @Schema(description = "Associated project ID (optional)")
+        @Size(max = MAX_ID_LENGTH, message = "projectId length must not exceed {max}")
+        String projectId,
+
+        @Schema(description = "Associated task ID (optional)")
+        @Size(max = MAX_ID_LENGTH, message = "taskId length must not exceed {max}")
+        String taskId
 ) {
     /**
      * Compact constructor that makes a defensive copy of the mutable Date.

@@ -1,7 +1,9 @@
 package contactapp.persistence.repository;
 
+import contactapp.domain.TaskStatus;
 import contactapp.persistence.entity.TaskEntity;
 import contactapp.security.User;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -69,4 +71,32 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
     @Modifying
     @Transactional
     int deleteByTaskIdAndUser(String taskId, User user);
+
+    /**
+     * Finds all tasks for a user with a specific status.
+     *
+     * @param user the user who owns the tasks
+     * @param status the task status to filter by
+     * @return list of tasks matching the status
+     */
+    List<TaskEntity> findByUserAndStatus(User user, TaskStatus status);
+
+    /**
+     * Finds all tasks for a user with due date before the specified date.
+     *
+     * @param user the user who owns the tasks
+     * @param date the date threshold
+     * @return list of tasks with due date before the specified date
+     */
+    List<TaskEntity> findByUserAndDueDateBefore(User user, LocalDate date);
+
+    /**
+     * Finds all tasks for a user with due date between two dates.
+     *
+     * @param user the user who owns the tasks
+     * @param startDate the start date (inclusive)
+     * @param endDate the end date (inclusive)
+     * @return list of tasks with due date in the specified range
+     */
+    List<TaskEntity> findByUserAndDueDateBetween(User user, LocalDate startDate, LocalDate endDate);
 }

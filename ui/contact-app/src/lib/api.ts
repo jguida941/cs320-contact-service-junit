@@ -1,4 +1,4 @@
-import type { Contact, ContactRequest, Task, TaskRequest, Appointment, AppointmentRequest } from './schemas';
+import type { Contact, ContactRequest, Task, TaskRequest, Appointment, AppointmentRequest, Project, ProjectRequest } from './schemas';
 import { queryClient } from './queryClient';
 
 const API_BASE = '/api/v1';
@@ -469,5 +469,113 @@ export const appointmentsApi = {
       method: 'DELETE',
     });
     return handleResponse<void>(response);
+  },
+};
+
+// ==================== Projects API ====================
+
+export const projectsApi = {
+  getAll: async (): Promise<Project[]> => {
+    const response = await fetchWithCsrf(`${API_BASE}/projects`);
+    return handleResponse<Project[]>(response);
+  },
+
+  getById: async (id: string): Promise<Project> => {
+    const response = await fetchWithCsrf(`${API_BASE}/projects/${encodeURIComponent(id)}`);
+    return handleResponse<Project>(response);
+  },
+
+  create: async (data: ProjectRequest): Promise<Project> => {
+    const response = await fetchWithCsrf(`${API_BASE}/projects`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Project>(response);
+  },
+
+  update: async (id: string, data: Partial<ProjectRequest>): Promise<Project> => {
+    const response = await fetchWithCsrf(`${API_BASE}/projects/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Project>(response);
+  },
+
+  delete: async (id: string): Promise<void> => {
+    const response = await fetchWithCsrf(`${API_BASE}/projects/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    return handleResponse<void>(response);
+  },
+};
+
+// ==================== Admin API ====================
+
+/**
+ * User information returned by admin endpoints.
+ */
+export interface AdminUser {
+  id: string;
+  username: string;
+  email: string;
+  role: 'USER' | 'ADMIN';
+  createdAt: string;
+}
+
+/**
+ * System-wide statistics visible to admins.
+ */
+export interface SystemStats {
+  totalUsers: number;
+  totalContacts: number;
+  totalTasks: number;
+  totalAppointments: number;
+  activeUsers: number;
+}
+
+/**
+ * Audit log entry for tracking system activity.
+ */
+export interface AuditLogEntry {
+  id: string;
+  username: string;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  timestamp: string;
+  details?: string;
+}
+
+/**
+ * Admin-only API endpoints.
+ * These endpoints require ADMIN role and are protected by @PreAuthorize on the backend.
+ * Per ADR-0036, these provide aggregate metrics, user management, and audit trails.
+ */
+export const adminApi = {
+  /**
+   * Get all users in the system (admin only).
+   */
+  getAllUsers: async (): Promise<AdminUser[]> => {
+    const response = await fetchWithCsrf(`${API_BASE}/admin/users`);
+    return handleResponse<AdminUser[]>(response);
+  },
+
+  /**
+   * Get system-wide statistics (admin only).
+   */
+  getSystemStats: async (): Promise<SystemStats> => {
+    const response = await fetchWithCsrf(`${API_BASE}/admin/stats`);
+    return handleResponse<SystemStats>(response);
+  },
+
+  /**
+   * Get audit log entries (admin only).
+   * Returns recent activity across all users.
+   */
+  getAuditLog: async (limit = 50): Promise<AuditLogEntry[]> => {
+    const response = await fetchWithCsrf(`${API_BASE}/admin/audit-log?limit=${limit}`);
+    return handleResponse<AuditLogEntry[]>(response);
   },
 };

@@ -2,6 +2,7 @@ package contactapp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Smoke test verifying the Spring application context loads successfully.
@@ -22,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * full HTTP stack is exercised by the controller tests.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@ActiveProfiles("test")
 class ApplicationTest {
 
     /**

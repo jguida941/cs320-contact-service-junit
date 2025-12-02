@@ -6,6 +6,77 @@ All notable changes to this project will be documented here. Follow the
 ## [Unreleased]
 
 ### Added
+- **Project/Task Tracker Evolution Phases 1-5 Complete (ADR-0045) (2025-12-01)**:
+  - **Phase 1 - Project Entity**: Project domain with CRUD API at `/api/v1/projects`, status tracking (ACTIVE/ON_HOLD/COMPLETED/ARCHIVED), migration V7
+  - **Phase 2 - Task Status/Due Date**: Enhanced Task with status (TODO/IN_PROGRESS/DONE), dueDate, createdAt/updatedAt timestamps, migration V8
+  - **Phase 3 - Task-Project Linking**: Added projectId FK to Task for organization, migration V10, query parameters `?projectId={id}` and `?projectId=none`
+  - **Phase 4 - Appointment Linking**: Added taskId and projectId FKs to Appointment for calendar context, migration V11, query parameters `?taskId={id}` and `?projectId={id}`
+  - **Phase 5 - Task Assignment**: Added assigneeId FK to Task for collaboration, migration V12, query parameters `?assigneeId={userId}`, access control for task visibility
+  - **Phase 6 - Contact-Project Linking**: Deferred to future implementation (V13 junction table planned but not implemented)
+  - Full test coverage across all implemented phases (domain, persistence, service, API layers)
+  - Backward compatibility maintained with sensible defaults and nullable FKs
+
+### Fixed
+- **Timestamp Bug Fix (2025-12-01)**: Fixed createdAt timestamp changing on update
+  - Added Task constructor accepting timestamps for reconstitution from persistence
+  - Updated TaskMapper.toDomain() to pass entity timestamps to domain
+  - Added timestamp setters to TaskEntity for testing
+  - Total tests now at **951**.
+
+### Added
+- **E2E Tests for Phase 2 Task Fields (2025-12-01)**: Two new end-to-end tests
+  - e2e_statusAndDueDate_persistThroughFullStack
+  - e2e_updatedAtChangesAfterModification
+
+### Added
+- **Project Entity and Project/Task Tracker Evolution (ADR-0045)**:
+  - New `Project` domain entity with projectId (1-10 chars), name (1-50 chars), description (0-100 chars), and ProjectStatus enum (ACTIVE/ON_HOLD/COMPLETED/ARCHIVED)
+  - ProjectController REST API at `/api/v1/projects` with full CRUD operations (POST, GET, GET/{id}, PUT/{id}, DELETE/{id}) plus status filtering
+  - ProjectService with per-user data isolation, getProjectsByStatus, and ADMIN-only getAllProjectsAllUsers
+  - ProjectEntity JPA entity with @Version for optimistic locking, user_id FK, and created_at/updated_at timestamps
+  - ProjectRepository Spring Data JPA repository with findByUserIdAndProjectId and findByUserIdAndStatus queries
+  - ProjectMapper bidirectional mapper following ADR-0024 persistence patterns
+  - JpaProjectStore and InMemoryProjectStore for Spring DI and legacy compatibility
+  - Flyway migration V8__create_projects_table.sql with UNIQUE constraint on (project_id, user_id), status check constraint, and indexed columns
+  - Comprehensive test coverage: ProjectTest (domain validation), ProjectStatusTest (enum), ProjectEntityTest (JPA), ProjectRepositoryTest (slice), ProjectMapperTest (mapper), JpaProjectStoreTest (store), ProjectServiceTest (service), ProjectControllerTest (REST API) - all following established testing patterns
+  - Validation constants added to Validation.java: MAX_PROJECT_NAME_LENGTH (50), MAX_PROJECT_DESCRIPTION_LENGTH (100)
+  - ProjectRequest/ProjectResponse DTOs with Bean Validation mirroring domain rules
+  - Future phases planned in ADR-0045: Task status/due dates (V9), task-project linking (V10), appointment linking (V11), task assignment (V12), contact-project linking (V13)
+
+- **Phase 7 UX Polish Complete**:
+  - Search/pagination/sorting: Debounced SearchInput, Pagination component, SortableTableHead, useTableState hook with URL sync
+  - Toast notifications: Sonner integration with useToast hook (success/error/info/warning)
+  - Empty states: EmptyState component with icons and action buttons on all CRUD pages
+  - Admin dashboard: RequireAdmin guard, AdminDashboard page with metrics/users/audit, role-based sidebar link
+  - Accessibility (WCAG 2.1 AA): SkipLink, ARIA landmarks, keyboard navigation, focus management, form labels, live regions
+
+- **Phase 6 Packaging + CI Complete**:
+  - Created comprehensive `Makefile` with 30+ targets for local development:
+    - Build targets: `build`, `test`, `test-unit`, `test-integration`, `verify`, `clean`
+    - Docker targets: `docker-build`, `docker-up`, `docker-down`, `docker-logs`, `docker-clean`
+    - Dev targets: `dev-db`, `run`, `run-dev`, `dev-setup`
+    - Quality targets: `lint`, `coverage`, `mutation`, `security`, `spotbugs`
+    - UI targets: `ui-install`, `ui-build`, `ui-dev`, `ui-test`
+    - Database targets: `db-migrate`, `db-info`, `db-validate`
+    - Help system: `make help` with color-coded categories
+  - Extended `.github/workflows/java-ci.yml` with new `docker-build` job:
+    - Runs after `build-test` succeeds
+    - Builds Docker image using multi-stage Dockerfile with layer caching
+    - Pushes to GitHub Container Registry (ghcr.io) on main/master
+    - Health check: Starts docker-compose, waits for `/actuator/health`
+    - Smoke test: Validates health endpoint returns `"status":"UP"`
+    - Cleanup: Tears down stack with `docker-compose down -v`
+    - Uploads docker build logs as artifact on failure
+  - Code quality audit confirmed: 0 critical issues, 31 commendations
+  - Documentation audit confirmed: All code already well-documented
+- **Mutation-killing regression tests**:
+  - Added `TaskServiceFallbackTest` to assert the in-memory legacy store is still invoked inside `addTask`, preventing PIT from replacing the fallback with a no-op.
+  - Extended `RateLimitingFilterTest` with log-capturing + boundary tests for the new sanitizers so log injection defenses can’t be removed without failing tests.
+  - Extended `RequestLoggingFilterTest` with direct tests for `getSafeLogValue`, `getSafeUserAgent`, and blank-query filtering to keep the inline sanitizers mutation-proof.
+
+### Security
+- Added `.env`, `.env.local`, `.env.*.local` to `.gitignore` to prevent accidental secret commits
+
 - **Log Injection Prevention (Inline Validation)**:
   - Refactored `RateLimitingFilter` to use inline validation methods (`logSafeValue`, `logRateLimitExceeded`, `getSafeLogValue`) that validate input before logging.
   - Refactored `RequestLoggingFilter` to use inline validation methods (`getSafeLogValue`, `getSafeUserAgent`) that strip CR/LF and control characters.
@@ -21,7 +92,7 @@ All notable changes to this project will be documented here. Follow the
   - Store coverage improved from 78% to **96%** (instructions), 73% to **97%** (branches).
   - All JPA stores now at **100%** coverage.
   - Mapper coverage improved to **95%+** with ContactMapper and TaskMapper at 100%.
-  - Total tests now at **642** (648 with ITs).
+  - Total tests now at **949**.
 
 - **Phase 5.5 DAST + Runtime Security** (complete):
   - Added password strength validation to `RegisterRequest` via `@Pattern` regex (uppercase, lowercase, digit required).

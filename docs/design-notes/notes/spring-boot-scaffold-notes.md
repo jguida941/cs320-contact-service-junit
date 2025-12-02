@@ -5,9 +5,9 @@ Phase 1 introduces Spring Boot infrastructure to convert the in-memory library i
 
 ## Key Decisions
 
-### Why Spring Boot 3.4.12?
-- Latest patch release in the 3.4.x line with security fixes
-- Java 17+ compatibility (matches our JDK target)
+### Why Spring Boot 4.0.0?
+- Latest major release with Java 17+ compatibility
+- Updated Spring Framework 7 and Spring Security 7
 - Mature ecosystem with extensive documentation
 - ADR-0014 pre-selected Spring Boot as the backend framework
 

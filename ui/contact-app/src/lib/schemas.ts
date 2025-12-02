@@ -45,6 +45,9 @@ export type ContactRequest = z.infer<typeof contactRequestSchema>;
 
 // ==================== Task Schemas ====================
 
+export const TaskStatusEnum = z.enum(['TODO', 'IN_PROGRESS', 'DONE']);
+export type TaskStatus = z.infer<typeof TaskStatusEnum>;
+
 export const taskSchema = z.object({
   id: z
     .string()
@@ -58,9 +61,32 @@ export const taskSchema = z.object({
     .string()
     .min(1, 'Description is required')
     .max(ValidationLimits.MAX_DESCRIPTION_LENGTH, `Description must be at most ${ValidationLimits.MAX_DESCRIPTION_LENGTH} characters`),
+  status: TaskStatusEnum,
+  dueDate: z.string().optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  assigneeId: z.number().optional().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
-export const taskRequestSchema = taskSchema;
+export const taskRequestSchema = z.object({
+  id: z
+    .string()
+    .min(1, 'ID is required')
+    .max(ValidationLimits.MAX_ID_LENGTH, `ID must be at most ${ValidationLimits.MAX_ID_LENGTH} characters`),
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(ValidationLimits.MAX_TASK_NAME_LENGTH, `Name must be at most ${ValidationLimits.MAX_TASK_NAME_LENGTH} characters`),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .max(ValidationLimits.MAX_DESCRIPTION_LENGTH, `Description must be at most ${ValidationLimits.MAX_DESCRIPTION_LENGTH} characters`),
+  status: TaskStatusEnum.default('TODO'),
+  dueDate: z.string().optional().nullable(),
+  projectId: z.string().optional().nullable(),
+  assigneeId: z.number().optional().nullable(),
+});
 
 export type Task = z.infer<typeof taskSchema>;
 export type TaskRequest = z.infer<typeof taskRequestSchema>;
@@ -77,16 +103,53 @@ export const appointmentSchema = z.object({
     .string()
     .min(1, 'Description is required')
     .max(ValidationLimits.MAX_DESCRIPTION_LENGTH, `Description must be at most ${ValidationLimits.MAX_DESCRIPTION_LENGTH} characters`),
+  projectId: z.string().optional().nullable(),
+  taskId: z.string().optional().nullable(),
 });
 
-export const appointmentRequestSchema = appointmentSchema.extend({
-  // Accept any non-empty string - let the form convert it to ISO before submission
+export const appointmentRequestSchema = z.object({
+  id: z
+    .string()
+    .min(1, 'ID is required')
+    .max(ValidationLimits.MAX_ID_LENGTH, `ID must be at most ${ValidationLimits.MAX_ID_LENGTH} characters`),
   appointmentDate: z.string().min(1, 'Date is required'),
-}).transform((data) => ({
-  ...data,
-  // Ensure date is valid before submission
-  appointmentDate: data.appointmentDate,
-}));
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .max(ValidationLimits.MAX_DESCRIPTION_LENGTH, `Description must be at most ${ValidationLimits.MAX_DESCRIPTION_LENGTH} characters`),
+  projectId: z.string().optional().nullable(),
+  taskId: z.string().optional().nullable(),
+});
 
 export type Appointment = z.infer<typeof appointmentSchema>;
 export type AppointmentRequest = z.infer<typeof appointmentRequestSchema>;
+
+// ==================== Project Schemas ====================
+
+export const ProjectStatusEnum = z.enum(['ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED']);
+export type ProjectStatus = z.infer<typeof ProjectStatusEnum>;
+
+export const ValidationLimitsProject = {
+  MAX_PROJECT_NAME_LENGTH: 50,
+  MAX_PROJECT_DESCRIPTION_LENGTH: 100,
+} as const;
+
+export const projectSchema = z.object({
+  id: z
+    .string()
+    .min(1, 'ID is required')
+    .max(ValidationLimits.MAX_ID_LENGTH, `ID must be at most ${ValidationLimits.MAX_ID_LENGTH} characters`),
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(ValidationLimitsProject.MAX_PROJECT_NAME_LENGTH, `Name must be at most ${ValidationLimitsProject.MAX_PROJECT_NAME_LENGTH} characters`),
+  description: z
+    .string()
+    .max(ValidationLimitsProject.MAX_PROJECT_DESCRIPTION_LENGTH, `Description must be at most ${ValidationLimitsProject.MAX_PROJECT_DESCRIPTION_LENGTH} characters`),
+  status: ProjectStatusEnum,
+});
+
+export const projectRequestSchema = projectSchema;
+
+export type Project = z.infer<typeof projectSchema>;
+export type ProjectRequest = z.infer<typeof projectRequestSchema>;

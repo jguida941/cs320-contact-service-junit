@@ -3,6 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/search-input';
+import { Pagination } from '@/components/ui/pagination';
+import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import {
   Table,
   TableBody,
@@ -22,10 +25,14 @@ import { Badge } from '@/components/ui/badge';
 import { AppointmentForm } from '@/components/forms/AppointmentForm';
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 import { appointmentsApi } from '@/lib/api';
+import { useFilteredSortedPaginatedData } from '@/lib/hooks/useTableState';
 import type { Appointment, AppointmentRequest } from '@/lib/schemas';
 
 type SheetMode = 'view' | 'create' | 'edit';
 
+/**
+ * Format appointment date for display
+ */
 function formatAppointmentDate(dateString: string): string {
   try {
     return format(new Date(dateString), 'PPpp');
@@ -34,6 +41,16 @@ function formatAppointmentDate(dateString: string): string {
   }
 }
 
+/**
+ * AppointmentsPage component with search, pagination, and sorting
+ *
+ * Features:
+ * - Client-side search across all appointment fields
+ * - Pagination with 15 items per page
+ * - Sortable columns (ID, Date, Description)
+ * - URL query params for bookmarkable state
+ * - Create/Edit/View/Delete operations
+ */
 export function AppointmentsPage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>('view');
@@ -41,10 +58,30 @@ export function AppointmentsPage() {
 
   const queryClient = useQueryClient();
 
+  // Fetch all appointments from API
   const { data: appointments = [], isLoading, error } = useQuery({
     queryKey: ['appointments'],
     queryFn: appointmentsApi.getAll,
   });
+
+  // Apply search, sorting, and pagination to the appointments
+  // Search across: id, appointmentDate, description
+  const {
+    items: paginatedAppointments,
+    totalItems,
+    totalPages,
+    currentPage,
+    itemsPerPage,
+    searchQuery,
+    sortConfig,
+    setSearch,
+    setPage,
+    setSort,
+  } = useFilteredSortedPaginatedData<Appointment>(appointments, [
+    'id',
+    'appointmentDate',
+    'description',
+  ]);
 
   const createMutation = useMutation({
     mutationFn: appointmentsApi.create,
@@ -136,14 +173,40 @@ export function AppointmentsPage() {
         </Button>
       </div>
 
+      {/* Search bar */}
+      <SearchInput
+        value={searchQuery}
+        onChange={setSearch}
+        placeholder="Search appointments by ID, date, or description..."
+        className="max-w-md"
+      />
+
       {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Description</TableHead>
+              <SortableTableHead
+                sortKey="id"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                ID
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="appointmentDate"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                Date
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="description"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                Description
+              </SortableTableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -154,14 +217,16 @@ export function AppointmentsPage() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : appointments.length === 0 ? (
+            ) : totalItems === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  No appointments found. Schedule your first appointment to get started.
+                  {searchQuery
+                    ? `No appointments found matching "${searchQuery}".`
+                    : 'No appointments found. Schedule your first appointment to get started.'}
                 </TableCell>
               </TableRow>
             ) : (
-              appointments.map((appointment) => (
+              paginatedAppointments.map((appointment) => (
                 <TableRow
                   key={appointment.id}
                   className="cursor-pointer hover:bg-muted/50"
@@ -198,6 +263,17 @@ export function AppointmentsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+        />
+      )}
 
       {/* Create/Edit/View Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>

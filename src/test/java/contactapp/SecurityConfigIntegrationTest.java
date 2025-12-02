@@ -11,13 +11,14 @@ import jakarta.servlet.Filter;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -44,6 +45,8 @@ class SecurityConfigIntegrationTest {
     private CorsConfigurationSource corsConfigurationSource;
     @Autowired
     private AuthenticationProvider authenticationProvider;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private MockMvc mockMvc;
 
@@ -77,9 +80,12 @@ class SecurityConfigIntegrationTest {
 
     @Test
     void authenticationProvider_usesBcryptEncoder() {
-        final Object encoder = ReflectionTestUtils.getField(authenticationProvider, "passwordEncoder");
-        assertThat(encoder).isNotNull();
-        assertThat(encoder.getClass().getSimpleName()).contains("BCrypt");
+        // Verify BCrypt by testing actual encoding behavior
+        assertThat(passwordEncoder).isNotNull();
+        assertThat(passwordEncoder).isInstanceOf(BCryptPasswordEncoder.class);
+        final String encoded = passwordEncoder.encode("test");
+        assertThat(encoded).startsWith("$2"); // BCrypt hashes start with $2a$, $2b$, or $2y$
+        assertThat(passwordEncoder.matches("test", encoded)).isTrue();
     }
 
     @Test

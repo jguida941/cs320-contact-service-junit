@@ -23,8 +23,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -64,8 +64,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private static final long DEFAULT_CORS_MAX_AGE_SECONDS = 3600L;
-    private static final RequestMatcher API_MATCHER = new AntPathRequestMatcher("/api/**");
-    private static final RequestMatcher ACTUATOR_MATCHER = new AntPathRequestMatcher("/actuator/**");
+    private static final RequestMatcher API_MATCHER =
+            PathPatternRequestMatcher.withDefaults().matcher("/api/**");
+    private static final RequestMatcher ACTUATOR_MATCHER =
+            PathPatternRequestMatcher.withDefaults().matcher("/actuator/**");
     private static final String[] ACTUATOR_PUBLIC_ENDPOINTS = {
             "/actuator/health",
             "/actuator/health/liveness",
@@ -78,7 +80,10 @@ public class SecurityConfig {
      * cover all frontend routes served from the same origin.
      */
     private static final RequestMatcher SPA_GET_MATCHER = new AndRequestMatcher(
-            new AntPathRequestMatcher("/**", HttpMethod.GET.name()),
+            new AndRequestMatcher(
+                    PathPatternRequestMatcher.withDefaults().matcher("/**"),
+                    request -> HttpMethod.GET.matches(request.getMethod())
+            ),
             new NegatedRequestMatcher(new OrRequestMatcher(API_MATCHER, ACTUATOR_MATCHER))
     );
     // CSRF disabled only for endpoints that don't need protection:
@@ -87,9 +92,12 @@ public class SecurityConfig {
     // All other /api/** endpoints require CSRF token (X-XSRF-TOKEN header)
     private static final RequestMatcher CSRF_IGNORED_MATCHERS = new OrRequestMatcher(
             ACTUATOR_MATCHER,
-            new AntPathRequestMatcher("/swagger-ui/**"),
-            new AntPathRequestMatcher("/v3/api-docs/**"),
-            new AntPathRequestMatcher("/api/auth/csrf-token", HttpMethod.GET.name())
+            PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v3/api-docs/**"),
+            new AndRequestMatcher(
+                    PathPatternRequestMatcher.withDefaults().matcher("/api/auth/csrf-token"),
+                    request -> HttpMethod.GET.matches(request.getMethod())
+            )
     );
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -209,8 +217,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        final DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        final DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }

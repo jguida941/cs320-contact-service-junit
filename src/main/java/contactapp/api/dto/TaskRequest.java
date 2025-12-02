@@ -1,8 +1,10 @@
 package contactapp.api.dto;
 
+import contactapp.domain.TaskStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import static contactapp.domain.Validation.MAX_DESCRIPTION_LENGTH;
 import static contactapp.domain.Validation.MAX_ID_LENGTH;
 import static contactapp.domain.Validation.MAX_TASK_NAME_LENGTH;
@@ -23,11 +25,19 @@ import static contactapp.domain.Validation.MAX_TASK_NAME_LENGTH;
  *   <li>id: required, 1-10 characters</li>
  *   <li>name: required, 1-20 characters</li>
  *   <li>description: required, 1-50 characters</li>
+ *   <li>status: optional, defaults to TODO if not provided</li>
+ *   <li>dueDate: optional, can be null</li>
+ *   <li>projectId: optional, links task to a project</li>
+ *   <li>assigneeId: optional, user ID to assign task to</li>
  * </ul>
  *
  * @param id          unique identifier for the task
  * @param name        task name
  * @param description task description
+ * @param status      task status (optional, defaults to TODO)
+ * @param dueDate     task due date (optional)
+ * @param projectId   associated project ID (optional)
+ * @param assigneeId  assignee user ID (optional)
  */
 public record TaskRequest(
         @Schema(description = "Task ID")
@@ -43,6 +53,19 @@ public record TaskRequest(
         @Schema(description = "Task description")
         @NotBlank(message = "description must not be null or blank")
         @Size(min = 1, max = MAX_DESCRIPTION_LENGTH, message = "description length must be between {min} and {max}")
-        String description
+        String description,
+
+        @Schema(description = "Task status (defaults to TODO if not provided)")
+        TaskStatus status,
+
+        @Schema(description = "Task due date (optional)")
+        LocalDate dueDate,
+
+        @Schema(description = "Associated project ID (optional)")
+        @Size(max = MAX_ID_LENGTH, message = "projectId length must not exceed {max}")
+        String projectId,
+
+        @Schema(description = "Assignee user ID (optional)")
+        Long assigneeId
 ) {
 }

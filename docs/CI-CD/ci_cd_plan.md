@@ -43,6 +43,7 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 5. ✅ Revisit workflow documentation in `README.md` once enhancements land and include the build badge.
 6. ✅ Publish per-run QA summaries in the GitHub Actions job summary (tests, JaCoCo, PITest, Dependency-Check) via `scripts/ci_metrics_summary.py`.
 7. ✅ Normalize CI flags so Dependency-Check skip/delay settings (`dependency.check.skip`, `nvdApiDelay`) match the Maven configuration and avoid hanging runs when secrets are absent.
+8. ✅ Add mutation-focused tests (+71 tests) targeting boundary conditions and comparison operators to improve mutation kill rate. See ADR-0046.
 
 ---
 
@@ -76,6 +77,16 @@ This document tracks how we will harden the GitHub Actions workflow from a simpl
 ## Phase 10 - Auth/Role Integration Tests (Planned)
 1. ☐ Add MockMvc/WebTestClient flows that assert 401/403 for anonymous or unauthorized roles and 2xx for allowed roles.
 2. ☐ Ensure token/credential handling is wired into CI (test-only secrets).
+
+## Phase 11 - Docker Packaging in CI ✅
+1. ✅ Add `docker-build` job to `.github/workflows/java-ci.yml` (runs after `build-test` succeeds).
+2. ✅ Build Docker image using multi-stage `Dockerfile` with layer caching via Docker Buildx.
+3. ✅ Push images to GitHub Container Registry (ghcr.io) on main/master push events.
+4. ✅ Health check step: Start docker-compose stack, wait for `/actuator/health` to return healthy.
+5. ✅ Smoke test: Validate health endpoint returns `"status":"UP"`.
+6. ✅ Cleanup: Tear down stack with `docker-compose down -v` (always runs).
+7. ✅ Upload docker build logs as artifact on failure for debugging.
+8. ✅ Added `Makefile` with 30+ targets for local dev (build, docker, quality, UI).
 
 Keep this plan updated as each phase lands. When a task completes, we replace the checkbox with ✅ and add links to PRs or workflow runs for traceability.
 Once all phases are complete, we summarize the final workflow in `README.md`.

@@ -5,16 +5,14 @@ import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import contactapp.security.WithMockAppUser;
 import contactapp.service.ContactService;
+import contactapp.support.SecuredMockMvcTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
@@ -40,13 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @see ContactController
  */
-@SpringBootTest
-@AutoConfigureMockMvc
 @WithMockAppUser
-class ContactControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+class ContactControllerTest extends SecuredMockMvcTest {
 
     @Autowired
     private ContactService contactService;

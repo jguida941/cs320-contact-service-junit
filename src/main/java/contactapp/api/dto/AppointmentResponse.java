@@ -19,12 +19,16 @@ import java.util.Objects;
  * @param id              the appointment's unique identifier
  * @param appointmentDate the appointment date/time
  * @param description     the appointment description
+ * @param projectId       the associated project ID (nullable)
+ * @param taskId          the associated task ID (nullable)
  */
 public record AppointmentResponse(
         String id,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
         Date appointmentDate,
-        String description
+        String description,
+        String projectId,
+        String taskId
 ) {
     /**
      * Compact constructor that makes a defensive copy of the mutable Date.
@@ -57,7 +61,9 @@ public record AppointmentResponse(
         return new AppointmentResponse(
                 appointment.getAppointmentId(),
                 appointment.getAppointmentDate(),
-                appointment.getDescription()
+                appointment.getDescription(),
+                appointment.getProjectId(),
+                appointment.getTaskId()
         );
     }
 }

@@ -114,6 +114,8 @@ public class AppointmentController {
                 request.appointmentDate(),
                 request.description()
         );
+        appointment.setProjectId(request.projectId());
+        appointment.setTaskId(request.taskId());
 
         appointmentService.addAppointment(appointment);
 
@@ -126,17 +128,45 @@ public class AppointmentController {
      * <p>For regular users, returns only their appointments.
      * For ADMIN users with {@code ?all=true}, returns all appointments across all users.
      *
+     * <p>Supports filtering by:
+     * <ul>
+     *   <li>{@code ?projectId=proj-1} - filter by associated project</li>
+     *   <li>{@code ?taskId=task-1} - filter by associated task</li>
+     * </ul>
+     *
      * @param all if true and user is ADMIN, returns all appointments across all users
+     * @param projectId filter by associated project ID
+     * @param taskId filter by associated task ID
      * @return list of appointments
      */
     @Operation(summary = "Get all appointments",
             description = "Returns appointments for the authenticated user. "
-                    + "ADMIN users can pass ?all=true to see all appointments across all users.")
+                    + "ADMIN users can pass ?all=true to see all appointments across all users. "
+                    + "Supports filtering by projectId and taskId.")
     @ApiResponse(responseCode = "200", description = "List of appointments")
     @GetMapping
     public List<AppointmentResponse> getAll(
             @Parameter(description = "If true and user is ADMIN, returns all appointments")
-            @RequestParam(required = false, defaultValue = "false") final boolean all) {
+            @RequestParam(required = false, defaultValue = "false") final boolean all,
+            @Parameter(description = "Filter by associated project ID")
+            @RequestParam(required = false) @Size(max = MAX_ID_LENGTH) final String projectId,
+            @Parameter(description = "Filter by associated task ID")
+            @RequestParam(required = false) @Size(max = MAX_ID_LENGTH) final String taskId) {
+
+        // Handle filtering
+        if (projectId != null) {
+            return appointmentService.getAppointmentsByProjectId(projectId).stream()
+                    .map(AppointmentResponse::from)
+                    .toList();
+        }
+
+        if (taskId != null) {
+            return appointmentService.getAppointmentsByTaskId(taskId).stream()
+                    .map(AppointmentResponse::from)
+                    .toList();
+        }
+
+        // No filters - return all appointments
         if (all) {
             // Verify caller has ADMIN role before returning all users' data
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -217,7 +247,9 @@ public class AppointmentController {
         if (!appointmentService.updateAppointment(
                 id,
                 request.appointmentDate(),
-                request.description())) {
+                request.description(),
+                request.projectId(),
+                request.taskId())) {
             throw new ResourceNotFoundException("Appointment not found: " + id);
         }
 

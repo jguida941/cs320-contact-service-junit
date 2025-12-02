@@ -12,7 +12,7 @@
 - Choices here will shape how we structure packages, testing, and deployment for the new app/UI work.
 
 ## Decision
-- Use Spring Boot 3 as the application framework for HTTP, DI, validation, and actuator endpoints.
+- Use Spring Boot 4.0 as the application framework for HTTP, DI, validation, and actuator endpoints.
 - Use Spring Data JPA/Hibernate for persistence; keep existing domain validation as the source of truth.
 - Use Flyway for database migrations and schema management.
 - Keep environment-specific profiles (`dev`, `test`, `prod`) to isolate configs.

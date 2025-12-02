@@ -95,7 +95,11 @@ export function AppointmentForm({ appointment, onSubmit, onCancel, isLoading }: 
   };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+    <form
+      onSubmit={handleSubmit(onFormSubmit)}
+      className="space-y-4"
+      aria-label={isEdit ? 'Edit appointment form' : 'Create appointment form'}
+    >
       {isEdit ? (
         // Hidden input to include ID in edit submissions
         <input type="hidden" {...register('id')} />
@@ -107,9 +111,13 @@ export function AppointmentForm({ appointment, onSubmit, onCancel, isLoading }: 
             {...register('id')}
             placeholder="Unique ID (max 10 chars)"
             maxLength={ValidationLimits.MAX_ID_LENGTH}
+            aria-invalid={errors.id ? 'true' : 'false'}
+            aria-describedby={errors.id ? 'id-error' : undefined}
           />
           {errors.id && (
-            <p className="text-sm text-destructive">{errors.id.message}</p>
+            <p id="id-error" className="text-sm text-destructive" role="alert">
+              {errors.id.message}
+            </p>
           )}
         </div>
       )}
@@ -120,11 +128,16 @@ export function AppointmentForm({ appointment, onSubmit, onCancel, isLoading }: 
           id="appointmentDate"
           type="datetime-local"
           {...register('appointmentDate')}
+          aria-invalid={errors.appointmentDate ? 'true' : 'false'}
+          aria-describedby={errors.appointmentDate ? 'appointmentDate-error appointmentDate-help' : 'appointmentDate-help'}
+          required
         />
         {errors.appointmentDate && (
-          <p className="text-sm text-destructive">{errors.appointmentDate.message}</p>
+          <p id="appointmentDate-error" className="text-sm text-destructive" role="alert">
+            {errors.appointmentDate.message}
+          </p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p id="appointmentDate-help" className="text-xs text-muted-foreground">
           Must be in the future
         </p>
       </div>
@@ -136,11 +149,16 @@ export function AppointmentForm({ appointment, onSubmit, onCancel, isLoading }: 
           {...register('description')}
           placeholder="Enter appointment description"
           maxLength={ValidationLimits.MAX_DESCRIPTION_LENGTH}
+          aria-invalid={errors.description ? 'true' : 'false'}
+          aria-describedby={errors.description ? 'description-error description-help' : 'description-help'}
+          required
         />
         {errors.description && (
-          <p className="text-sm text-destructive">{errors.description.message}</p>
+          <p id="description-error" className="text-sm text-destructive" role="alert">
+            {errors.description.message}
+          </p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p id="description-help" className="text-xs text-muted-foreground">
           Max {ValidationLimits.MAX_DESCRIPTION_LENGTH} characters
         </p>
       </div>

@@ -40,7 +40,11 @@ export function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form
+            className="space-y-6"
+            onSubmit={handleSubmit}
+            aria-label="Sign in form"
+          >
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
@@ -52,6 +56,8 @@ export function LoginPage() {
                   setCredentials((prev) => ({ ...prev, username: event.target.value }))
                 }
                 required
+                aria-required="true"
+                aria-invalid={error ? 'true' : 'false'}
               />
             </div>
             <div className="space-y-2">
@@ -66,14 +72,27 @@ export function LoginPage() {
                   setCredentials((prev) => ({ ...prev, password: event.target.value }))
                 }
                 required
+                aria-required="true"
+                aria-invalid={error ? 'true' : 'false'}
+                aria-describedby={error ? 'login-error' : undefined}
               />
             </div>
             {error && (
-              <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <div
+                id="login-error"
+                role="alert"
+                aria-live="assertive"
+                className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={submitting}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={submitting}
+              aria-busy={submitting}
+            >
               {submitting ? 'Signing in…' : 'Sign in'}
             </Button>
             <p className="text-center text-xs text-muted-foreground">

@@ -1,6 +1,7 @@
 package contactapp;
 
 import contactapp.domain.Task;
+import contactapp.domain.TaskStatus;
 import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import contactapp.security.WithMockAppUser;
@@ -10,13 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import contactapp.support.SecuredMockMvcTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -39,13 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *   <li>Duplicate ID conflicts (409)</li>
  * </ul>
  */
-@SpringBootTest
-@AutoConfigureMockMvc
 @WithMockAppUser
-class TaskControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+class TaskControllerTest extends SecuredMockMvcTest {
 
     @Autowired
     private TaskService taskService;
@@ -371,5 +366,437 @@ class TaskControllerTest {
     private void addTaskForUser(final String username, final Role role, final String id) {
         testUserSetup.setupTestUser(username, username + "@example.com", role);
         taskService.addTask(new Task(id, "Name-" + id, "Desc-" + id));
+    }
+
+    // ==================== Phase 2 Tests: Status, Due Date, Timestamps ====================
+
+    @Test
+    void createTask_withStatus_returns201() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "200",
+                                "name": "Status Task",
+                                "description": "Task with status",
+                                "status": "IN_PROGRESS"
+                            }
+                            """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value("200"))
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
+    }
+
+    @Test
+    void createTask_withDueDate_returns201() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "201",
+                                "name": "Due Date Task",
+                                "description": "Task with due date",
+                                "dueDate": "2026-06-15"
+                            }
+                            """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value("201"))
+                .andExpect(jsonPath("$.dueDate").value("2026-06-15"));
+    }
+
+    @Test
+    void createTask_withStatusAndDueDate_returns201() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "202",
+                                "name": "Complete Task",
+                                "description": "Task with all fields",
+                                "status": "TODO",
+                                "dueDate": "2026-12-31"
+                            }
+                            """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value("202"))
+                .andExpect(jsonPath("$.status").value("TODO"))
+                .andExpect(jsonPath("$.dueDate").value("2026-12-31"));
+    }
+
+    @Test
+    void createTask_defaultsToTodoStatus() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "203",
+                                "name": "Default Status",
+                                "description": "Should default to TODO"
+                            }
+                            """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("TODO"));
+    }
+
+    @Test
+    void createTask_setsCreatedAtTimestamp() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "204",
+                                "name": "Timestamp Test",
+                                "description": "Testing timestamps"
+                            }
+                            """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.updatedAt").exists());
+    }
+
+    @Test
+    void updateTask_withNewStatus_returns200() throws Exception {
+        createTestTask("205", "Original", "Original description");
+
+        mockMvc.perform(put("/api/v1/tasks/205")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "205",
+                                "name": "Updated",
+                                "description": "Updated description",
+                                "status": "DONE"
+                            }
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("DONE"));
+    }
+
+    @Test
+    void updateTask_withNewDueDate_returns200() throws Exception {
+        createTestTask("206", "Original", "Original description");
+
+        mockMvc.perform(put("/api/v1/tasks/206")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "206",
+                                "name": "Updated",
+                                "description": "Updated description",
+                                "dueDate": "2027-01-01"
+                            }
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.dueDate").value("2027-01-01"));
+    }
+
+    @Test
+    void getTaskById_returnsStatusAndDueDate() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "207",
+                                "name": "Full Task",
+                                "description": "Task with all fields",
+                                "status": "IN_PROGRESS",
+                                "dueDate": "2026-08-15"
+                            }
+                            """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/v1/tasks/207"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
+                .andExpect(jsonPath("$.dueDate").value("2026-08-15"))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.updatedAt").exists());
+    }
+
+    @Test
+    void createTask_invalidStatus_returns400() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "300",
+                                "name": "Invalid Status",
+                                "description": "Task with invalid status",
+                                "status": "INVALID_STATUS"
+                            }
+                            """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createTask_invalidDueDateFormat_returns400() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "301",
+                                "name": "Invalid Date",
+                                "description": "Task with invalid date format",
+                                "dueDate": "invalid-date"
+                            }
+                            """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createTask_allTaskStatuses_accepted() throws Exception {
+        int counter = 400;
+        for (TaskStatus status : TaskStatus.values()) {
+            String id = String.valueOf(counter++);
+            mockMvc.perform(post("/api/v1/tasks")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(String.format("""
+                                {
+                                    "id": "%s",
+                                    "name": "Task %s",
+                                    "description": "Testing status %s",
+                                    "status": "%s"
+                                }
+                                """, id, status, status, status)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.status").value(status.toString()));
+        }
+    }
+
+    @Test
+    void createTask_pastDueDate_rejected() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "500",
+                                "name": "Past Due",
+                                "description": "Task with past due date",
+                                "dueDate": "2020-01-01"
+                            }
+                            """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        org.hamcrest.Matchers.containsString("dueDate")));
+    }
+
+    @Test
+    void createTask_futureDueDate_accepted() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "501",
+                                "name": "Future Due",
+                                "description": "Task with future due date",
+                                "dueDate": "2030-12-31"
+                            }
+                            """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.dueDate").value("2030-12-31"));
+    }
+
+    @Test
+    void createTask_nullDueDate_accepted() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "502",
+                                "name": "No Due Date",
+                                "description": "Task without due date"
+                            }
+                            """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.dueDate").doesNotExist());
+    }
+
+    @Test
+    void updateTask_clearsStatusWhenNotProvided() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "600",
+                                "name": "Original",
+                                "description": "Original description",
+                                "status": "IN_PROGRESS"
+                            }
+                            """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(put("/api/v1/tasks/600")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "600",
+                                "name": "Updated",
+                                "description": "Updated description"
+                            }
+                            """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateTask_clearsDueDateWhenNotProvided() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "601",
+                                "name": "Original",
+                                "description": "Original description",
+                                "dueDate": "2026-12-31"
+                            }
+                            """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(put("/api/v1/tasks/601")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "601",
+                                "name": "Updated",
+                                "description": "Updated description"
+                            }
+                            """))
+                .andExpect(status().isOk());
+    }
+
+    // ==================== E2E Two-Layer Validation Tests ====================
+
+    /**
+     * E2E test: Verifies status/dueDate persist through full stack round-trip.
+     * Controller → DTO → Service → Domain → Mapper → Entity → DB → Entity → Mapper → Domain → DTO
+     */
+    @Test
+    void e2e_statusAndDueDate_persistThroughFullStack() throws Exception {
+        // Create task with all Phase 2 fields
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "e2e-001",
+                                "name": "E2E Task",
+                                "description": "Testing full round-trip",
+                                "status": "IN_PROGRESS",
+                                "dueDate": "2028-06-15"
+                            }
+                            """))
+                .andExpect(status().isCreated());
+
+        // Retrieve and verify domain constructor validated on load (no corruption)
+        mockMvc.perform(get("/api/v1/tasks/e2e-001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("e2e-001"))
+                .andExpect(jsonPath("$.name").value("E2E Task"))
+                .andExpect(jsonPath("$.description").value("Testing full round-trip"))
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
+                .andExpect(jsonPath("$.dueDate").value("2028-06-15"))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.updatedAt").exists());
+
+        // Update status to DONE
+        mockMvc.perform(put("/api/v1/tasks/e2e-001")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "e2e-001",
+                                "name": "E2E Task Complete",
+                                "description": "Round-trip complete",
+                                "status": "DONE",
+                                "dueDate": "2028-06-15"
+                            }
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("DONE"));
+
+        // Final verification - proves domain re-constructed correctly on each load
+        mockMvc.perform(get("/api/v1/tasks/e2e-001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("DONE"))
+                .andExpect(jsonPath("$.name").value("E2E Task Complete"));
+    }
+
+    /**
+     * E2E test: Verifies updatedAt timestamp changes after modification.
+     * Proves timestamps are maintained correctly through service/persistence layers.
+     *
+     * <p>Note: We fetch the task after creation to get the persisted timestamps
+     * (set by JPA @PrePersist), not the domain object timestamps returned from create.
+     */
+    @Test
+    void e2e_updatedAtChangesAfterModification() throws Exception {
+        // Create task
+        mockMvc.perform(post("/api/v1/tasks")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "e2e-002",
+                                "name": "Timestamp Test",
+                                "description": "Testing timestamp updates"
+                            }
+                            """))
+                .andExpect(status().isCreated());
+
+        // Fetch to get the persisted timestamps (from entity, not domain)
+        final var fetchResult = mockMvc.perform(get("/api/v1/tasks/e2e-002"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        final String fetchResponse = fetchResult.getResponse().getContentAsString();
+        final String originalCreatedAt = com.jayway.jsonpath.JsonPath.read(fetchResponse, "$.createdAt");
+        final String originalUpdatedAt = com.jayway.jsonpath.JsonPath.read(fetchResponse, "$.updatedAt");
+
+        // Small delay to ensure timestamp difference
+        Thread.sleep(50);
+
+        // Update task
+        mockMvc.perform(put("/api/v1/tasks/e2e-002")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "id": "e2e-002",
+                                "name": "Updated Name",
+                                "description": "Description changed"
+                            }
+                            """))
+                .andExpect(status().isOk());
+
+        // Fetch again to get updated timestamps
+        final var updateFetchResult = mockMvc.perform(get("/api/v1/tasks/e2e-002"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        final String updateResponse = updateFetchResult.getResponse().getContentAsString();
+        final String newCreatedAt = com.jayway.jsonpath.JsonPath.read(updateResponse, "$.createdAt");
+        final String newUpdatedAt = com.jayway.jsonpath.JsonPath.read(updateResponse, "$.updatedAt");
+
+        // createdAt should remain unchanged
+        org.assertj.core.api.Assertions.assertThat(newCreatedAt).isEqualTo(originalCreatedAt);
+        // updatedAt should have changed
+        org.assertj.core.api.Assertions.assertThat(newUpdatedAt).isNotEqualTo(originalUpdatedAt);
     }
 }

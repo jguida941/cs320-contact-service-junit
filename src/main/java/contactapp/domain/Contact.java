@@ -54,9 +54,8 @@ public final class Contact {
             final String phone,
             final String address) {
 
-        // Use Validation utility for constructor field checks
-        Validation.validateLength(contactId, "contactId", MIN_LENGTH, ID_MAX_LENGTH);
-        this.contactId = contactId.trim(); // normalize ID by trimming whitespace
+        // Use Validation utility for constructor field checks (validates and trims in one call)
+        this.contactId = Validation.validateTrimmedLength(contactId, "contactId", MIN_LENGTH, ID_MAX_LENGTH);
 
         // Reuse setter validation for the mutable fields
         setFirstName(firstName);
@@ -88,11 +87,11 @@ public final class Contact {
 
     // Setters
     public void setFirstName(final String firstName) {
-        this.firstName = validateAndTrimText(firstName, "firstName", NAME_MAX_LENGTH);
+        this.firstName = normalizeName(firstName, "firstName");
     }
 
     public void setLastName(final String lastName) {
-        this.lastName = validateAndTrimText(lastName, "lastName", NAME_MAX_LENGTH);
+        this.lastName = normalizeName(lastName, "lastName");
     }
 
     public void setPhone(final String phone) {
@@ -100,7 +99,7 @@ public final class Contact {
     }
 
     public void setAddress(final String address) {
-        this.address = validateAndTrimText(address, "address", ADDRESS_MAX_LENGTH);
+        this.address = normalizeAddress(address);
     }
 
     /**
@@ -121,10 +120,10 @@ public final class Contact {
             final String newPhone,
             final String newAddress) {
         // Validate all incoming values before mutating state so the update is all-or-nothing
-        final String validatedFirst = validateAndTrimText(newFirstName, "firstName", NAME_MAX_LENGTH);
-        final String validatedLast = validateAndTrimText(newLastName, "lastName", NAME_MAX_LENGTH);
+        final String validatedFirst = normalizeName(newFirstName, "firstName");
+        final String validatedLast = normalizeName(newLastName, "lastName");
         final String validatedPhone = validatePhoneNumber(newPhone);
-        final String validatedAddress = validateAndTrimText(newAddress, "address", ADDRESS_MAX_LENGTH);
+        final String validatedAddress = normalizeAddress(newAddress);
 
         this.firstName = validatedFirst;
         this.lastName = validatedLast;
@@ -133,22 +132,19 @@ public final class Contact {
     }
 
     /**
-     * Validates min/max length for a text field and returns the trimmed value.
-     */
-    private static String validateAndTrimText(
-            final String value,
-            final String label,
-            final int maxLength) {
-        Validation.validateLength(value, label, MIN_LENGTH, maxLength);
-        return value.trim();
-    }
-
-    /**
      * Validates a phone entry (digits only, required length) and returns it unchanged.
      */
     private static String validatePhoneNumber(final String phone) {
         Validation.validateDigits(phone, "phone", PHONE_LENGTH);
         return phone;
+    }
+
+    private static String normalizeName(final String value, final String label) {
+        return Validation.validateTrimmedLength(value, label, NAME_MAX_LENGTH);
+    }
+
+    private static String normalizeAddress(final String value) {
+        return Validation.validateTrimmedLength(value, "address", ADDRESS_MAX_LENGTH);
     }
 
     /**

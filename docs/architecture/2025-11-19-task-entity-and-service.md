@@ -3,7 +3,7 @@ Status: Implemented
 Owner: Justin Guida
 Implemented: 2025-11-20
 Links: requirements/task-requirements/requirements.md
-Summary: Implements Task (id,name,description) and TaskService with singleton store and atomic updates.
+Summary: Implements Task (id,name,description,status,dueDate) and TaskService with singleton store and atomic updates.
 
 ## Implementation Plan Overview
 
@@ -16,7 +16,7 @@ Implemented in:
 - `src/test/java/contactapp/service/TaskServiceTest.java`
 
 Key points:
-- Task fields and limits mirror the requirements (id 1–10 chars, name 1–20, description 1–50) and reuse the shared `Validation` helpers.
+- Task fields and limits mirror the requirements (id 1–10 chars, name 1–20, description 1–50, status enum, optional dueDate) and reuse the shared `Validation` helpers including `validateNotNull` for enum and `validateOptionalDateNotPast` for dueDate.
 - `Task.update(...)` validates both mutable fields first so updates remain atomic and exception-safe.
 - `TaskService` is a lazy singleton backed by `ConcurrentHashMap`, with `add`/`delete`/`update` returning booleans; `addTask` relies on the Task constructor having already trimmed the ID, while `deleteTask` and `updateTask` explicitly trim their ID parameters; `updateTask` uses `computeIfPresent` for thread-safe atomic lookup + update.
 - `getDatabase()` returns defensive copies (via `Task.copy()`) in an unmodifiable map, preventing external mutation of internal state.
@@ -36,9 +36,9 @@ Key points:
 ### Phase 1 - Domain & Validation Foundations
 - Confirm requirements from `docs/requirements/task-requirements/requirements.md` and align with Contact patterns.
 - Implement `Task` class:
-  - Fields: `taskId` (immutable, ≤10 chars), `name` (mutable, ≤20), `description` (mutable, ≤50).
+  - Fields: `taskId` (immutable, ≤10 chars), `name` (mutable, ≤20), `description` (mutable, ≤50), `status` (TaskStatus enum, defaults to TODO), `dueDate` (optional LocalDate, must not be past).
   - Constructor validates and trims inputs; delegate mutable fields to setters.
-  - Provide getters, `setName`, `setDescription`, and `update(String newName, String newDescription)` for atomic updates.
+  - Provide getters, `setName`, `setDescription`, `setStatus`, `setDueDate`, and `update(String, String, TaskStatus, LocalDate)` for atomic updates.
 - Reuse `Validation.validateLength` / `validateNotBlank`; extend Validation only if new shared helpers become necessary.
 
 ### Phase 2 - Service Layer Implementation

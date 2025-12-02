@@ -1,6 +1,7 @@
 package contactapp.domain;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.regex.Pattern;
 
@@ -44,6 +45,12 @@ public final class Validation {
     /** Maximum length for description fields (Task, Appointment). */
     public static final int MAX_DESCRIPTION_LENGTH = 50;
 
+    /** Maximum length for Project name field. */
+    public static final int MAX_PROJECT_NAME_LENGTH = 50;
+
+    /** Maximum length for Project description field. */
+    public static final int MAX_PROJECT_DESCRIPTION_LENGTH = 100;
+
     /** Required length for phone numbers (digits only). */
     public static final int PHONE_LENGTH = 10;
 
@@ -65,6 +72,9 @@ public final class Validation {
 
     /** Maximum length for role enum storage. Covers USER/ADMIN and future roles. */
     public static final int MAX_ROLE_LENGTH = 20;
+
+    /** Maximum length for status enum storage. Covers TaskStatus/ProjectStatus values. */
+    public static final int MAX_STATUS_LENGTH = 20;
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,}$");
@@ -145,6 +155,70 @@ public final class Validation {
     }
 
     /**
+     * Validates that a String meets the length bounds and returns the trimmed value.
+     *
+     * <p>Use this helper when you need both validation and normalized storage.</p>
+     */
+    public static String validateTrimmedLength(
+            final String input,
+            final String label,
+            final int minLength,
+            final int maxLength
+    ) {
+        return validateTrimmedLengthInternal(input, label, minLength, maxLength, false);
+    }
+
+    /**
+     * Validates length bounds but allows empty strings when {@code minLength == 0}.
+     */
+    public static String validateTrimmedLengthAllowBlank(
+            final String input,
+            final String label,
+            final int minLength,
+            final int maxLength
+    ) {
+        return validateTrimmedLengthInternal(input, label, minLength, maxLength, true);
+    }
+
+    /**
+     * Convenience overload for the common case where minLength=1.
+     */
+    public static String validateTrimmedLength(
+            final String input,
+            final String label,
+            final int maxLength
+    ) {
+        return validateTrimmedLengthInternal(input, label, 1, maxLength, false);
+    }
+
+    private static String validateTrimmedLengthInternal(
+            final String input,
+            final String label,
+            final int minLength,
+            final int maxLength,
+            final boolean allowBlankWhenMinZero
+    ) {
+        if (input == null) {
+            throw new IllegalArgumentException(label + " must not be null or blank");
+        }
+        final String trimmed = input.trim();
+        if (trimmed.isEmpty()) {
+            if (allowBlankWhenMinZero && minLength == 0) {
+                return trimmed;
+            }
+            throw new IllegalArgumentException(label + " must not be null or blank");
+        }
+        final int length = trimmed.length();
+        if (length < minLength || length > maxLength) {
+            final String message = String.format(
+                    "%s length must be between %d and %d",
+                    label, minLength, maxLength);
+            throw new IllegalArgumentException(message);
+        }
+        return trimmed;
+    }
+
+    /**
      * Validates that a date is not null and not in the past.
      *
      * <p>A date equal to "now" (within the same millisecond) is considered valid
@@ -183,5 +257,59 @@ public final class Validation {
         if (date.getTime() < clock.millis()) {
             throw new IllegalArgumentException(label + " must not be in the past");
         }
+    }
+
+    /**
+     * Validates that a LocalDate is not null and not in the past (inclusive of today).
+     *
+     * @param date  the date to validate
+     * @param label logical field name
+     * @return the same date for fluent usage
+     */
+    public static LocalDate validateDateNotPast(final LocalDate date, final String label) {
+        return validateDateNotPast(date, label, Clock.systemUTC());
+    }
+
+    /**
+     * Validates that a LocalDate is not null and not in the past using the supplied clock.
+     */
+    public static LocalDate validateDateNotPast(final LocalDate date, final String label, final Clock clock) {
+        if (date == null) {
+            throw new IllegalArgumentException(label + " must not be null");
+        }
+        final LocalDate today = LocalDate.now(clock);
+        if (date.isBefore(today)) {
+            throw new IllegalArgumentException(label + " must not be in the past");
+        }
+        return date;
+    }
+
+    /**
+     * Validates an optional LocalDate (skips validation when null).
+     */
+    public static LocalDate validateOptionalDateNotPast(final LocalDate date, final String label) {
+        if (date == null) {
+            return null;
+        }
+        return validateDateNotPast(date, label);
+    }
+
+    /**
+     * Validates that an enum value is not null.
+     *
+     * <p>This helper consolidates the null checks for enum fields like
+     * {@code ProjectStatus} and {@code Role}, ensuring consistent error messages.
+     *
+     * @param <T>       the enum type
+     * @param enumValue the enum value to check
+     * @param label     logical name of the field, used in exception messages
+     * @return the validated enum value (for fluent chaining)
+     * @throws IllegalArgumentException if the enum value is null
+     */
+    public static <T extends Enum<T>> T validateNotNull(final T enumValue, final String label) {
+        if (enumValue == null) {
+            throw new IllegalArgumentException(label + " must not be null");
+        }
+        return enumValue;
     }
 }

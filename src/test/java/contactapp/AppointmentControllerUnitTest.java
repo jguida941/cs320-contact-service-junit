@@ -36,7 +36,7 @@ class AppointmentControllerUnitTest {
     void getAll_withAllFlagRejectsNonAdmins() {
         authenticate(false);
 
-        assertThatThrownBy(() -> controller.getAll(true))
+        assertThatThrownBy(() -> controller.getAll(true, null, null))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("Only administrators");
     }
@@ -50,7 +50,7 @@ class AppointmentControllerUnitTest {
                 "Admin review");
         when(appointmentService.getAllAppointmentsAllUsers()).thenReturn(List.of(appointment));
 
-        assertThat(controller.getAll(true)).singleElement().satisfies(response ->
+        assertThat(controller.getAll(true, null, null)).singleElement().satisfies(response ->
                 assertThat(response.id()).isEqualTo("admin-appt"));
         verify(appointmentService).getAllAppointmentsAllUsers();
     }

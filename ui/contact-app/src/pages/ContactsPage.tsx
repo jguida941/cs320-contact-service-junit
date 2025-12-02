@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/search-input';
+import { Pagination } from '@/components/ui/pagination';
+import { SortableTableHead } from '@/components/ui/sortable-table-head';
+import { useToast } from '@/hooks/useToast';
 import {
   Table,
   TableBody,
@@ -21,27 +25,65 @@ import { Badge } from '@/components/ui/badge';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 import { contactsApi } from '@/lib/api';
+import { useFilteredSortedPaginatedData } from '@/lib/hooks/useTableState';
 import type { Contact, ContactRequest } from '@/lib/schemas';
 
 type SheetMode = 'view' | 'create' | 'edit';
 
+/**
+ * ContactsPage component with search, pagination, and sorting
+ *
+ * Features:
+ * - Client-side search across all contact fields
+ * - Pagination with 15 items per page
+ * - Sortable columns (ID, Name, Phone, Address)
+ * - URL query params for bookmarkable state
+ * - Create/Edit/View/Delete operations
+ */
 export function ContactsPage() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>('view');
   const [deleteTarget, setDeleteTarget] = useState<Contact | null>(null);
 
   const queryClient = useQueryClient();
+  const toast = useToast();
 
+  // Fetch all contacts from API
   const { data: contacts = [], isLoading, error } = useQuery({
     queryKey: ['contacts'],
     queryFn: contactsApi.getAll,
   });
+
+  // Apply search, sorting, and pagination to the contacts
+  // Search across: id, firstName, lastName, phone, address
+  const {
+    items: paginatedContacts,
+    totalItems,
+    totalPages,
+    currentPage,
+    itemsPerPage,
+    searchQuery,
+    sortConfig,
+    setSearch,
+    setPage,
+    setSort,
+  } = useFilteredSortedPaginatedData<Contact>(contacts, [
+    'id',
+    'firstName',
+    'lastName',
+    'phone',
+    'address',
+  ]);
 
   const createMutation = useMutation({
     mutationFn: contactsApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
       closeSheet();
+      toast.success('Contact created successfully');
+    },
+    onError: (error) => {
+      toast.error(error);
     },
   });
 
@@ -51,6 +93,10 @@ export function ContactsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
       closeSheet();
+      toast.success('Contact updated successfully');
+    },
+    onError: (error) => {
+      toast.error(error);
     },
   });
 
@@ -62,6 +108,10 @@ export function ContactsPage() {
       if (selectedContact?.id === deleteTarget?.id) {
         closeSheet();
       }
+      toast.success('Contact deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(error);
     },
   });
 
@@ -127,15 +177,47 @@ export function ContactsPage() {
         </Button>
       </div>
 
+      {/* Search bar */}
+      <SearchInput
+        value={searchQuery}
+        onChange={setSearch}
+        placeholder="Search contacts by ID, name, phone, or address..."
+        className="max-w-md"
+      />
+
       {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Address</TableHead>
+              <SortableTableHead
+                sortKey="id"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                ID
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="firstName"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                Name
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="phone"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                Phone
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="address"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                Address
+              </SortableTableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -146,14 +228,16 @@ export function ContactsPage() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : contacts.length === 0 ? (
+            ) : totalItems === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  No contacts found. Add your first contact to get started.
+                  {searchQuery
+                    ? `No contacts found matching "${searchQuery}".`
+                    : 'No contacts found. Add your first contact to get started.'}
                 </TableCell>
               </TableRow>
             ) : (
-              contacts.map((contact) => (
+              paginatedContacts.map((contact) => (
                 <TableRow
                   key={contact.id}
                   className="cursor-pointer hover:bg-muted/50"
@@ -191,6 +275,17 @@ export function ContactsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+        />
+      )}
 
       {/* Create/Edit/View Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>

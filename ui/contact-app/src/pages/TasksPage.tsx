@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SearchInput } from '@/components/ui/search-input';
+import { Pagination } from '@/components/ui/pagination';
+import { SortableTableHead } from '@/components/ui/sortable-table-head';
 import {
   Table,
   TableBody,
@@ -21,10 +24,21 @@ import { Badge } from '@/components/ui/badge';
 import { TaskForm } from '@/components/forms/TaskForm';
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 import { tasksApi } from '@/lib/api';
+import { useFilteredSortedPaginatedData } from '@/lib/hooks/useTableState';
 import type { Task, TaskRequest } from '@/lib/schemas';
 
 type SheetMode = 'view' | 'create' | 'edit';
 
+/**
+ * TasksPage component with search, pagination, and sorting
+ *
+ * Features:
+ * - Client-side search across all task fields
+ * - Pagination with 15 items per page
+ * - Sortable columns (ID, Name, Description)
+ * - URL query params for bookmarkable state
+ * - Create/Edit/View/Delete operations
+ */
 export function TasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetMode>('view');
@@ -32,10 +46,30 @@ export function TasksPage() {
 
   const queryClient = useQueryClient();
 
+  // Fetch all tasks from API
   const { data: tasks = [], isLoading, error } = useQuery({
     queryKey: ['tasks'],
     queryFn: tasksApi.getAll,
   });
+
+  // Apply search, sorting, and pagination to the tasks
+  // Search across: id, name, description
+  const {
+    items: paginatedTasks,
+    totalItems,
+    totalPages,
+    currentPage,
+    itemsPerPage,
+    searchQuery,
+    sortConfig,
+    setSearch,
+    setPage,
+    setSort,
+  } = useFilteredSortedPaginatedData<Task>(tasks, [
+    'id',
+    'name',
+    'description',
+  ]);
 
   const createMutation = useMutation({
     mutationFn: tasksApi.create,
@@ -127,14 +161,40 @@ export function TasksPage() {
         </Button>
       </div>
 
+      {/* Search bar */}
+      <SearchInput
+        value={searchQuery}
+        onChange={setSearch}
+        placeholder="Search tasks by ID, name, or description..."
+        className="max-w-md"
+      />
+
       {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
+              <SortableTableHead
+                sortKey="id"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                ID
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="name"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                Name
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="description"
+                currentSort={sortConfig}
+                onSort={setSort}
+              >
+                Description
+              </SortableTableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -145,14 +205,16 @@ export function TasksPage() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : tasks.length === 0 ? (
+            ) : totalItems === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  No tasks found. Add your first task to get started.
+                  {searchQuery
+                    ? `No tasks found matching "${searchQuery}".`
+                    : 'No tasks found. Add your first task to get started.'}
                 </TableCell>
               </TableRow>
             ) : (
-              tasks.map((task) => (
+              paginatedTasks.map((task) => (
                 <TableRow
                   key={task.id}
                   className="cursor-pointer hover:bg-muted/50"
@@ -187,6 +249,17 @@ export function TasksPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+        />
+      )}
 
       {/* Create/Edit/View Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={(open) => !open && closeSheet()}>

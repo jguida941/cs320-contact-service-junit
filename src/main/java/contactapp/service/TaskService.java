@@ -239,6 +239,97 @@ public class TaskService {
     }
 
     /**
+     * Updates all fields of an existing task for the authenticated user.
+     *
+     * @param taskId the id of the task to update
+     * @param newName new task name
+     * @param description new description
+     * @param status new status (defaults to TODO if null)
+     * @param dueDate new due date (nullable)
+     * @return true if the task exists and was updated, false if no task with that id exists
+     * @throws IllegalArgumentException if any new field value is invalid
+     */
+    public boolean updateTask(
+            final String taskId,
+            final String newName,
+            final String description,
+            final contactapp.domain.TaskStatus status,
+            final java.time.LocalDate dueDate) {
+        return updateTask(taskId, newName, description, status, dueDate, null);
+    }
+
+    /**
+     * Updates all fields of an existing task for the authenticated user, including project link.
+     *
+     * @param taskId the id of the task to update
+     * @param newName new task name
+     * @param description new description
+     * @param status new status (defaults to TODO if null)
+     * @param dueDate new due date (nullable)
+     * @param projectId new project ID (nullable, can unlink from project)
+     * @return true if the task exists and was updated, false if no task with that id exists
+     * @throws IllegalArgumentException if any new field value is invalid
+     */
+    public boolean updateTask(
+            final String taskId,
+            final String newName,
+            final String description,
+            final contactapp.domain.TaskStatus status,
+            final java.time.LocalDate dueDate,
+            final String projectId) {
+        return updateTask(taskId, newName, description, status, dueDate, projectId, null);
+    }
+
+    /**
+     * Updates all fields of an existing task for the authenticated user, including project link and assignee.
+     *
+     * @param taskId the id of the task to update
+     * @param newName new task name
+     * @param description new description
+     * @param status new status (defaults to TODO if null)
+     * @param dueDate new due date (nullable)
+     * @param projectId new project ID (nullable, can unlink from project)
+     * @param assigneeId new assignee user ID (nullable, can unassign)
+     * @return true if the task exists and was updated, false if no task with that id exists
+     * @throws IllegalArgumentException if any new field value is invalid
+     */
+    public boolean updateTask(
+            final String taskId,
+            final String newName,
+            final String description,
+            final contactapp.domain.TaskStatus status,
+            final java.time.LocalDate dueDate,
+            final String projectId,
+            final Long assigneeId) {
+        Validation.validateNotBlank(taskId, "taskId");
+        final String normalizedId = taskId.trim();
+
+        if (store instanceof JpaTaskStore) {
+            final JpaTaskStore jpaStore = (JpaTaskStore) store;
+            final User currentUser = getCurrentUser();
+
+            final Optional<Task> task = jpaStore.findById(normalizedId, currentUser);
+            if (task.isEmpty()) {
+                return false;
+            }
+            final Task existing = task.get();
+            existing.update(newName, description, status, dueDate, projectId, assigneeId);
+            jpaStore.save(existing, currentUser);
+            return true;
+        }
+
+        // Fallback for legacy in-memory store
+        final Optional<Task> task = store.findById(normalizedId);
+        if (task.isEmpty()) {
+            return false;
+        }
+        final Task existing = task.get();
+        existing.update(newName, description, status, dueDate, projectId, assigneeId);
+        store.save(existing);
+        return true;
+    }
+
+    /**
      * Returns an unmodifiable snapshot of the current task store.
      *
      * <p>Returns defensive copies of each Task to prevent external mutation
@@ -332,6 +423,148 @@ public class TaskService {
         }
 
         return store.findById(trimmedId).map(Task::copy);
+    }
+
+    /**
+     * Returns all tasks with the specified status for the authenticated user.
+     *
+     * @param status the status to filter by
+     * @return list of tasks with the specified status
+     * @throws IllegalArgumentException if status is null
+     */
+    @Transactional(readOnly = true)
+    public List<Task> getTasksByStatus(final contactapp.domain.TaskStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
+
+        if (store instanceof JpaTaskStore) {
+            final JpaTaskStore jpaStore = (JpaTaskStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findAll(currentUser).stream()
+                    .filter(task -> status.equals(task.getStatus()))
+                    .map(Task::copy)
+                    .toList();
+        }
+
+        return store.findAll().stream()
+                .filter(task -> status.equals(task.getStatus()))
+                .map(Task::copy)
+                .toList();
+    }
+
+    /**
+     * Returns all tasks with a due date before the specified date for the authenticated user.
+     *
+     * @param date the date to compare against
+     * @return list of tasks due before the specified date
+     * @throws IllegalArgumentException if date is null
+     */
+    @Transactional(readOnly = true)
+    public List<Task> getTasksDueBefore(final java.time.LocalDate date) {
+        if (date == null) {
+            throw new IllegalArgumentException("date must not be null");
+        }
+
+        if (store instanceof JpaTaskStore) {
+            final JpaTaskStore jpaStore = (JpaTaskStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findAll(currentUser).stream()
+                    .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(date))
+                    .map(Task::copy)
+                    .toList();
+        }
+
+        return store.findAll().stream()
+                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(date))
+                .map(Task::copy)
+                .toList();
+    }
+
+    /**
+     * Returns all tasks associated with the specified project for the authenticated user.
+     *
+     * @param projectId the project ID to filter by
+     * @return list of tasks for the specified project
+     * @throws IllegalArgumentException if projectId is null or blank
+     */
+    @Transactional(readOnly = true)
+    public List<Task> getTasksByProjectId(final String projectId) {
+        Validation.validateNotBlank(projectId, "projectId");
+        final String trimmedProjectId = projectId.trim();
+
+        if (store instanceof JpaTaskStore) {
+            final JpaTaskStore jpaStore = (JpaTaskStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findAll(currentUser).stream()
+                    .filter(task -> trimmedProjectId.equals(task.getProjectId()))
+                    .map(Task::copy)
+                    .toList();
+        }
+
+        return store.findAll().stream()
+                .filter(task -> trimmedProjectId.equals(task.getProjectId()))
+                .map(Task::copy)
+                .toList();
+    }
+
+    /**
+     * Returns all tasks assigned to the specified user for the authenticated user.
+     *
+     * @param assigneeId the user ID to filter by
+     * @return list of tasks assigned to the specified user
+     * @throws IllegalArgumentException if assigneeId is null
+     */
+    @Transactional(readOnly = true)
+    public List<Task> getTasksByAssigneeId(final Long assigneeId) {
+        if (assigneeId == null) {
+            throw new IllegalArgumentException("assigneeId must not be null");
+        }
+
+        if (store instanceof JpaTaskStore) {
+            final JpaTaskStore jpaStore = (JpaTaskStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findAll(currentUser).stream()
+                    .filter(task -> assigneeId.equals(task.getAssigneeId()))
+                    .map(Task::copy)
+                    .toList();
+        }
+
+        return store.findAll().stream()
+                .filter(task -> assigneeId.equals(task.getAssigneeId()))
+                .map(Task::copy)
+                .toList();
+    }
+
+    /**
+     * Returns all overdue tasks for the authenticated user.
+     *
+     * <p>A task is considered overdue if its due date is before today and
+     * its status is not DONE.
+     *
+     * @return list of overdue tasks
+     */
+    @Transactional(readOnly = true)
+    public List<Task> getOverdueTasks() {
+        final java.time.LocalDate today = java.time.LocalDate.now();
+
+        if (store instanceof JpaTaskStore) {
+            final JpaTaskStore jpaStore = (JpaTaskStore) store;
+            final User currentUser = getCurrentUser();
+            return jpaStore.findAll(currentUser).stream()
+                    .filter(task -> task.getDueDate() != null
+                            && task.getDueDate().isBefore(today)
+                            && task.getStatus() != contactapp.domain.TaskStatus.DONE)
+                    .map(Task::copy)
+                    .toList();
+        }
+
+        return store.findAll().stream()
+                .filter(task -> task.getDueDate() != null
+                        && task.getDueDate().isBefore(today)
+                        && task.getStatus() != contactapp.domain.TaskStatus.DONE)
+                .map(Task::copy)
+                .toList();
     }
 
     void clearAllTasks() {

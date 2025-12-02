@@ -98,7 +98,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
         // Wrap request and response to allow body reading
         final ContentCachingRequestWrapper requestWrapper =
-                new ContentCachingRequestWrapper(request);
+                new ContentCachingRequestWrapper(request, 10240);
         final ContentCachingResponseWrapper responseWrapper =
                 new ContentCachingResponseWrapper(response);
 

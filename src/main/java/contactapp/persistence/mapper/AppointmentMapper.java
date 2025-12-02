@@ -29,11 +29,14 @@ public class AppointmentMapper {
             throw new IllegalArgumentException("appointmentDate must not be null");
         }
         final Instant instant = appointmentDate.toInstant();
-        return new AppointmentEntity(
+        final AppointmentEntity entity = new AppointmentEntity(
                 domain.getAppointmentId(),
                 instant,
                 domain.getDescription(),
                 user);
+        entity.setProjectId(domain.getProjectId());
+        entity.setTaskId(domain.getTaskId());
+        return entity;
     }
 
     /**
@@ -64,7 +67,9 @@ public class AppointmentMapper {
         return new Appointment(
                 entity.getAppointmentId(),
                 date,
-                entity.getDescription());
+                entity.getDescription(),
+                entity.getProjectId(),
+                entity.getTaskId());
     }
 
     /**
@@ -86,5 +91,7 @@ public class AppointmentMapper {
         }
         target.setAppointmentDate(appointmentDate.toInstant());
         target.setDescription(source.getDescription());
+        target.setProjectId(source.getProjectId());
+        target.setTaskId(source.getTaskId());
     }
 }

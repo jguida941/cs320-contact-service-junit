@@ -1,6 +1,9 @@
 package contactapp.api.dto;
 
 import contactapp.domain.Task;
+import contactapp.domain.TaskStatus;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Objects;
 
 /**
@@ -12,11 +15,23 @@ import java.util.Objects;
  * @param id          the task's unique identifier
  * @param name        the task name
  * @param description the task description
+ * @param status      the task status
+ * @param dueDate     the task due date (nullable)
+ * @param projectId   the associated project ID (nullable)
+ * @param assigneeId  the assignee user ID (nullable)
+ * @param createdAt   timestamp when the task was created
+ * @param updatedAt   timestamp when the task was last updated
  */
 public record TaskResponse(
         String id,
         String name,
-        String description
+        String description,
+        TaskStatus status,
+        LocalDate dueDate,
+        String projectId,
+        Long assigneeId,
+        Instant createdAt,
+        Instant updatedAt
 ) {
     /**
      * Creates a TaskResponse from a Task domain object.
@@ -30,7 +45,13 @@ public record TaskResponse(
         return new TaskResponse(
                 task.getTaskId(),
                 task.getName(),
-                task.getDescription()
+                task.getDescription(),
+                task.getStatus(),
+                task.getDueDate(),
+                task.getProjectId(),
+                task.getAssigneeId(),
+                task.getCreatedAt(),
+                task.getUpdatedAt()
         );
     }
 }

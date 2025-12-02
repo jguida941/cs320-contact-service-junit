@@ -6,8 +6,8 @@ import java.util.List;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.TomcatContextCustomizer;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 
 import static org.assertj.core.api.Assertions.assertThat;

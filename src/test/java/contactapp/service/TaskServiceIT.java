@@ -1,6 +1,7 @@
 package contactapp.service;
 
 import contactapp.domain.Task;
+import contactapp.domain.TaskStatus;
 import contactapp.persistence.entity.TaskEntity;
 import contactapp.persistence.repository.TaskRepository;
 import contactapp.security.User;
@@ -20,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -69,7 +72,8 @@ class TaskServiceIT {
     @Test
     void databaseRejectsNullDescription() {
         User owner = userRepository.save(TestUserFactory.createUser("task-it-invalid"));
-        TaskEntity entity = new TaskEntity("it-task-null", "Name", null, owner);
+        TaskEntity entity = new TaskEntity("it-task-null", "Name", null,
+                TaskStatus.TODO, LocalDate.now(), owner);
 
         assertThatThrownBy(() -> taskRepository.saveAndFlush(entity))
                 .as("description column is NOT NULL")

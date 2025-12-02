@@ -15,8 +15,11 @@ import org.springframework.util.StringUtils;
  * <p>Accepts raw CSRF tokens from cookies (as sent by SPAs that read XSRF-TOKEN cookie)
  * while still providing BREACH protection via XOR masking for server-rendered pages.
  *
- * <p>Based on Spring Security 6 migration guide:
- * https://docs.spring.io/spring-security/reference/5.8/migration/servlet/exploits.html#_i_am_using_a_single_page_application_with_cookiecsrftokenrepository
+ * <p>Based on Spring Security 6 migration guide.
+ *
+ * @see <a href="https://docs.spring.io/spring-security/reference/5.8/migration/
+ * servlet/exploits.html#_i_am_using_a_single_page_application_with_cookiecsrftokenrepository">
+ * Spring Security 6 CSRF Migration</a>
  */
 public final class SpaCsrfTokenRequestHandler extends CsrfTokenRequestAttributeHandler {
     private final CsrfTokenRequestHandler delegate = new XorCsrfTokenRequestAttributeHandler();

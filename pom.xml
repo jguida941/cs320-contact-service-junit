@@ -308,8 +308,7 @@
                 <version>${surefire.version}</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
-                    <parallel>classes</parallel>
-                    <useUnlimitedThreads>true</useUnlimitedThreads>
+                    <!-- Sequential execution to ensure @Isolated tests don't collide -->
                     <excludes>
                         <exclude>**/*IT.java</exclude>
                     </excludes>

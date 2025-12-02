@@ -49,6 +49,16 @@ class RequestUtilsTest {
         assertThat(clientIp(request)).isEqualTo("unknown");
     }
 
+    @Test
+    void getClientIp_ignoresUnknownHeaderValues() {
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("X-Forwarded-For", "unknown");
+        request.addHeader("X-Real-IP", "unknown");
+        request.setRemoteAddr("192.0.2.9");
+
+        assertThat(clientIp(request)).isEqualTo("192.0.2.9");
+    }
+
     private String clientIp(final HttpServletRequest request) {
         return RequestUtils.getClientIp(request);
     }

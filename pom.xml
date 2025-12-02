@@ -315,9 +315,6 @@
                     <excludes>
                         <exclude>**/*IT.java</exclude>
                     </excludes>
-                    <systemPropertyVariables>
-                        <contactapp.disableSingletonMigration>true</contactapp.disableSingletonMigration>
-                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
@@ -608,9 +605,6 @@
                                 <exclude>**/ProjectServiceTest.java</exclude>
                                 <exclude>**/*ServiceLegacyTest.java</exclude>
                             </excludes>
-                            <systemPropertyVariables>
-                                <contactapp.disableSingletonMigration>true</contactapp.disableSingletonMigration>
-                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                 </plugins>

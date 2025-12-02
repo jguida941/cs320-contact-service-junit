@@ -313,6 +313,12 @@
                     <reuseForks>true</reuseForks>
                     <!-- Sequential execution to ensure @Isolated tests don't collide -->
                     <excludes>
+                        <!-- Move singleton/legacy coverage into a dedicated profile -->
+                        <exclude>**/service/*ServiceLegacyTest.java</exclude>
+                        <exclude>**/service/ContactServiceTest.java</exclude>
+                        <exclude>**/service/TaskServiceTest.java</exclude>
+                        <exclude>**/service/AppointmentServiceTest.java</exclude>
+                        <exclude>**/service/ProjectServiceTest.java</exclude>
                         <exclude>**/*IT.java</exclude>
                     </excludes>
                 </configuration>
@@ -574,6 +580,32 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>legacy-singleton</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/service/*ServiceLegacyTest.java</include>
+                                <include>**/service/ContactServiceTest.java</include>
+                                <include>**/service/TaskServiceTest.java</include>
+                                <include>**/service/AppointmentServiceTest.java</include>
+                                <include>**/service/ProjectServiceTest.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*IT.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <skipITs>true</skipITs>
+            </properties>
+        </profile>
         <!--
             Profile to skip Testcontainers-based tests on platforms without Docker support.
             Activated by passing -DskipTestcontainersTests=true (used on Windows CI runners).

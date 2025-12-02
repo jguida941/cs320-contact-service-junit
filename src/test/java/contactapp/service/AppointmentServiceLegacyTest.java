@@ -18,9 +18,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.parallel.Isolated;
-import contactapp.support.PostgresContainerSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,8 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Isolated
-@Disabled("Temporarily disabled to isolate duplicate-id flakiness")
-class AppointmentServiceLegacyTest extends PostgresContainerSupport {
+class AppointmentServiceLegacyTest {
 
     @Autowired
     private TestUserSetup testUserSetup;

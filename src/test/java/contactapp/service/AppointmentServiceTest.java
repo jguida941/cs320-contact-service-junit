@@ -5,11 +5,10 @@ import contactapp.domain.Appointment;
 import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import java.lang.reflect.Field;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.junit.jupiter.api.Disabled;
-import contactapp.support.PostgresContainerSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Isolated
-public class AppointmentServiceTest extends PostgresContainerSupport {
+public class AppointmentServiceTest {
 
     @Autowired
     private AppointmentService service;

@@ -7,8 +7,6 @@ import contactapp.security.TestUserSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.junit.jupiter.api.Disabled;
-import contactapp.support.PostgresContainerSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Isolated
-public class ContactServiceTest extends PostgresContainerSupport {
+public class ContactServiceTest {
 
     @Autowired
     private ContactService service;

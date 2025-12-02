@@ -49,6 +49,8 @@ public class TaskService {
     private final TaskStore store;
     private final boolean legacyStore;
     private Clock clock = Clock.systemUTC();
+    private static final String DISABLE_SINGLETON_MIGRATION_PROPERTY =
+            "contactapp.disableSingletonMigration";
 
     @org.springframework.beans.factory.annotation.Autowired
     public TaskService(final TaskStore store) {
@@ -62,10 +64,16 @@ public class TaskService {
     }
 
     private static synchronized void registerInstance(final TaskService candidate) {
-        if (instance != null && instance.legacyStore && !candidate.legacyStore) {
+        if (!isSingletonMigrationDisabled()
+                && instance != null && instance.legacyStore && !candidate.legacyStore) {
             instance.getAllTasks().forEach(candidate::addTask);
         }
         instance = candidate;
+    }
+
+    private static boolean isSingletonMigrationDisabled() {
+        return Boolean.parseBoolean(
+                System.getProperty(DISABLE_SINGLETON_MIGRATION_PROPERTY, "false"));
     }
 
     /**

@@ -53,7 +53,7 @@ public static final int MAX_PROJECT_DESCRIPTION_LENGTH = 100;
 
 ### 1.2 Database Migration
 
-**New File: `src/main/resources/db/migration/common/V7__create_projects_table.sql`**
+**New File: `src/main/resources/db/migration/common/V8__create_projects_table.sql`**
 
 ```sql
 CREATE TABLE projects (
@@ -503,7 +503,7 @@ This is optional and can be deferred.
 ```
 Phase 1: Project Entity                    [Foundation]
     ├── 1.1 Domain + Validation
-    ├── 1.2 Migration V7
+    ├── 1.2 Migration V8
     ├── 1.3 Persistence layer
     ├── 1.4 Service layer
     ├── 1.5 API layer

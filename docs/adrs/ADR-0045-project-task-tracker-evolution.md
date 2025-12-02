@@ -24,7 +24,7 @@
 **Deferred Features**:
 - Contact-project linking (stakeholder management via V13 junction table)
 
-**Database Migrations**: V7 (projects), V8 (task status/dates), V10 (task-project FK), V11 (appointment links), V12 (task assignment)
+**Database Migrations**: V7 (version columns), V8 (projects), V9 (task status/dates), V10 (task-project FK), V11 (appointment links), V12 (task assignment)
 
 **API Endpoints**: Full CRUD at `/api/v1/projects`, enhanced `/api/v1/tasks` and `/api/v1/appointments` with query parameters for filtering by project, task, status, assignee, and due dates.
 
@@ -81,7 +81,7 @@ public final class Project {
 - `MAX_PROJECT_NAME_LENGTH = 50`
 - `MAX_PROJECT_DESCRIPTION_LENGTH = 100`
 
-**Migration V7**: `V7__create_projects_table.sql`
+**Migration V8**: `V8__create_projects_table.sql`
 ```sql
 CREATE TABLE projects (
     id BIGSERIAL PRIMARY KEY,
@@ -449,9 +449,9 @@ All migrations use **additive-only changes**:
 
 | Migration | Description                                    | Breaking?              | Status     |
 |-----------|------------------------------------------------|------------------------|------------|
-| V7        | CREATE projects table                          | No - new table         | ✅ Complete |
-| V8        | ALTER tasks ADD status, due_date, timestamps   | No - defaults provided | ✅ Complete |
-| V9        | (Reserved - migration numbering adjustment)    | -                      | -          |
+| V7        | ALTER entities ADD version column              | No - defaults provided | ✅ Complete |
+| V8        | CREATE projects table                          | No - new table         | ✅ Complete |
+| V9        | ALTER tasks ADD status, due_date, timestamps   | No - defaults provided | ✅ Complete |
 | V10       | ALTER tasks ADD project_id FK                  | No - nullable          | ✅ Complete |
 | V11       | ALTER appointments ADD task_id, project_id FKs | No - nullable          | ✅ Complete |
 | V12       | ALTER tasks ADD assigned_to_user_id FK         | No - nullable          | ✅ Complete |
@@ -542,7 +542,7 @@ Response 201:
 ```
 Phase 1: Project Entity                    [2-3 days] ✅ COMPLETE
     ├── Domain + Validation constants
-    ├── Migration V7
+    ├── Migration V8
     ├── Persistence layer (Entity/Repo/Mapper/Store)
     ├── Service layer
     ├── API layer (Controller + DTOs)

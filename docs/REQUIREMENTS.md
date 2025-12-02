@@ -30,8 +30,8 @@
 
 - **Phases 0-7 complete**: Spring Boot 4.0.0 foundation with layered packages, REST API with OpenAPI/Swagger, Spring Data JPA persistence (Postgres in dev/prod; Postgres via Testcontainers for SpringBootTests; H2 for targeted slices), React 19 SPA with search/pagination/sorting/admin dashboard/accessibility, JWT authentication with per-user data isolation, rate limiting, CSRF protection, structured logging with PII masking, Prometheus metrics, Docker packaging with CI/CD, and comprehensive security testing (ZAP DAST, Schemathesis API fuzzing).
 - **Project/Task Tracker Evolution implemented (ADR-0045 Phases 1-5)**: Complete implementation of project organization and team collaboration features:
-  - Phase 1: Project entity with full CRUD operations, status tracking (ACTIVE/ON_HOLD/COMPLETED/ARCHIVED), migration V7
-  - Phase 2: Task enhancements with status (TODO/IN_PROGRESS/DONE), dueDate, timestamps, migration V8
+  - Phase 1: Project entity with full CRUD operations, status tracking (ACTIVE/ON_HOLD/COMPLETED/ARCHIVED), migration V8
+  - Phase 2: Task enhancements with status (TODO/IN_PROGRESS/DONE), dueDate, timestamps, migration V9
   - Phase 3: Task-project linking with projectId FK, migration V10
   - Phase 4: Appointment linking with taskId/projectId FKs, migration V11
   - Phase 5: Task assignment with assigneeId FK, migration V12
@@ -218,7 +218,7 @@ Implementation details:
 - **Status**: Phases 1-5 complete (2025-12-01). Phase 6 (Contact-Project Linking) is deferred to future implementation.
 - **Phase 1 Complete - Project Entity**:
   - Implemented first-class Project aggregate with domain/entity/repository/service/controller/DTO/tests
-  - Flyway migration V7__create_projects_table.sql with user_id FK, status constraint, indexes
+  - Flyway migration V8__create_projects_table.sql with user_id FK, status constraint, indexes
   - ProjectController REST API at `/api/v1/projects` with CRUD + status filtering (`?status=ACTIVE`)
   - ProjectService with per-user data isolation following established patterns
   - ProjectEntity JPA entity with @Version for optimistic locking
@@ -426,7 +426,7 @@ Implementation details:
 - [x] ProjectService with per-user data isolation and status filtering
 - [x] ProjectController REST API at `/api/v1/projects` (CRUD + status query)
 - [x] ProjectRequest/ProjectResponse DTOs with Bean Validation
-- [x] Flyway migration V7__create_projects_table.sql
+- [x] Flyway migration V8__create_projects_table.sql
 - [x] Comprehensive test coverage: ProjectTest, ProjectStatusTest, ProjectEntityTest, ProjectRepositoryTest, ProjectMapperTest, JpaProjectStoreTest, ProjectServiceTest, ProjectControllerTest
 - [x] Documentation updates (CHANGELOG, ROADMAP, REQUIREMENTS, README, ADR-0045)
 

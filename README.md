@@ -150,8 +150,8 @@ The phased plan in [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) governs scope.
 ### Project/Task Tracker Evolution Summary (ADR-0045 Phases 1-5)
 
 **Completed Features** (2025-12-01):
-- **Phase 1 - Project Entity**: Full CRUD operations at `/api/v1/projects` with status tracking (ACTIVE, ON_HOLD, COMPLETED, ARCHIVED), per-user data isolation, migration V7
-- **Phase 2 - Task Status/Due Date**: Enhanced Task with status enum (TODO, IN_PROGRESS, DONE), optional due dates, createdAt/updatedAt timestamps, migration V8
+- **Phase 1 - Project Entity**: Full CRUD operations at `/api/v1/projects` with status tracking (ACTIVE, ON_HOLD, COMPLETED, ARCHIVED), per-user data isolation, migration V8
+- **Phase 2 - Task Status/Due Date**: Enhanced Task with status enum (TODO, IN_PROGRESS, DONE), optional due dates, createdAt/updatedAt timestamps, migration V9
 - **Phase 3 - Task-Project Linking**: Tasks can be assigned to projects for organization via nullable projectId FK, query parameters `?projectId={id}` and `?projectId=none`, migration V10
 - **Phase 4 - Appointment Linking**: Appointments can reference tasks and/or projects for calendar context via nullable taskId/projectId FKs, query parameters `?taskId={id}` and `?projectId={id}`, migration V11
 - **Phase 5 - Task Assignment**: Tasks can be assigned to team members via assigneeId FK, access control ensures users see tasks they own or are assigned to (plus project owners see all project tasks, admins see everything), query parameter `?assigneeId={userId}`, migration V12
@@ -1787,14 +1787,15 @@ graph TD
 ## QA Summary
 Each GitHub Actions matrix job writes a QA table (tests, coverage, mutation score, Dependency-Check status) to the run summary. The table now includes colored icons, ASCII bars, and severity breakdowns so drift stands out immediately. Open any workflow's "Summary" tab and look for the "QA Metrics" section for the latest numbers.
 
-**Current Test Metrics (1066 tests):**
+**Current Test Metrics (911 @Test methods, 1066 test executions):**
 - +44 TaskService tests covering query methods, user isolation, and defensive copies
 - +71 mutation-focused tests targeting boundary conditions and comparison operators
 - 94%+ mutation kill rate (PIT)
 - 96%+ line coverage on stores, 95%+ on mappers
 - All domain entities have comprehensive boundary testing
 - Test fixtures use centralized `TestCleanupUtility` to reset the SecurityContext, reseed test users, and reset singleton instances via reflection, ensuring complete test isolation and eliminating all DuplicateResource exceptions
-- All 1066 tests now run reliably without order-dependent failures thanks to proper cleanup order enforcement (security → singletons → users → data)
+- All 1066 test executions run reliably without order-dependent failures thanks to proper cleanup order enforcement (security → singletons → users → data)
+- **Note:** Full test suite requires Docker for Testcontainers-based integration tests; parameterized tests expand the 911 @Test methods into 1066 total executions
 
 Recent PIT survivors in the rate-limiting/logging filters and the TaskService legacy fallback are now covered with dedicated unit tests (log capturing + legacy-store spies), so sanitization helpers and legacy data migration can't be removed without failing tests.
 

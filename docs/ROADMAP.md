@@ -27,8 +27,8 @@ Phase 5 focus: End-to-end authentication/authorization, per-tenant data isolatio
 Test fixtures now reset stale SecurityContext entries and recreate the seed user when missing to prevent FK/unique collisions during singleton-sharing service tests.
 
 **Project/Task Tracker Evolution (Phases 1-5 Complete - 2025-12-01).** ADR-0045 documents the evolution plan. Phases 1-5 are complete and production-ready:
-- **Phase 1 (Project Entity)**: Full CRUD operations, status tracking, migration V7
-- **Phase 2 (Task Status/Due Date)**: Task workflow management with status/due dates, migration V8
+- **Phase 1 (Project Entity)**: Full CRUD operations, status tracking, migration V8
+- **Phase 2 (Task Status/Due Date)**: Task workflow management with status/due dates, migration V9
 - **Phase 3 (Task-Project Linking)**: Organize tasks within projects, migration V10
 - **Phase 4 (Appointment Linking)**: Link appointments to tasks/projects for context, migration V11
 - **Phase 5 (Task Assignment)**: Team collaboration with task assignment and access control, migration V12

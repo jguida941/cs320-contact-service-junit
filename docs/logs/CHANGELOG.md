@@ -63,8 +63,8 @@ All notable changes to this project will be documented here. Follow the
   - Incremented total test count to **1066** tests (up from 1056)
 
 - **Project/Task Tracker Evolution Phases 1-5 Complete (ADR-0045) (2025-12-01)**:
-  - **Phase 1 - Project Entity**: Project domain with CRUD API at `/api/v1/projects`, status tracking (ACTIVE/ON_HOLD/COMPLETED/ARCHIVED), migration V7
-  - **Phase 2 - Task Status/Due Date**: Enhanced Task with status (TODO/IN_PROGRESS/DONE), dueDate, createdAt/updatedAt timestamps, migration V8
+  - **Phase 1 - Project Entity**: Project domain with CRUD API at `/api/v1/projects`, status tracking (ACTIVE/ON_HOLD/COMPLETED/ARCHIVED), migration V8
+  - **Phase 2 - Task Status/Due Date**: Enhanced Task with status (TODO/IN_PROGRESS/DONE), dueDate, createdAt/updatedAt timestamps, migration V9
   - **Phase 3 - Task-Project Linking**: Added projectId FK to Task for organization, migration V10, query parameters `?projectId={id}` and `?projectId=none`
   - **Phase 4 - Appointment Linking**: Added taskId and projectId FKs to Appointment for calendar context, migration V11, query parameters `?taskId={id}` and `?projectId={id}`
   - **Phase 5 - Task Assignment**: Added assigneeId FK to Task for collaboration, migration V12, query parameters `?assigneeId={userId}`, access control for task visibility

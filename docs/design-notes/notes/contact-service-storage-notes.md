@@ -1,5 +1,7 @@
 # ContactService singleton and storage
 
+> **Note**: This document describes the legacy in-memory `ConcurrentHashMap` implementation. The current production system uses JPA persistence with `ContactStore` abstraction. See [ADR-0024](../../adrs/ADR-0024-persistence-implementation.md) for the current architecture.
+
 (Related: [ADR-0002](../../adrs/ADR-0002-contact-service-storage.md), [ContactService.java](../../../src/main/java/contactapp/service/ContactService.java))
 
 File: docs/design-notes/notes/contact-service-storage-notes.md

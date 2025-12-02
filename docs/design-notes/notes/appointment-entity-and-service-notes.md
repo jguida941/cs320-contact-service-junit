@@ -1,5 +1,7 @@
 # Appointment entity and service notes
 
+> **Note**: This document describes the legacy in-memory `ConcurrentHashMap` implementation. The current production system uses JPA persistence with `AppointmentStore` abstraction. See [ADR-0024](../../adrs/ADR-0024-persistence-implementation.md) for the current architecture.
+
 Related: [Appointment.java](../../../src/main/java/contactapp/domain/Appointment.java), [AppointmentService.java](../../../src/main/java/contactapp/service/AppointmentService.java), ADR-0012, ADR-0013
 
 ## Why Appointment exists

@@ -1,5 +1,7 @@
 # Contact entity design
 
+> **Note**: Domain entities (`Contact`, `Task`, `Appointment`, `Project`) remain pure and validation-focused. Services now use JPA persistence via `DomainDataStore` implementations. See [ADR-0024](../../adrs/ADR-0024-persistence-implementation.md) for the persistence architecture.
+
 (Related: [Contact.java](../../../src/main/java/contactapp/domain/Contact.java), [ADR-0001](../../adrs/ADR-0001-validation-normalization.md), [ADR-0003](../../adrs/ADR-0003-update-atomicity.md))
 
 File: docs/design-notes/notes/contact-entity-notes.md

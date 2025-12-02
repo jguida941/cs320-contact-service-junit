@@ -1,5 +1,7 @@
 # Task entity and service notes
 
+> **Note**: This document describes the legacy in-memory `ConcurrentHashMap` implementation. The current production system uses JPA persistence with `TaskStore` abstraction. See [ADR-0024](../../adrs/ADR-0024-persistence-implementation.md) for the current architecture.
+
 Related: [Task.java](../../../src/main/java/contactapp/domain/Task.java), [TaskService.java](../../../src/main/java/contactapp/service/TaskService.java), ADR-0010, ADR-0011
 
 ## Why Task exists

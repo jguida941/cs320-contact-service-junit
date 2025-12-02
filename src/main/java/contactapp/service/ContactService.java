@@ -58,8 +58,6 @@ public class ContactService {
 
     private final ContactStore store;
     private final boolean legacyStore;
-    private static final String DISABLE_SINGLETON_MIGRATION_PROPERTY =
-            "contactapp.disableSingletonMigration";
 
     /**
      * Primary constructor used by Spring to wire the JPA-backed store.
@@ -76,16 +74,10 @@ public class ContactService {
     }
 
     private static synchronized void registerInstance(final ContactService candidate) {
-        if (!isSingletonMigrationDisabled()
-                && instance != null && instance.legacyStore && !candidate.legacyStore) {
+        if (instance != null && instance.legacyStore && !candidate.legacyStore) {
             instance.getAllContacts().forEach(candidate::addContact);
         }
         instance = candidate;
-    }
-
-    private static boolean isSingletonMigrationDisabled() {
-        return Boolean.parseBoolean(
-                System.getProperty(DISABLE_SINGLETON_MIGRATION_PROPERTY, "false"));
     }
 
     /**

@@ -48,8 +48,6 @@ public class AppointmentService {
 
     private final AppointmentStore store;
     private final boolean legacyStore;
-    private static final String DISABLE_SINGLETON_MIGRATION_PROPERTY =
-            "contactapp.disableSingletonMigration";
 
     @org.springframework.beans.factory.annotation.Autowired
     public AppointmentService(final AppointmentStore store) {
@@ -63,16 +61,10 @@ public class AppointmentService {
     }
 
     private static synchronized void registerInstance(final AppointmentService candidate) {
-        if (!isSingletonMigrationDisabled()
-                && instance != null && instance.legacyStore && !candidate.legacyStore) {
+        if (instance != null && instance.legacyStore && !candidate.legacyStore) {
             instance.getAllAppointments().forEach(candidate::addAppointment);
         }
         instance = candidate;
-    }
-
-    private static boolean isSingletonMigrationDisabled() {
-        return Boolean.parseBoolean(
-                System.getProperty(DISABLE_SINGLETON_MIGRATION_PROPERTY, "false"));
     }
 
     /**

@@ -69,8 +69,6 @@ public class ProjectService {
 
     private final ProjectStore store;
     private final boolean legacyStore;
-    private static final String DISABLE_SINGLETON_MIGRATION_PROPERTY =
-            "contactapp.disableSingletonMigration";
 
     private ProjectContactRepository projectContactRepository;
     private ContactRepository contactRepository;
@@ -111,16 +109,10 @@ public class ProjectService {
     }
 
     private static synchronized void registerInstance(final ProjectService candidate) {
-        if (!isSingletonMigrationDisabled()
-                && instance != null && instance.legacyStore && !candidate.legacyStore) {
+        if (instance != null && instance.legacyStore && !candidate.legacyStore) {
             instance.getAllProjects().forEach(candidate::addProject);
         }
         instance = candidate;
-    }
-
-    private static boolean isSingletonMigrationDisabled() {
-        return Boolean.parseBoolean(
-                System.getProperty(DISABLE_SINGLETON_MIGRATION_PROPERTY, "false"));
     }
 
     /**

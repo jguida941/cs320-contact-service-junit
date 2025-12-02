@@ -214,8 +214,8 @@ Implementation details:
 - Add search/pagination/sorting for large datasets; empty states, toasts, and responsive layout.
 - Harden accessibility; instrument feature usage and errors for future iterations.
 
-### Project/Task Tracker Evolution (Phases 1-5 Complete, Phase 6 Optional/Future - ADR-0045)
-- **Status**: Phases 1-5 complete (2025-12-01). Phase 6 (Contact-Project Linking) is deferred to future implementation.
+### Project/Task Tracker Evolution (Phases 1-6 Complete - ADR-0045)
+- **Status**: Phases 1-6 complete (2025-12-02). All project-task-contact linking functionality is production-ready.
 - **Phase 1 Complete - Project Entity**:
   - Implemented first-class Project aggregate with domain/entity/repository/service/controller/DTO/tests
   - Flyway migration V8__create_projects_table.sql with user_id FK, status constraint, indexes
@@ -251,9 +251,11 @@ Implementation details:
   - Query parameter: `?assigneeId={userId}` for filtering tasks by assignee
   - TaskResponse DTO includes assigneeId and assigneeUsername
   - Access control: users see tasks they own or are assigned to; project owners see all project tasks; admins see everything
-- **Phase 6 - Future/Optional**:
+- **Phase 6 Complete (2025-12-02)**:
   - Contact-Project Linking with V13__create_project_contacts_table.sql junction table
-  - Deferred for future implementation
+  - ProjectContactEntity, ProjectContactRepository, ProjectService CRUD operations
+  - API endpoints: POST/GET/DELETE /api/v1/projects/{projectId}/contacts
+  - Full test coverage for junction table operations and many-to-many relationships
 - **Guards** (maintained):
   - All new features follow established ADR patterns (ADR-0024 persistence, ADR-0037 validation, ADR-0044 optimistic locking)
   - Backward compatibility maintained via optional nullable FKs and sensible defaults
@@ -476,14 +478,15 @@ Implementation details:
 - [x] Test coverage for assignment operations
 - [x] Documentation updates
 
-**Phase 6: Contact-Project Linking (Deferred/Future)**
-- [ ] Contact-project relationships (V13__create_project_contacts_table.sql junction table)
-- [ ] ProjectContactService with CRUD operations for stakeholder management
-- [ ] API endpoints: POST/GET/DELETE /api/v1/projects/{id}/contacts
-- [ ] ContactResponse enhanced with project associations
-- [ ] React UI extensions (projects dashboard, task board with drag-drop, calendar filtering by project/task, assignment UX)
-- [ ] Test coverage for junction table operations and many-to-many relationships
-- **Note**: Deferred to future implementation. Core task tracking functionality (Phases 1-5) is complete and production-ready.
+**Phase 6: Contact-Project Linking (Complete 2025-12-02)**
+- [x] Contact-project relationships (V13__create_project_contacts_table.sql junction table)
+- [x] ProjectService with CRUD operations for stakeholder management (addContactToProject, removeContactFromProject, getProjectContacts)
+- [x] API endpoints: POST/GET/DELETE /api/v1/projects/{projectId}/contacts
+- [x] ProjectContactEntity and ProjectContactRepository for many-to-many linking
+- [x] ProjectContactRequest DTO with validation
+- [x] Test coverage for junction table operations and many-to-many relationships
+- [ ] React UI extensions (projects dashboard with contacts, task board with drag-drop, calendar filtering by project/task)
+- **Note**: Backend implementation complete. Frontend UI enhancements remain for future implementation.
 
 ### CI/CD Security Stages
 - [x] Phase 8: ZAP baseline/API scan in CI (fail on high/critical)

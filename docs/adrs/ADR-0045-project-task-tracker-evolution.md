@@ -12,7 +12,7 @@
 
 ## Summary
 
-**Implementation Status**: Phases 1-5 complete (2025-12-01). Phase 6 deferred to future.
+**Implementation Status**: Phases 1-6 complete (2025-12-02).
 
 **Completed Features**:
 - ✅ Project entity with full CRUD operations and status tracking (ACTIVE/ON_HOLD/COMPLETED/ARCHIVED)
@@ -20,11 +20,9 @@
 - ✅ Task-project linking for organization and filtering
 - ✅ Appointment-task/project linking for calendar context
 - ✅ Task assignment for team collaboration with access control
+- ✅ Contact-project linking (stakeholder management via V13 junction table)
 
-**Deferred Features**:
-- Contact-project linking (stakeholder management via V13 junction table)
-
-**Database Migrations**: V7 (version columns), V8 (projects), V9 (task status/dates), V10 (task-project FK), V11 (appointment links), V12 (task assignment)
+**Database Migrations**: V7 (version columns), V8 (projects), V9 (task status/dates), V10 (task-project FK), V11 (appointment links), V12 (task assignment), V13 (project-contact junction)
 
 **API Endpoints**: Full CRUD at `/api/v1/projects`, enhanced `/api/v1/tasks` and `/api/v1/appointments` with query parameters for filtering by project, task, status, assignee, and due dates.
 
@@ -316,11 +314,11 @@ CREATE INDEX idx_tasks_assigned_to_user_id ON tasks(assigned_to_user_id);
 - Access control implemented in service layer using Spring Security context
 - Comprehensive test coverage for assignment operations and visibility rules
 
-### Phase 6: Contact-Project Linking (Deferred/Future)
+### Phase 6: Contact-Project Linking (Complete 2025-12-02)
 
-**Status**: Not implemented. Deferred to future enhancement.
+**Status**: Implemented and production-ready.
 
-**Planned Implementation**:
+**Implementation**:
 
 **Migration V13**: `V13__create_project_contacts_table.sql`
 ```sql
@@ -334,24 +332,26 @@ CREATE TABLE project_contacts (
 );
 ```
 
-**Service Layer**: `ProjectContactService` (planned)
-- `addContactToProject(Long projectId, Long contactId, String role)`
-- `removeContactFromProject(Long projectId, Long contactId)`
-- `getProjectContacts(Long projectId)` - List of contacts with roles
-- `getContactProjects(Long contactId)` - List of projects for a contact
+**Service Layer**: `ProjectService` methods
+- `addContactToProject(String projectId, String contactId, String role)` - implemented
+- `removeContactFromProject(String projectId, String contactId)` - implemented
+- `getProjectContacts(String projectId)` - implemented
+- Uses ProjectContactRepository for persistence
 
-**API Layer**: RESTful endpoints (planned)
+**API Layer**: RESTful endpoints
 ```
 POST   /api/v1/projects/{id}/contacts     - Add contact to project
 GET    /api/v1/projects/{id}/contacts     - List project stakeholders
 DELETE /api/v1/projects/{id}/contacts/{contactId} - Remove contact from project
 ```
 
-**Rationale for Deferral**:
-- Core task tracking functionality (Phases 1-5) provides immediate value for project/task organization and team collaboration
-- Contact-Project linking is a nice-to-have feature for stakeholder management but not essential for MVP
-- Can be implemented later without breaking changes (new junction table, additive API endpoints)
-- Current focus is on stabilizing and documenting the implemented features
+**Implementation Details**:
+- Junction table `project_contacts` with composite PK (project_id, contact_id)
+- `ProjectContactEntity` JPA entity with `@EmbeddedId` for composite key
+- `ProjectContactRepository` extends JpaRepository with custom query methods
+- `ProjectContactRequest` DTO with validation via Jakarta Bean Validation
+- Full test coverage including `ProjectContactRepositoryTest` with 7 test cases
+- No breaking changes to existing APIs - purely additive endpoints
 
 ## Architecture Diagram
 
@@ -455,7 +455,7 @@ All migrations use **additive-only changes**:
 | V10       | ALTER tasks ADD project_id FK                  | No - nullable          | ✅ Complete |
 | V11       | ALTER appointments ADD task_id, project_id FKs | No - nullable          | ✅ Complete |
 | V12       | ALTER tasks ADD assigned_to_user_id FK         | No - nullable          | ✅ Complete |
-| V13       | CREATE project_contacts junction table         | No - new table         | Future     |
+| V13       | CREATE project_contacts junction table         | No - new table         | ✅ Complete |
 
 **Key Points**:
 - All new columns are nullable or have sensible defaults (status='TODO', etc.)
@@ -575,11 +575,11 @@ Phase 5: Task Assignment                   [1-2 days] ✅ COMPLETE
     ├── Access control updates
     └── API updates + Tests
 
-Phase 6: Contact-Project Linking           [Future/Optional]
-    └── Migration V13 + Full stack
+Phase 6: Contact-Project Linking           [✅ Complete 2025-12-02]
+    └── Migration V13 + Entity + Repository + Service + API + Tests
 ```
 
-**Phases 1-5 Complete** (2025-12-01): All core project/task tracker features implemented with full test coverage.
+**Phases 1-6 Complete** (2025-12-02): All project/task tracker features implemented with full test coverage.
 
 ## Consequences
 
@@ -631,8 +631,8 @@ Phase 6: Contact-Project Linking           [Future/Optional]
 - **Why**: Service layer can translate between domain IDs and entity IDs
 
 ### Alternative 6: Contact-Project Linking in Phase 1
-- **Deferred to Phase 6**: Stakeholder management is lower priority than core task tracking
-- **Why**: Can be added later without impacting core functionality
+- **Implemented in Phase 6** (2025-12-02): Stakeholder management added after core task tracking was stable
+- **Why**: Successfully added later without impacting core functionality, as planned
 
 ## References
 

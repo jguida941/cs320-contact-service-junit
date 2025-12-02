@@ -8,6 +8,15 @@
 [![OWASP Dependency-Check](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jguida941/contact-suite-spring-react/master/badges/dependency.json&style=for-the-badge)](#static-analysis--quality-gates)
 [![License](https://img.shields.io/badge/License-MIT-1D4ED8?style=for-the-badge)](LICENSE)
 
+## Executive Summary
+
+- **What it is**: Full-stack contact, task, appointment, and project tracker with Spring Boot 4.0.0 and React 19.
+- **What makes it non-trivial**: PostgreSQL + JPA with 13 Flyway migrations, JWT authentication with RBAC, per-user data isolation, token-bucket rate limiting, structured logging with PII masking, and Prometheus metrics.
+- **What was done**: Designed schema (13 migrations), built 6 domain aggregates with services/controllers, wired JWT security and observability stack, created React 19 SPA with TanStack Query.
+- **Quality**: 1,066 test executions (911 @Test methods), 92% line coverage, 89% mutation score (PITest), 5 CI quality gates (JaCoCo, PITest, SpotBugs, Checkstyle, OWASP Dependency-Check).
+
+---
+
 Started as the simple CS320 contact-service milestone and grew into a multi-entity suite (Contact/Task/Appointment/Project) with full persistence, Spring Boot 4.0.0, React 19 SPA, and backward-compatible singletons. The work breaks down into key pieces:
 1. Build the `Contact` and `ContactService` classes exactly as described in the requirements.
 2. Prove every rule with unit tests (length limits, null checks, unique IDs, and add/update/delete behavior) using the shared `Validation` helper so exceptions surface clear messages.

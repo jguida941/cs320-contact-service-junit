@@ -3,10 +3,8 @@ package contactapp.service;
 import contactapp.domain.Task;
 import contactapp.persistence.store.TaskStore;
 import java.lang.reflect.Constructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -42,11 +40,5 @@ class TaskServiceFallbackTest {
                 TaskService.class.getDeclaredConstructor(TaskStore.class, boolean.class);
         constructor.setAccessible(true);
         return constructor.newInstance(store, true);
-    }
-
-    @AfterEach
-    void clearSingleton() {
-        // Ensure legacy instances from this unit test do not leak into Spring-managed tests
-        ReflectionTestUtils.setField(TaskService.class, "instance", null);
     }
 }

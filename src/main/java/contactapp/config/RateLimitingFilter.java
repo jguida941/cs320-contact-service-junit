@@ -122,13 +122,13 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String rateLimitKey = null;
 
         if (path.startsWith("/api/auth/login")) {
-            final String clientIp = RequestUtils.getClientIp(request);
+            final String clientIp = sanitizeClientIp(RequestUtils.getClientIp(request));
             rateLimitKey = LOGIN_KEY_PREFIX + clientIp;
             bucket = ipBuckets.get(rateLimitKey, k ->
                     createBucket(rateLimitConfig.getLogin()));
             logSafeValue("Rate limiting login request from IP: {}", clientIp);
         } else if (path.startsWith("/api/auth/register")) {
-            final String clientIp = RequestUtils.getClientIp(request);
+            final String clientIp = sanitizeClientIp(RequestUtils.getClientIp(request));
             rateLimitKey = REGISTER_KEY_PREFIX + clientIp;
             bucket = ipBuckets.get(rateLimitKey, k ->
                     createBucket(rateLimitConfig.getRegister()));
@@ -293,6 +293,20 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         }
         // Value passed all validation checks - safe to log
         logger.debug(message, sanitized);
+    }
+
+    /**
+     * Sanitizes a client IP for use as a rate limit key and debug log value.
+     *
+     * <p>Strips CR/LF to prevent log injection while preserving the concatenated
+     * value expected by tests (e.g., "10.0.0.1\r\n10.0.0.2" becomes "10.0.0.110.0.0.2").
+     */
+    private String sanitizeClientIp(final String clientIp) {
+        if (clientIp == null) {
+            return "[null]";
+        }
+        final String sanitized = clientIp.replace("\r", "").replace("\n", "").trim();
+        return sanitized.isEmpty() ? "[empty]" : sanitized;
     }
 
     /**

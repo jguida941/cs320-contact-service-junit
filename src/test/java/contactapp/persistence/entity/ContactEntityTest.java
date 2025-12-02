@@ -61,4 +61,11 @@ class ContactEntityTest {
         assertThat(entity.getAddress()).isEqualTo("456 Elm");
         assertThat(entity.getUser()).isEqualTo(owner);
     }
+
+    @Test
+    void versionGetterReturnsAssignedValue() {
+        ContactEntity entity = new ContactEntity();
+        entity.setVersion(3L);
+        assertThat(entity.getVersion()).isEqualTo(3L);
+    }
 }

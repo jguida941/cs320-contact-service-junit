@@ -13,7 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -599,6 +603,29 @@ public class TaskServiceTest {
         assertThatThrownBy(() -> service.addTask(new Task(null, "Name", "Desc")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("taskId must not be null or blank");
+    }
+
+    @Test
+    void getOverdueTasksReturnsOnlyIncompletePastDueTasks() {
+        final Clock futureClock = Clock.fixed(
+                Instant.now().plus(5, ChronoUnit.DAYS),
+                ZoneOffset.UTC);
+        service.setClock(futureClock);
+
+        try {
+            final LocalDate futureToday = LocalDate.now(futureClock);
+            service.addTask(new Task("overdue", "Overdue", "Needs work", TaskStatus.IN_PROGRESS, futureToday.minusDays(2)));
+            service.addTask(new Task("done", "Done", "Already finished", TaskStatus.DONE, futureToday.minusDays(5)));
+            service.addTask(new Task("future", "Future", "Still pending", TaskStatus.TODO, futureToday.plusDays(1)));
+
+            final var overdueTasks = service.getOverdueTasks();
+
+            assertThat(overdueTasks)
+                    .extracting(Task::getTaskId)
+                    .containsExactly("overdue");
+        } finally {
+            service.setClock(Clock.systemUTC());
+        }
     }
 
     // ==================== Extended Update Tests ====================

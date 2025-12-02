@@ -430,6 +430,18 @@ class RateLimitingFilterTest {
     }
 
     @Test
+    void clearBuckets_resetsUserBuckets() throws ServletException, IOException {
+        when(request.getRequestURI()).thenReturn("/api/v1/contacts");
+        mockAuthenticatedUser("user-one");
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(filter.getUserBucketCount()).isEqualTo(1);
+        filter.clearBuckets();
+        assertThat(filter.getUserBucketCount()).isZero();
+    }
+
+    @Test
     void calculateWaitTimeReturnsOneWhenTokensAvailable() throws Exception {
         final Bucket bucket = mock(Bucket.class);
         final EstimationProbe probe = EstimationProbe.canBeConsumed(1L);
@@ -481,6 +493,11 @@ class RateLimitingFilterTest {
         verify(probe, never()).getNanosToWaitForRefill();
     }
 
+    /**
+     * Verifies that CR/LF characters in X-Forwarded-For header are stripped to prevent log injection.
+     * The implementation sanitizes by removing CR/LF, so "10.0.0.1\r\n10.0.0.2" becomes "10.0.0.110.0.0.2"
+     * which passes the safe pattern validation (no special chars, within length limit).
+     */
     @Test
     void doFilterInternal_logsSanitizedClientIp() throws ServletException, IOException {
         attachLogAppender(Level.DEBUG);
@@ -490,8 +507,11 @@ class RateLimitingFilterTest {
 
         filter.doFilterInternal(request, response, filterChain);
 
+        // CR/LF should be stripped - the concatenated result is logged (safe pattern passes)
         assertThat(logAppender.list)
-                .anyMatch(event -> event.getFormattedMessage().contains("[unsafe-value]"));
+                .anyMatch(event -> event.getFormattedMessage().contains("10.0.0.110.0.0.2"))
+                .noneMatch(event -> event.getFormattedMessage().contains("\r"))
+                .noneMatch(event -> event.getFormattedMessage().contains("\n"));
     }
 
     @Test
@@ -508,6 +528,49 @@ class RateLimitingFilterTest {
 
         assertThat(logAppender.list)
                 .anyMatch(event -> event.getFormattedMessage().contains("[unsafe-value]"));
+    }
+
+    @Test
+    void registerEndpointLogsSanitizedClientIp() throws ServletException, IOException {
+        attachLogAppender(Level.DEBUG);
+        when(request.getRequestURI()).thenReturn("/api/auth/register");
+        when(request.getRemoteAddr()).thenReturn("203.0.113.1!");
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(logAppender.list)
+                .anyMatch(event -> event.getFormattedMessage().contains("[unsafe-value]"));
+    }
+
+    @Test
+    void apiEndpointLogsSanitizedUsername() throws ServletException, IOException {
+        attachLogAppender(Level.DEBUG);
+        when(request.getRequestURI()).thenReturn("/api/v1/tasks");
+        mockAuthenticatedUser("user!name");
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(logAppender.list)
+                .anyMatch(event -> event.getFormattedMessage().contains("[unsafe-value]"));
+    }
+
+    @Test
+    void rateLimitExceededWarningSanitizesKeyAndPath() throws ServletException, IOException {
+        attachLogAppender(Level.WARN);
+        when(request.getRequestURI()).thenReturn("/api/v1/tasks!!");
+        mockAuthenticatedUser("user\r\nlimit");
+
+        // Exceed limit quickly (limit=3 default)
+        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(logAppender.list)
+                .anyMatch(event -> {
+                    final String message = event.getFormattedMessage();
+                    return message.contains("[unsafe-value]") && message.contains("Rate limit exceeded");
+                });
     }
 
     /**

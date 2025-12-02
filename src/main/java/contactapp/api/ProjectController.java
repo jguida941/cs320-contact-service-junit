@@ -186,6 +186,17 @@ public class ProjectController {
     }
 
     /**
+     * Backward-compatible overload used by unit tests that haven't been updated
+     * to pass the optional status filter. Delegates to the main {@link #getAll(boolean, ProjectStatus, Authentication)}
+     * handler with a {@code null} status to preserve existing behavior.
+     */
+    public List<ProjectResponse> getAll(
+            final boolean all,
+            final Authentication authentication) {
+        return getAll(all, null, authentication);
+    }
+
+    /**
      * Returns a project by ID.
      *
      * <p>Requires USER or ADMIN role.

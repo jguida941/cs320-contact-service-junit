@@ -6,10 +6,12 @@ import contactapp.domain.Contact;
 import contactapp.service.ContactService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,6 +47,16 @@ class ContactControllerUnitTest {
         controller.getAll(false, userAuth);
 
         verify(contactService).getAllContacts();
+        verify(contactService, never()).getAllContactsAllUsers();
+    }
+
+    @Test
+    void getAll_withAllFlagAndNonAdminThrowsAccessDenied() {
+        final Authentication userAuth = mockAuthentication("ROLE_USER");
+
+        assertThatThrownBy(() -> controller.getAll(true, userAuth))
+                .isInstanceOf(AccessDeniedException.class);
+
         verify(contactService, never()).getAllContactsAllUsers();
     }
 

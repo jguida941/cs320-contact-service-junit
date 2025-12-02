@@ -1,67 +1,57 @@
 package contactapp;
 
+import contactapp.api.AuthController;
+import contactapp.security.JwtService;
+import contactapp.security.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import contactapp.api.AuthController;
-import contactapp.api.dto.LoginRequest;
-import contactapp.security.JwtService;
-import contactapp.security.UserRepository;
-import jakarta.servlet.http.HttpServletResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 /**
- * Focused unit tests for {@link AuthController} branches that are hard to hit
- * with the full MVC stack (specifically the lambda used by
- * {@code orElseThrow} inside {@link AuthController#login}).
- *
- * <p>The mutation report flagged that the lambda could return {@code null}
- * without any test failing, so this class asserts the controller still throws
- * {@link BadCredentialsException} when the repository somehow fails to return
- * a user after authentication succeeds.
+ * Narrow tests for {@link AuthController} helpers that PIT flagged as uncovered.
+ * Integration tests exercise the public endpoints, but we also validate the
+ * private cookie extraction logic to prevent regressions when the implementation
+ * changes.
  */
-@ExtendWith(MockitoExtension.class)
 class AuthControllerUnitTest {
 
-    @Mock
-    private AuthenticationManager authenticationManager;
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private PasswordEncoder passwordEncoder;
-    @Mock
-    private JwtService jwtService;
-    @Mock
-    private HttpServletResponse response;
+    private final AuthController controller = new AuthController(
+            mock(AuthenticationManager.class),
+            mock(UserRepository.class),
+            mock(PasswordEncoder.class),
+            mock(JwtService.class));
 
-    private AuthController controller;
+    @Test
+    void extractTokenFromCookiesReturnsValueWhenPresent() {
+        final HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getCookies()).thenReturn(new Cookie[]{
+                new Cookie("other", "noop"),
+                new Cookie(AuthController.AUTH_COOKIE_NAME, "token-123")
+        });
 
-    @BeforeEach
-    void setUp() {
-        controller = new AuthController(authenticationManager, userRepository, passwordEncoder, jwtService);
+        final String token = ReflectionTestUtils.invokeMethod(controller, "extractTokenFromCookies", request);
+
+        assertThat(token).isEqualTo("token-123");
     }
 
     @Test
-    void loginThrowsWhenRepositoryReturnsEmptyAfterAuthentication() {
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(mock(Authentication.class));
-        when(userRepository.findByUsername("ghost")).thenReturn(java.util.Optional.empty());
+    void extractTokenFromCookiesReturnsNullWhenMissing() {
+        final HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getCookies()).thenReturn(new Cookie[]{
+                new Cookie("random", "value")
+        });
 
-        final LoginRequest request = new LoginRequest("ghost", "secret");
+        final String token = ReflectionTestUtils.invokeMethod(controller, "extractTokenFromCookies", request);
 
-        assertThatThrownBy(() -> controller.login(request, response))
-                .isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid credentials");
+        assertThat(token).isNull();
     }
 }

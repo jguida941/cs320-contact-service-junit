@@ -44,6 +44,18 @@ class ValidationTest {
                 Validation.validateLength("123456789012345678901234567890", "address", MIN_LENGTH, ADDRESS_MAX));
     }
 
+    @Test
+    void validateTrimmedLengthReturnsTrimmedValue() {
+        final String value = Validation.validateTrimmedLength(" padded ", "nickname", 10);
+        assertThat(value).isEqualTo("padded");
+    }
+
+    @Test
+    void validateTrimmedLengthAllowBlankPermitsEmptyWhenMinZero() {
+        final String value = Validation.validateTrimmedLengthAllowBlank("   ", "notes", 0, 10);
+        assertThat(value).isEmpty();
+    }
+
     /**
      * Blank inputs must fail length validation for any label.
      */

@@ -489,6 +489,24 @@ public class ProjectServiceTest {
                 .hasMessage("status must not be null");
     }
 
+    @Test
+    void getAllProjectsAllUsersRequiresAdminRole() {
+        runAs("standard", Role.USER, () ->
+                assertThatThrownBy(() -> service.getAllProjectsAllUsers())
+                        .isInstanceOf(AccessDeniedException.class)
+                        .hasMessageContaining("Only ADMIN users"));
+    }
+
+    @Test
+    void getAllProjectsAllUsersReturnsDataForAdmin() {
+        runAs("admin-user", Role.ADMIN, () -> {
+            service.addProject(new Project("proj-admin", "Admin Project", "desc", ProjectStatus.ACTIVE));
+            assertThat(service.getAllProjectsAllUsers())
+                    .extracting(Project::getProjectId)
+                    .contains("proj-admin");
+        });
+    }
+
     private void runAs(final String username, final Role role, final Runnable action) {
         testUserSetup.setupTestUser(username, username + "@example.com", role);
         action.run();
@@ -555,8 +573,18 @@ public class ProjectServiceTest {
 
         runAs("other", Role.USER, () ->
                 assertThatThrownBy(() -> service.addContactToProject("proj4", "c4", "CLIENT"))
-                        .isInstanceOf(ResourceNotFoundException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
         );
+    }
+
+    @Test
+    void addContactToProject_blankIdsThrow() {
+        assertThatThrownBy(() -> service.addContactToProject(" ", "contact", "role"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("projectId must not be null or blank");
+        assertThatThrownBy(() -> service.addContactToProject("project", " ", "role"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("contactId must not be null or blank");
     }
 
     @Test
@@ -588,6 +616,16 @@ public class ProjectServiceTest {
     }
 
     @Test
+    void removeContactFromProject_blankIdsThrow() {
+        assertThatThrownBy(() -> service.removeContactFromProject(" ", "contact"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("projectId must not be null or blank");
+        assertThatThrownBy(() -> service.removeContactFromProject("project", " "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("contactId must not be null or blank");
+    }
+
+    @Test
     void getProjectContacts_returnsLinkedContacts() {
         Project project = new Project("proj7", "Test Project", "Description", ProjectStatus.ACTIVE);
         Contact contact1 = new Contact("c7", "Eve", "Foster", "4444444444", "444 Fourth St");
@@ -613,6 +651,13 @@ public class ProjectServiceTest {
         List<Contact> contacts = service.getProjectContacts("proj8");
 
         assertThat(contacts).isEmpty();
+    }
+
+    @Test
+    void getProjectContacts_blankProjectIdThrows() {
+        assertThatThrownBy(() -> service.getProjectContacts(" "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("projectId must not be null or blank");
     }
 
     @Test
@@ -648,6 +693,13 @@ public class ProjectServiceTest {
         List<Project> projects = service.getContactProjects("c10");
 
         assertThat(projects).isEmpty();
+    }
+
+    @Test
+    void getContactProjects_blankContactIdThrows() {
+        assertThatThrownBy(() -> service.getContactProjects(" "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("contactId must not be null or blank");
     }
 
     @Test

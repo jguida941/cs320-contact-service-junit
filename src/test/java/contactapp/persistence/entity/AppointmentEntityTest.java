@@ -53,10 +53,21 @@ class AppointmentEntityTest {
         entity.setDescription("Proxy update");
         User owner = TestUserFactory.createUser("appointment-entity-mutable");
         entity.setUser(owner);
+        entity.setProjectId("proj-entity");
+        entity.setTaskId("task-entity");
 
         assertThat(entity.getAppointmentId()).isEqualTo("A-88");
         assertThat(entity.getAppointmentDate()).isEqualTo(instant);
         assertThat(entity.getDescription()).isEqualTo("Proxy update");
         assertThat(entity.getUser()).isEqualTo(owner);
+        assertThat(entity.getProjectId()).isEqualTo("proj-entity");
+        assertThat(entity.getTaskId()).isEqualTo("task-entity");
+    }
+
+    @Test
+    void versionGetterReturnsAssignedValue() {
+        AppointmentEntity entity = new AppointmentEntity();
+        entity.setVersion(5L);
+        assertThat(entity.getVersion()).isEqualTo(5L);
     }
 }

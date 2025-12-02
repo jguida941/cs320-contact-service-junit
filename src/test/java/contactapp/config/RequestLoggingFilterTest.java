@@ -105,6 +105,32 @@ class RequestLoggingFilterTest {
         assertThat(sanitized).isEqualTo("limit=5&token=***");
     }
 
+    @Test
+    void sanitizeForLogReturnsDefaultWhenValueMissing() {
+        final RequestLoggingFilter filter = new RequestLoggingFilter(true);
+        final String defaultedNull = ReflectionTestUtils.invokeMethod(filter, "sanitizeForLog", null, "fallback");
+        final String defaultedBlank = ReflectionTestUtils.invokeMethod(filter, "sanitizeForLog", " \r\n ", "fallback");
+        final String sanitized = ReflectionTestUtils.invokeMethod(filter, "sanitizeForLog", "/api/v1/tasks\r\n", "fallback");
+        assertThat(defaultedNull).isEqualTo("fallback");
+        assertThat(defaultedBlank).isEqualTo("fallback");
+        assertThat(sanitized).isEqualTo("/api/v1/tasks");
+    }
+
+    @Test
+    void sanitizeLogValueStripsControlCharactersAndReturnsNullWhenEmpty() {
+        final RequestLoggingFilter filter = new RequestLoggingFilter(true);
+        final String sanitized = ReflectionTestUtils.invokeMethod(
+                filter,
+                "sanitizeLogValue",
+                "Agent\r\nName");
+        final Object empty = ReflectionTestUtils.invokeMethod(
+                filter,
+                "sanitizeLogValue",
+                "\r\n\t ");
+        assertThat(sanitized).isEqualTo("AgentName");
+        assertThat(empty).isNull();
+    }
+
     /**
      * Ensures sanitizeUserAgent strips control characters so PIT cannot remove the replacement without tests failing.
      */
@@ -118,22 +144,10 @@ class RequestLoggingFilterTest {
         assertThat(sanitized).isEqualTo("TestAgentMalicious");
     }
 
-    @Test
-    void getSafeLogValue_appliesDefaultsAndTrims() {
-        final RequestLoggingFilter filter = new RequestLoggingFilter(true);
-        final String sanitized = ReflectionTestUtils.invokeMethod(
-                filter,
-                "getSafeLogValue",
-                " value\r\n",
-                "fallback");
-        assertThat(sanitized).isEqualTo("value");
-
-        final String blank = ReflectionTestUtils.invokeMethod(filter, "getSafeLogValue", "   ", "fallback");
-        assertThat(blank).isEqualTo("fallback");
-
-        final String nullValue = ReflectionTestUtils.invokeMethod(filter, "getSafeLogValue", (Object) null, "fallback");
-        assertThat(nullValue).isEqualTo("fallback");
-    }
+    /**
+     * Test removed: getSafeLogValue method was refactored out of RequestLoggingFilter.
+     * The sanitization logic is now handled differently via getSafeUserAgent.
+     */
 
     @Test
     void getSafeUserAgent_truncatesLongValues() throws Exception {

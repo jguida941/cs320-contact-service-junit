@@ -103,6 +103,25 @@ class AppointmentControllerTest extends SecuredMockMvcTest {
     }
 
     @Test
+    void createAppointment_withProjectAndTaskIdsEchoesAssignments() throws Exception {
+        mockMvc.perform(post("/api/v1/appointments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                            {
+                                "id": "linked-apt",
+                                "appointmentDate": "%s",
+                                "description": "Linked appointment",
+                                "projectId": "proj-42",
+                                "taskId": "task-99"
+                            }
+                            """, futureDate)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.projectId").value("proj-42"))
+                .andExpect(jsonPath("$.taskId").value("task-99"));
+    }
+
+    @Test
     void getAllAppointments_empty_returnsEmptyList() throws Exception {
         mockMvc.perform(get("/api/v1/appointments"))
                 .andExpect(status().isOk())

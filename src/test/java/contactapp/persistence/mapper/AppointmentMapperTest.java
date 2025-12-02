@@ -22,12 +22,16 @@ class AppointmentMapperTest {
     void toEntityConvertsDateToInstant() {
         Date futureDate = Date.from(Instant.now().plusSeconds(3_600));
         Appointment appointment = new Appointment("appt-1", futureDate, "Check-in");
+        appointment.setProjectId("proj-entity");
+        appointment.setTaskId("task-entity");
 
         AppointmentEntity entity = mapper.toEntity(appointment, TestUserFactory.createUser("appointment-mapper"));
 
         assertThat(entity.getAppointmentId()).isEqualTo("appt-1");
         assertThat(entity.getAppointmentDate()).isEqualTo(futureDate.toInstant());
         assertThat(entity.getDescription()).isEqualTo("Check-in");
+        assertThat(entity.getProjectId()).isEqualTo("proj-entity");
+        assertThat(entity.getTaskId()).isEqualTo("task-entity");
     }
 
     @Test
@@ -38,6 +42,8 @@ class AppointmentMapperTest {
                 instant,
                 "Check-in",
                 TestUserFactory.createUser("appointment-mapper-domain"));
+        entity.setProjectId("proj-domain");
+        entity.setTaskId("task-domain");
 
         Appointment appointment = mapper.toDomain(entity);
 
@@ -45,6 +51,8 @@ class AppointmentMapperTest {
         assertThat(appointment.getAppointmentDate().toInstant())
                 .isEqualTo(instant.truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
         assertThat(appointment.getDescription()).isEqualTo("Check-in");
+        assertThat(appointment.getProjectId()).isEqualTo("proj-domain");
+        assertThat(appointment.getTaskId()).isEqualTo("task-domain");
     }
 
     /**

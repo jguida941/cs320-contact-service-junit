@@ -10,6 +10,7 @@ import contactapp.persistence.store.TaskStore;
 import contactapp.security.Role;
 import contactapp.security.User;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,6 +48,7 @@ public class TaskService {
 
     private final TaskStore store;
     private final boolean legacyStore;
+    private Clock clock = Clock.systemUTC();
 
     @org.springframework.beans.factory.annotation.Autowired
     public TaskService(final TaskStore store) {
@@ -162,7 +164,8 @@ public class TaskService {
         }
 
         // Fallback for legacy in-memory store
-        return attemptLegacySave(task);
+        final boolean saved = attemptLegacySave(task);
+        return saved;
     }
 
     private boolean attemptLegacySave(final Task task) {
@@ -546,7 +549,7 @@ public class TaskService {
      */
     @Transactional(readOnly = true)
     public List<Task> getOverdueTasks() {
-        final java.time.LocalDate today = java.time.LocalDate.now();
+        final java.time.LocalDate today = java.time.LocalDate.now(clock);
 
         if (store instanceof JpaTaskStore) {
             final JpaTaskStore jpaStore = (JpaTaskStore) store;
@@ -569,5 +572,13 @@ public class TaskService {
 
     void clearAllTasks() {
         store.deleteAll();
+    }
+
+    /**
+     * Overrides the clock used for date-based computations. Intended for tests that need
+     * deterministic "today" values when calculating overdue tasks.
+     */
+    void setClock(final Clock clock) {
+        this.clock = clock != null ? clock : Clock.systemUTC();
     }
 }

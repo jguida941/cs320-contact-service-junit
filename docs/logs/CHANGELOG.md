@@ -42,6 +42,12 @@ All notable changes to this project will be documented here. Follow the
 - **E2E Tests for Phase 2 Task Fields (2025-12-01)**: Two new end-to-end tests
   - e2e_statusAndDueDate_persistThroughFullStack
   - e2e_updatedAtChangesAfterModification
+- **Test Hardening for Rate Limiting/Auth/Controllers (2025-12-02)**:
+  - Added `AuthControllerUnitTest`, `ContactControllerUnitTest`, and `ProjectControllerUnitTest` so controller-level guards and cookie parsing helpers can’t be mutated away.
+  - Expanded `RateLimitingFilterTest`/`RequestLoggingFilterTest` with log-sanitization, bucket reset, and duration-math assertions; entity mapper tests now cover project/task linkage on appointments.
+  - `RateLimitingFilter` sanitizes the login/register IP before using it as a cache key, and `ProjectController` reintroduces the legacy two-arg `getAll` overload for the admin guard tests.
+  - Added `ProjectServiceLegacyTest` + repository guard tests to exercise the singleton migration path and `ensureRepositoriesAvailable()` guard; TaskService gained a deterministic overdue test via the clock override.
+  - Total tests now at **1,026** with the same mutation/coverage gates (94%+ kills, 96%+ store coverage).
 
 ### Added
 - **Project Entity and Project/Task Tracker Evolution (ADR-0045)**:

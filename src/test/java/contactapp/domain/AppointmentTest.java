@@ -146,6 +146,17 @@ public class AppointmentTest {
         assertThat(copy.getAppointmentDate()).isNotSameAs(originalDate);
     }
 
+    @Test
+    void projectAndTaskIdentifiersRoundTripThroughSetters() {
+        Appointment appointment = new Appointment("950", futureDate(15), "Linked");
+
+        appointment.setProjectId("project-1");
+        appointment.setTaskId("  task-2  ");
+
+        assertThat(appointment.getProjectId()).isEqualTo("project-1");
+        assertThat(appointment.getTaskId()).isEqualTo("task-2");
+    }
+
     /**
      * Ensures the copy guard rejects corrupted state (null internal fields).
      *

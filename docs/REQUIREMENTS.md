@@ -48,7 +48,7 @@
 - Mapper/unit suites now include null-guard coverage plus JPA entity accessor tests to keep persistence mutation-safe even when Hibernate instantiates proxies through the protected constructors.
 - OpenAPI/Swagger UI available at `/swagger-ui.html` and `/v3/api-docs` (springdoc-openapi).
 - Health/info actuator endpoints available; other actuator endpoints locked down.
-- Latest CI: 951 tests passing (unit + slice + Testcontainers + security + filter + config + Project/Task/Appointment enhancement tests), 94% mutation score, 96%+ line coverage on stores, 95%+ on mappers, SpotBugs clean.
+- Latest CI: 1,026 tests passing (unit + slice + Testcontainers + security + filter + config + Project/Task/Appointment enhancement tests), 94% mutation score, 96%+ line coverage on stores, 95%+ on mappers, SpotBugs clean.
 - Testcontainers-backed Postgres integration tests run automatically in CI (Ubuntu jobs pass `-DskipITs=false`) while local `mvn verify` runs set `skipITs=true` by default; enable them locally with `mvn verify -DskipITs=false` once Docker Desktop/Colima is running.
 - Controller tests (71 tests): ContactControllerTest (30), TaskControllerTest (21), AppointmentControllerTest (20).
 - Exception handler tests (5 tests): GlobalExceptionHandlerTest validates direct handler coverage (including ConstraintViolationException for path variable validation).

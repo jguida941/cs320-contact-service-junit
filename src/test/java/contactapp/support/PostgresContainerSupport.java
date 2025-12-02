@@ -8,9 +8,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 /**
  * Shared Testcontainers Postgres support for Spring Boot tests.
  *
- * <p>Using a single static container with reuse enabled keeps SpringBootTest/MockMvc suites
- * aligned with the production Postgres dialect while avoiding cross-test interference.
- * The container starts once and is shared across ALL test classes.
+ * <p>This creates a SINGLE container instance shared across ALL test classes in the JVM.
+ * The container starts once and remains active throughout the entire test suite execution.
+ * This approach aligns with Spring's test context caching, preventing connection pool
+ * issues when the same @SpringBootTest configuration is reused across multiple test classes.
+ *
+ * <p>Removing @Testcontainers/@Container annotations ensures the container lifecycle
+ * matches Spring context lifecycle, avoiding port conflicts from container recreation.
  */
 public abstract class PostgresContainerSupport {
 

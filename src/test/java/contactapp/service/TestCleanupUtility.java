@@ -40,8 +40,8 @@ public class TestCleanupUtility {
      * Performs complete cleanup in the correct order:
      * 1. Clear security contexts first
      * 2. Reset singletons before clearing data (prevents migration)
-     * 3. Clean up test users
-     * 4. Clear all service data
+     * 3. Clear all service data (tasks/contacts/appointments reference users)
+     * 4. Clean up test users last (FK constraints cascade delete)
      *
      * Call this in @BeforeEach to ensure test isolation.
      */
@@ -54,13 +54,13 @@ public class TestCleanupUtility {
         // This prevents registerInstance() from migrating old data
         resetAllSingletons();
 
-        // Step 3: Clean up test users first (they may have foreign key constraints)
+        // Step 3: Clear all service data FIRST (tasks/contacts/appointments reference users)
+        clearAllServiceData();
+
+        // Step 4: Clean up test users LAST (FK cascade will handle orphans)
         if (testUserSetup != null) {
             testUserSetup.cleanup();
         }
-
-        // Step 4: Clear all service data
-        clearAllServiceData();
     }
 
     /**

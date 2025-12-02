@@ -4,6 +4,7 @@ import contactapp.api.exception.DuplicateResourceException;
 import contactapp.domain.Contact;
 import contactapp.persistence.store.ContactStore;
 import contactapp.persistence.store.InMemoryContactStore;
+import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

@@ -5,6 +5,7 @@ import contactapp.domain.Project;
 import contactapp.domain.ProjectStatus;
 import contactapp.persistence.store.InMemoryProjectStore;
 import contactapp.persistence.store.ProjectStore;
+import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

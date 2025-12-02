@@ -4,6 +4,7 @@ import contactapp.api.exception.DuplicateResourceException;
 import contactapp.domain.Appointment;
 import contactapp.persistence.store.AppointmentStore;
 import contactapp.persistence.store.InMemoryAppointmentStore;
+import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

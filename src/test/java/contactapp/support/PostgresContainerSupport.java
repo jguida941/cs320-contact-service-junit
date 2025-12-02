@@ -1,21 +1,32 @@
 package contactapp.support;
 
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * Shared Testcontainers Postgres support for Spring Boot tests.
  *
- * <p>Using a single static container keeps SpringBootTest/MockMvc suites aligned
- * with the production Postgres dialect while avoiding cross-test interference.
+ * <p>Using a single static container with reuse enabled keeps SpringBootTest/MockMvc suites
+ * aligned with the production Postgres dialect while avoiding cross-test interference.
+ * The container starts once and is shared across ALL test classes.
  */
-@Testcontainers
 public abstract class PostgresContainerSupport {
 
-    @Container
     @ServiceConnection
-    // Postgres 16 to mirror dev/prod environments.
-    protected static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    protected static final PostgreSQLContainer<?> postgres;
+
+    static {
+        postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+                .withReuse(true);
+        postgres.start();
+    }
+
+    @DynamicPropertySource
+    static void postgresProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
 }

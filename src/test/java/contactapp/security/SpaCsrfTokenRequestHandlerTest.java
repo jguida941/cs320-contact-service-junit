@@ -51,6 +51,8 @@ class SpaCsrfTokenRequestHandlerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         CsrfToken token = new DefaultCsrfToken("X-CSRF-TOKEN", "_csrf", "token-value");
         request.setParameter(token.getParameterName(), "from-param");
+        // Delegate needs handle() to seed request attributes before resolving
+        handler.handle(request, new MockHttpServletResponse(), () -> token);
 
         String resolved = handler.resolveCsrfTokenValue(request, token);
 

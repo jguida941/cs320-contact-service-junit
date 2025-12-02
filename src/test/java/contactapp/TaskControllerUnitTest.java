@@ -5,6 +5,7 @@ import contactapp.api.dto.TaskResponse;
 import contactapp.domain.Task;
 import contactapp.service.TaskService;
 import java.util.List;
+import java.time.LocalDate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
@@ -52,6 +53,62 @@ class TaskControllerUnitTest {
         verify(taskService).getAllTasksAllUsers();
         assertThat(responses).singleElement().satisfies(response ->
                 assertThat(response.id()).isEqualTo("t-1"));
+    }
+
+    @Test
+    void getAll_filtersByDueBefore() {
+        final LocalDate cutoff = LocalDate.now().plusDays(7);
+        when(taskService.getTasksDueBefore(cutoff)).thenReturn(List.of(
+                new Task("due-1", "Due Soon", "Desc")));
+
+        final List<TaskResponse> responses = controller.getAll(false, null, cutoff, false, null, null);
+
+        verify(taskService).getTasksDueBefore(cutoff);
+        assertThat(responses).singleElement().extracting(TaskResponse::id).isEqualTo("due-1");
+    }
+
+    @Test
+    void getAll_filtersByOverdue() {
+        when(taskService.getOverdueTasks()).thenReturn(List.of(
+                new Task("ov-1", "Overdue", "Desc")));
+
+        final List<TaskResponse> responses = controller.getAll(false, null, null, true, null, null);
+
+        verify(taskService).getOverdueTasks();
+        assertThat(responses).singleElement().extracting(TaskResponse::id).isEqualTo("ov-1");
+    }
+
+    @Test
+    void getAll_filtersByProjectId() {
+        when(taskService.getTasksByProjectId("proj-1")).thenReturn(List.of(
+                new Task("p-1", "Proj Task", "Desc")));
+
+        final List<TaskResponse> responses = controller.getAll(false, null, null, false, "proj-1", null);
+
+        verify(taskService).getTasksByProjectId("proj-1");
+        assertThat(responses).singleElement().extracting(TaskResponse::id).isEqualTo("p-1");
+    }
+
+    @Test
+    void getAll_filtersByAssigneeId() {
+        when(taskService.getTasksByAssigneeId(42L)).thenReturn(List.of(
+                new Task("a-1", "Assigned", "Desc")));
+
+        final List<TaskResponse> responses = controller.getAll(false, null, null, false, null, 42L);
+
+        verify(taskService).getTasksByAssigneeId(42L);
+        assertThat(responses).singleElement().extracting(TaskResponse::id).isEqualTo("a-1");
+    }
+
+    @Test
+    void getAll_defaultsToCurrentUsersTasksWhenNoFilters() {
+        when(taskService.getAllTasks()).thenReturn(List.of(
+                new Task("def-1", "Default", "Desc")));
+
+        final List<TaskResponse> responses = controller.getAll(false, null, null, false, null, null);
+
+        verify(taskService).getAllTasks();
+        assertThat(responses).singleElement().extracting(TaskResponse::id).isEqualTo("def-1");
     }
 
     private void authenticate(final boolean admin) {

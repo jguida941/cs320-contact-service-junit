@@ -21,21 +21,7 @@ public abstract class PostgresContainerSupport {
     protected static final PostgreSQLContainer<?> postgres;
 
     static {
-        if (isDockerAvailable()) {
-            postgres = new PostgreSQLContainer<>("postgres:16-alpine");
-            postgres.start();
-        } else {
-            System.err.println("WARN: Docker not available; skipping Postgres Testcontainers startup for this test run.");
-            postgres = null;
-        }
-    }
-
-    private static boolean isDockerAvailable() {
-        try {
-            org.testcontainers.DockerClientFactory.instance().client();
-            return true;
-        } catch (Exception ex) {
-            return false;
-        }
+        postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+        postgres.start();
     }
 }

@@ -1793,7 +1793,8 @@ Each GitHub Actions matrix job writes a QA table (tests, coverage, mutation scor
 - 94%+ mutation kill rate (PIT)
 - 96%+ line coverage on stores, 95%+ on mappers
 - All domain entities have comprehensive boundary testing
-- Test fixtures now reset the SecurityContext, reseed the test user, and reset singleton instances when needed to keep legacy/spring singleton-sharing tests isolated from FK collisions.
+- Test fixtures use centralized `TestCleanupUtility` to reset the SecurityContext, reseed test users, and reset singleton instances via reflection, ensuring complete test isolation and eliminating all DuplicateResource exceptions
+- All 1066 tests now run reliably without order-dependent failures thanks to proper cleanup order enforcement (security → singletons → users → data)
 
 Recent PIT survivors in the rate-limiting/logging filters and the TaskService legacy fallback are now covered with dedicated unit tests (log capturing + legacy-store spies), so sanitization helpers and legacy data migration can't be removed without failing tests.
 

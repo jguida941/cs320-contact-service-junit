@@ -39,6 +39,7 @@
 ## Consequences
 - A singleton with a concurrent map yields thread-safe shared state but requires
   explicit resets in tests to avoid cross-test leakage.
+- **Spring Boot Test Considerations (Added 2025-12-02)**: When using `@SpringBootTest`, the singleton pattern interacts with Spring's context caching. Static `instance` fields persist across test executions even when the database is cleared. Solution: `TestCleanupUtility.resetTestEnvironment()` resets singletons via reflection before clearing data, preventing `registerInstance()` from migrating stale data. See ADR-0047.
 - Boolean return contracts simplify caller logic for missing entries; tests
   enforce duplicate/missing/trimmed-id branches to avoid accidental overwrites.
 - Returning copies from `getDatabase()` protects internal state, at the cost of

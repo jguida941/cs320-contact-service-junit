@@ -48,6 +48,7 @@ constraint to retain `ContactService.getInstance()` (and peers) for backward com
 - Documentation (README, agents.md, REQUIREMENTS, ROADMAP, INDEX, CHANGELOG) now references
   the persistence stack instead of ConcurrentHashMap storage, clarifying how to configure
   profiles and run migrations.
+- **Test Isolation with Hybrid Stores (Added 2025-12-02)**: The dual store approach (in-memory via `getInstance()` + JPA via Spring DI) created test isolation challenges. Static singleton instances persisted across tests while Spring reused contexts, causing `registerInstance()` to migrate stale data into fresh JPA stores. Solution: `TestCleanupUtility` resets singletons via reflection before clearing data. See ADR-0047.
 
 ## Concurrency: Hybrid Duplicate Detection
 

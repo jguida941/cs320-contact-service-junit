@@ -17,6 +17,7 @@
 - Validation helpers should have both ends of each range covered (min/max length, blank/null, over/under) to keep mutation and coverage tools at 100%.
 - Use AssertJ and JUnit 5 parameterized tests (`@CsvSource`) for expressive assertions and compact invalid-case coverage.
 - Keep singleton state reset helpers (`clearAllContacts`, `clearAllTasks`) and ensure tests explicitly cover them so mutation testing catches missing `Map.clear()` calls.
+- **Test Isolation and Cleanup (Added 2025-12-02)**: Use centralized `TestCleanupUtility` for Spring Boot integration tests to ensure proper test isolation. Call `testCleanup.resetTestEnvironment()` in `@BeforeEach` to enforce correct cleanup order: security contexts → singleton reset → user cleanup → service data clearing. This prevents singleton state bleeding across tests when Spring context is shared. See ADR-0047 for complete rationale.
 - Run the full suite via Maven Surefire during `mvn verify`; enforce test quality with JaCoCo (coverage) and PITest (mutation) thresholds described in ADR-0004.
 
 ## Consequences

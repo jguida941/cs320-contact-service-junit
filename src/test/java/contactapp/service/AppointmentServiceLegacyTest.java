@@ -42,11 +42,12 @@ class AppointmentServiceLegacyTest extends PostgresContainerSupport {
     @Autowired
     private AppointmentService springService;
 
+    @Autowired
+    private TestCleanupUtility testCleanup;
+
     @BeforeEach
     void resetSingleton() throws Exception {
-        testUserSetup.setupTestUser();
-        springService.clearAllAppointments();
-        setInstance(null);
+        testCleanup.resetTestEnvironment();
     }
 
     @AfterEach

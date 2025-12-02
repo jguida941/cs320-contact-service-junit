@@ -34,16 +34,15 @@ public class ContactServiceTest extends PostgresContainerSupport {
     @Autowired
     private TestUserSetup testUserSetup;
 
+    @Autowired
+    private TestCleanupUtility testCleanup;
+
     /**
      * Sets up test user and clears data before each test.
      */
     @BeforeEach
     void clearBeforeTest() {
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
-        testUserSetup.cleanup();
-        testUserSetup.setupTestUser();
-        service.clearAllContacts();
-        setInstance(null);
+        testCleanup.resetTestEnvironment();
     }
 
     /**

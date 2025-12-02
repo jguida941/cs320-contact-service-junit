@@ -39,26 +39,19 @@ public class TaskServiceTest extends PostgresContainerSupport {
     @Autowired
     private TestUserSetup testUserSetup;
 
+    @Autowired
+    private TestCleanupUtility testCleanup;
+
     /**
      * Sets up test user and clears data before each test.
      */
     @BeforeEach
     void reset() {
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
-        testUserSetup.cleanup();
-        testUserSetup.setupTestUser();
-        service.clearAllTasks();
-        resetSingleton();
+        testCleanup.resetTestEnvironment();
     }
 
     @Test
     void testSingletonSharesStateWithSpringBean() {
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
-        testUserSetup.cleanup();
-        testUserSetup.setupTestUser();
-        service.clearAllTasks();
-        resetSingleton();
-
         TaskService singleton = TaskService.getInstance();
         singleton.clearAllTasks();
 

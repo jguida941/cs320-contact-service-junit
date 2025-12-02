@@ -34,6 +34,7 @@
 ## Consequences
 - Shared singleton state requires explicit test resets but keeps API surface consistent with other services; update
   now uses `computeIfPresent` to remove the get-then-mutate window.
+- **Spring Boot Test Considerations (Added 2025-12-02)**: When using `@SpringBootTest`, static singleton instances persist across test executions while Spring reuses the `ApplicationContext`. This caused `DuplicateResourceException` failures until `TestCleanupUtility` was introduced to reset singletons via reflection before clearing data. See ADR-0047.
 - Boolean contracts simplify caller logic for missing/duplicate IDs, but rely on tests to prevent accidental overwrites.
 - Defensive copies from `getDatabase()` add minor allocation overhead but protect internal state.
 

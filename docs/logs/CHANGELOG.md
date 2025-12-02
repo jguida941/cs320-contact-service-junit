@@ -12,6 +12,17 @@ All notable changes to this project will be documented here. Follow the
   - Eliminates race conditions where parallel execution attempted to share singleton state across test classes despite @Isolated annotations
   - Total test count now at **1066** tests
 
+- **Test Isolation via Centralized Cleanup Utility (2025-12-02)**:
+  - Created `TestCleanupUtility` component in `contactapp.service` package to enforce proper test cleanup order
+  - Resolved 8 `DuplicateResourceException` failures across service test suites (Appointment, Contact, Task, Project - both standard and Legacy tests)
+  - Root cause: Static singleton instances persisted across tests while Spring Boot reused ApplicationContext, causing `registerInstance()` to migrate stale data into fresh stores
+  - Solution: Reflection-based singleton reset BEFORE clearing data prevents migration of old test data
+  - Cleanup order enforced: security contexts → singleton reset → user cleanup → service data clearing
+  - All service tests now call `testCleanup.resetTestEnvironment()` in `@BeforeEach` for consistent isolation
+  - Documented in new **ADR-0047** (Test Isolation and Cleanup Utility) with full architectural rationale
+  - Updated ADR-0009 (Test Strategy) to reference centralized cleanup pattern
+  - Tests now run reliably with all 1066 tests passing without order-dependent failures
+
 ### Added
 - **TaskService Test Coverage Improvements (2025-12-02)**:
   - Added 44 new tests to TaskServiceTest bringing total from 29 to 73 tests

@@ -40,13 +40,12 @@ class TaskServiceLegacyTest extends PostgresContainerSupport {
     @Autowired
     private TaskService springService;
 
+    @Autowired
+    private TestCleanupUtility testCleanup;
+
     @BeforeEach
     void resetSingleton() throws Exception {
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
-        testUserSetup.cleanup();
-        testUserSetup.setupTestUser();
-        springService.clearAllTasks();
-        setInstance(null);
+        testCleanup.resetTestEnvironment();
     }
 
     @AfterEach

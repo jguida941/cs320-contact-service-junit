@@ -41,6 +41,30 @@ Reorganize into layered architecture:
 - `ActuatorEndpointsTest` - Confirms health/info exposed, other endpoints blocked
 - `ServiceBeanTest` - Proves beans are injectable and singletons
 
+### Test Infrastructure (Added 2025-12-02)
+The hybrid singleton + Spring DI pattern introduced test isolation challenges that were discovered during suite evolution:
+
+**Challenge**: Spring Boot caches `ApplicationContext` across test classes for performance, but static singleton instances persist across test executions. This caused `DuplicateResourceException` failures when services' `registerInstance()` method migrated stale singleton data into fresh Spring-managed stores.
+
+**Solution**: `TestCleanupUtility` component in `contactapp.service` package:
+- Autowired into Spring Boot integration tests
+- Enforces cleanup order: security contexts → singleton reset → user cleanup → service data clearing
+- Uses reflection to reset static `instance` fields before clearing data (prevents migration)
+- Eliminates order-dependent test failures
+
+**Usage Pattern**:
+```java
+@Autowired
+private TestCleanupUtility testCleanup;
+
+@BeforeEach
+void reset() {
+    testCleanup.resetTestEnvironment();
+}
+```
+
+See **ADR-0047** for complete architectural rationale and alternatives considered.
+
 ### Visibility Changes
 - Made `copy()` methods public so services can call them across packages
 - Domain classes remain in separate package from services (proper layering)
@@ -58,6 +82,7 @@ Reorganize into layered architecture:
 - Added 10 Spring Boot dependencies to the classpath
 - Slightly longer test startup due to context loading
 - `copy()` methods are now public API (acceptable trade-off for proper layering)
+- Test isolation requires `TestCleanupUtility` with reflection-based singleton reset (added 2025-12-02 to resolve DuplicateResource failures)
 
 ### Neutral
 - Test count increased (Spring Boot smoke tests + ValidationTest additions)

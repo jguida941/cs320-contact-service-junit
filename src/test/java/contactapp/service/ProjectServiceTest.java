@@ -42,17 +42,15 @@ public class ProjectServiceTest extends PostgresContainerSupport {
     @Autowired
     private TestUserSetup testUserSetup;
 
+    @Autowired
+    private TestCleanupUtility testCleanup;
+
     /**
      * Sets up test user and clears data before each test.
      */
     @BeforeEach
     void clearBeforeTest() {
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
-        testUserSetup.cleanup();
-        testUserSetup.setupTestUser();
-        service.clearAllProjects();
-        contactService.clearAllContacts();
-        setInstance(null);
+        testCleanup.resetTestEnvironment();
     }
 
     /**
@@ -60,12 +58,6 @@ public class ProjectServiceTest extends PostgresContainerSupport {
      */
     @Test
     void testSingletonSharesStateWithSpringBean() {
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
-        testUserSetup.cleanup();
-        testUserSetup.setupTestUser();
-        service.clearAllProjects();
-        setInstance(null);
-
         ProjectService singleton = ProjectService.getInstance();
         singleton.clearAllProjects();
 

@@ -40,13 +40,12 @@ class ContactServiceLegacyTest extends PostgresContainerSupport {
     @Autowired
     private ContactService springService;
 
+    @Autowired
+    private TestCleanupUtility testCleanup;
+
     @BeforeEach
     void resetSingleton() throws Exception {
-        org.springframework.security.core.context.SecurityContextHolder.clearContext();
-        testUserSetup.cleanup();
-        testUserSetup.setupTestUser();
-        springService.clearAllContacts();
-        setInstance(null);
+        testCleanup.resetTestEnvironment();
     }
 
     @AfterEach

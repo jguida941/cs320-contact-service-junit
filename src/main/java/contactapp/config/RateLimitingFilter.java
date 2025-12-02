@@ -350,27 +350,4 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return sanitized;
     }
 
-    /**
-     * Returns a safe string for logging, validating inline for CodeQL recognition.
-     *
-     * @param value the potentially untrusted input
-     * @return a safe string for logging
-     */
-    private String getSafeLogValue(final String value) {
-        if (value == null) {
-            return "[null]";
-        }
-        final String trimmed = value.trim();
-        if (trimmed.isEmpty()) {
-            return "[empty]";
-        }
-        if (!SAFE_LOG_PATTERN.matcher(trimmed).matches()) {
-            return "[unsafe-value]";
-        }
-        if (trimmed.length() > MAX_LOG_LENGTH) {
-            return trimmed.substring(0, MAX_LOG_LENGTH) + "...";
-        }
-        // Value passed all validation checks - safe to log
-        return trimmed;
-    }
 }

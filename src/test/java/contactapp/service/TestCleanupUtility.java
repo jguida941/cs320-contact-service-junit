@@ -157,15 +157,29 @@ public class TestCleanupUtility {
      * Executes in FK-safe order to avoid constraint violations.
      */
     private void clearDatabaseTables() {
-        if (jdbcTemplate == null) {
+        if (entityManager != null) {
+            executeDelete(entityManager, "project_contacts");
+            executeDelete(entityManager, "appointments");
+            executeDelete(entityManager, "tasks");
+            executeDelete(entityManager, "projects");
+            executeDelete(entityManager, "contacts");
+            executeDelete(entityManager, "users");
+            entityManager.flush();
+            entityManager.clear();
             return;
         }
-        jdbcTemplate.execute("DELETE FROM project_contacts");
-        jdbcTemplate.execute("DELETE FROM appointments");
-        jdbcTemplate.execute("DELETE FROM tasks");
-        jdbcTemplate.execute("DELETE FROM projects");
-        jdbcTemplate.execute("DELETE FROM contacts");
-        jdbcTemplate.execute("DELETE FROM users");
+        if (jdbcTemplate != null) {
+            jdbcTemplate.execute("DELETE FROM project_contacts");
+            jdbcTemplate.execute("DELETE FROM appointments");
+            jdbcTemplate.execute("DELETE FROM tasks");
+            jdbcTemplate.execute("DELETE FROM projects");
+            jdbcTemplate.execute("DELETE FROM contacts");
+            jdbcTemplate.execute("DELETE FROM users");
+        }
+    }
+
+    private void executeDelete(final EntityManager em, final String table) {
+        em.createNativeQuery("DELETE FROM " + table).executeUpdate();
     }
 
     /**

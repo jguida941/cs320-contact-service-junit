@@ -11,6 +11,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Centralized test cleanup utility that ensures complete state isolation between tests.
@@ -50,6 +54,9 @@ public class TestCleanupUtility {
 
     @Autowired(required = false)
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired(required = false)
+    private DataSource dataSource;
 
     /**
      * Performs complete cleanup in the correct order:
@@ -166,15 +173,37 @@ public class TestCleanupUtility {
             executeDelete(entityManager, "users");
             entityManager.flush();
             entityManager.clear();
+        }
+
+        // Belt-and-suspenders: use direct JDBC to TRUNCATE/RESET identity across databases
+        final DataSource targetDataSource = dataSource != null
+                ? dataSource
+                : (jdbcTemplate != null ? jdbcTemplate.getDataSource() : null);
+        if (targetDataSource == null) {
             return;
         }
-        if (jdbcTemplate != null) {
-            jdbcTemplate.execute("DELETE FROM project_contacts");
-            jdbcTemplate.execute("DELETE FROM appointments");
-            jdbcTemplate.execute("DELETE FROM tasks");
-            jdbcTemplate.execute("DELETE FROM projects");
-            jdbcTemplate.execute("DELETE FROM contacts");
-            jdbcTemplate.execute("DELETE FROM users");
+        try (Connection connection = targetDataSource.getConnection();
+             Statement stmt = connection.createStatement()) {
+            final String product = connection.getMetaData().getDatabaseProductName().toLowerCase();
+            if (product.contains("h2")) {
+                stmt.execute("SET REFERENTIAL_INTEGRITY FALSE");
+                stmt.execute("TRUNCATE TABLE project_contacts");
+                stmt.execute("TRUNCATE TABLE appointments");
+                stmt.execute("TRUNCATE TABLE tasks");
+                stmt.execute("TRUNCATE TABLE projects");
+                stmt.execute("TRUNCATE TABLE contacts");
+                stmt.execute("TRUNCATE TABLE users");
+                stmt.execute("SET REFERENTIAL_INTEGRITY TRUE");
+            } else {
+                stmt.execute("TRUNCATE TABLE project_contacts CASCADE");
+                stmt.execute("TRUNCATE TABLE appointments CASCADE");
+                stmt.execute("TRUNCATE TABLE tasks CASCADE");
+                stmt.execute("TRUNCATE TABLE projects CASCADE");
+                stmt.execute("TRUNCATE TABLE contacts CASCADE");
+                stmt.execute("TRUNCATE TABLE users CASCADE");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to purge database tables during test cleanup", e);
         }
     }
 

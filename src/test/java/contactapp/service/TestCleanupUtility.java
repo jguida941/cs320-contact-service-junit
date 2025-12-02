@@ -3,7 +3,6 @@ package contactapp.service;
 import contactapp.security.TestUserSetup;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.TestSecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -48,9 +47,6 @@ public class TestCleanupUtility {
     @Autowired(required = false)
     private EntityManager entityManager;
 
-    @Autowired(required = false)
-    private JdbcTemplate jdbcTemplate;
-
     /**
      * Performs complete cleanup in the correct order:
      * 1. Clear security contexts first
@@ -91,9 +87,6 @@ public class TestCleanupUtility {
             entityManager.flush();  // Ensure all pending changes are written to DB
             entityManager.clear();  // Clear L1 cache to prevent duplicate key errors
         }
-
-        // Step 5.5: Direct table cleanup in case singleton migration populated data before reset
-        clearDatabaseTables();
     }
 
     /**
@@ -150,22 +143,6 @@ public class TestCleanupUtility {
         } catch (Exception e) {
             throw new RuntimeException("Failed to clear service data", e);
         }
-    }
-
-    /**
-     * Last-resort database cleanup to delete all rows regardless of service wiring.
-     * Executes in FK-safe order to avoid constraint violations.
-     */
-    private void clearDatabaseTables() {
-        if (jdbcTemplate == null) {
-            return;
-        }
-        jdbcTemplate.execute("DELETE FROM project_contacts");
-        jdbcTemplate.execute("DELETE FROM appointments");
-        jdbcTemplate.execute("DELETE FROM tasks");
-        jdbcTemplate.execute("DELETE FROM projects");
-        jdbcTemplate.execute("DELETE FROM contacts");
-        jdbcTemplate.execute("DELETE FROM users");
     }
 
     /**

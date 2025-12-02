@@ -207,7 +207,7 @@ export function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFormProps)
             control={control}
             render={({ field }) => (
               <Select
-                onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
+                onValueChange={(value: string) => field.onChange(value ? parseInt(value) : undefined)}
                 defaultValue={field.value?.toString() || undefined}
               >
                 <SelectTrigger id="assigneeId">

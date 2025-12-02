@@ -1,8 +1,6 @@
 # ADR-0012: Appointment Validation and Test Coverage
 
-**Status**: Accepted  
-**Date**: 2025-11-24  
-**Owners**: Justin Guida  
+**Status**: Accepted | **Date**: 2025-11-24 | **Owners**: Justin Guida
 
 **Related**: [Appointment.java](../../src/main/java/contactapp/domain/Appointment.java),
 [AppointmentTest.java](../../src/test/java/contactapp/domain/AppointmentTest.java),

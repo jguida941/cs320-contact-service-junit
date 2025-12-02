@@ -1,8 +1,6 @@
 # ADR-0018: Authentication and Authorization Model
 
-**Status**: Accepted  
-**Date**: 2025-11-29  
-**Owners**: Justin Guida  
+**Status**: Accepted | **Date**: 2025-11-29 | **Owners**: Justin Guida
 
 **Related**: ADR-0014, ADR-0016, ADR-0017, ADR-0019
 

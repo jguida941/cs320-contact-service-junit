@@ -1,8 +1,6 @@
 # ADR-0039: Phase 5 Security and Observability Implementation
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [ADR-0018](ADR-0018-authentication-and-authorization-model.md),
 [ADR-0038](ADR-0038-authentication-implementation.md),

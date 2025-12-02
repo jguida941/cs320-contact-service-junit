@@ -1,8 +1,6 @@
 # ADR-0036: Admin Dashboard and Role-Based UI
 
-**Status**: Accepted  
-**Date**: 2025-12-01  
-**Owners**: Justin Guida  
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: ADR-0017, ADR-0018, ADR-0025, [REQUIREMENTS.md](../REQUIREMENTS.md)
 

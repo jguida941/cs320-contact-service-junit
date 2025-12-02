@@ -25,7 +25,7 @@ import { TaskForm } from '@/components/forms/TaskForm';
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { projectsApi, tasksApi } from '@/lib/api';
-import type { Project, Task, TaskRequest, ProjectStatus } from '@/lib/schemas';
+import type { Task, TaskRequest, ProjectStatus } from '@/lib/schemas';
 
 type SheetMode = 'view' | 'create' | 'edit';
 

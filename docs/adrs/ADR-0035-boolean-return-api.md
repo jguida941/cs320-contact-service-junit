@@ -1,8 +1,6 @@
 # ADR-0035: Boolean Return API for Service Methods
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: ADR-0002
 

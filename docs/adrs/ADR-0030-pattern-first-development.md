@@ -1,8 +1,6 @@
 # ADR-0030: Pattern-First Development with AI Assistance
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 - Building three similar entities (Contact, Task, Appointment) with consistent patterns.

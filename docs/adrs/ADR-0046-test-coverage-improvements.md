@@ -1,8 +1,6 @@
 # ADR-0046: Test Coverage Improvements - Store and Mapper Test Enhancement
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [ADR-0009](ADR-0009-test-strategy.md), [ADR-0024](ADR-0024-persistence-implementation.md), [ADR-0031](ADR-0031-mutation-testing-for-test-quality.md), [ADR-0034](ADR-0034-mapper-pattern.md)
 
@@ -125,24 +123,24 @@ void toDomainWithNull() {
 ## Test Coverage Results
 
 ### Before Enhancement
-| Component | Instruction Coverage | Branch Coverage | Notes |
-|-----------|---------------------|-----------------|-------|
-| JpaContactStore | 78% | 73% | Missing null checks, save branches, findAll/deleteAll |
-| JpaTaskStore | 78% | 73% | Same gaps as ContactStore |
-| JpaAppointmentStore | 78% | 73% | Same gaps as ContactStore |
-| ContactMapper | 92% | 88% | Missing null-guard coverage |
-| TaskMapper | 90% | 85% | Missing updateEntity null checks |
-| AppointmentMapper | 93% | 90% | Missing toEntity/toDomain null checks |
+| Component           | Instruction Coverage | Branch Coverage | Notes                                                 |
+|---------------------|----------------------|-----------------|-------------------------------------------------------|
+| JpaContactStore     | 78%                  | 73%             | Missing null checks, save branches, findAll/deleteAll |
+| JpaTaskStore        | 78%                  | 73%             | Same gaps as ContactStore                             |
+| JpaAppointmentStore | 78%                  | 73%             | Same gaps as ContactStore                             |
+| ContactMapper       | 92%                  | 88%             | Missing null-guard coverage                           |
+| TaskMapper          | 90%                  | 85%             | Missing updateEntity null checks                      |
+| AppointmentMapper   | 93%                  | 90%             | Missing toEntity/toDomain null checks                 |
 
 ### After Enhancement
-| Component | Instruction Coverage | Branch Coverage | Tests Added |
-|-----------|---------------------|-----------------|-------------|
-| JpaContactStore | **96%** | **97%** | 8 new tests |
-| JpaTaskStore | **96%** | **97%** | 8 new tests |
-| JpaAppointmentStore | **96%** | **97%** | 8 new tests |
-| ContactMapper | **100%** | **100%** | 6 new tests |
-| TaskMapper | **100%** | **100%** | 6 new tests |
-| AppointmentMapper | **95%** | **95%** | 6 new tests |
+| Component           | Instruction Coverage | Branch Coverage | Tests Added |
+|---------------------|----------------------|-----------------|-------------|
+| JpaContactStore     | **96%**              | **97%**         | 8 new tests |
+| JpaTaskStore        | **96%**              | **97%**         | 8 new tests |
+| JpaAppointmentStore | **96%**              | **97%**         | 8 new tests |
+| ContactMapper       | **100%**             | **100%**        | 6 new tests |
+| TaskMapper          | **100%**             | **100%**        | 6 new tests |
+| AppointmentMapper   | **95%**              | **95%**         | 6 new tests |
 
 **Overall Impact**:
 - Store coverage improved from **78%** to **96%** (instructions), **73%** to **97%** (branches)

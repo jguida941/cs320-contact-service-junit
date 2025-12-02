@@ -2,9 +2,7 @@
 
 > **Note**: This ADR describes the legacy in-memory implementation. See [ADR-0024](ADR-0024-persistence-implementation.md) for the current JPA persistence architecture.
 
-**Status**: Accepted
-**Date**: 2025-11-19
-**Owners**: Justin Guida
+**Status**: Accepted | **Date**: 2025-11-20 | **Owners**: Justin Guida
 
 **Related**: [ContactService.java](../../src/main/java/contactapp/service/ContactService.java), [CHANGELOG.md](../logs/CHANGELOG.md)
 

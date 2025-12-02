@@ -1,8 +1,6 @@
 # ADR-0038: Authentication Implementation (Phase 5)
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [AuthController.java](../../src/main/java/contactapp/api/AuthController.java),
 [SecurityConfig.java](../../src/main/java/contactapp/security/SecurityConfig.java),
@@ -107,16 +105,16 @@ flowchart TD
 
 ## HTTP Status Codes
 
-| Endpoint | Status | Meaning |
-|----------|--------|---------|
-| POST /api/auth/login | 200 | Login successful |
-| POST /api/auth/login | 400 | Validation error |
-| POST /api/auth/login | 401 | Invalid credentials |
-| POST /api/auth/register | 201 | Registration successful |
-| POST /api/auth/register | 400 | Validation error |
-| POST /api/auth/register | 409 | Username/email already exists |
-| GET/POST/PUT/DELETE /api/v1/** | 401 | Missing or invalid JWT |
-| GET/POST/PUT/DELETE /api/v1/** | 403 | Insufficient role |
+| Endpoint                       | Status | Meaning                       |
+|--------------------------------|--------|-------------------------------|
+| POST /api/auth/login           | 200    | Login successful              |
+| POST /api/auth/login           | 400    | Validation error              |
+| POST /api/auth/login           | 401    | Invalid credentials           |
+| POST /api/auth/register        | 201    | Registration successful       |
+| POST /api/auth/register        | 400    | Validation error              |
+| POST /api/auth/register        | 409    | Username/email already exists |
+| GET/POST/PUT/DELETE /api/v1/** | 401    | Missing or invalid JWT        |
+| GET/POST/PUT/DELETE /api/v1/** | 403    | Insufficient role             |
 
 ## Test Coverage
 
@@ -142,11 +140,11 @@ graph TD
 
 ## Security Headers
 
-| Header | Value | Purpose |
-|--------|-------|---------|
-| X-Content-Type-Options | nosniff | Prevents MIME type sniffing |
-| X-Frame-Options | SAMEORIGIN | Prevents clickjacking |
-| Referrer-Policy | strict-origin-when-cross-origin | Controls referrer info leakage |
+| Header                 | Value                           | Purpose                        |
+|------------------------|---------------------------------|--------------------------------|
+| X-Content-Type-Options | nosniff                         | Prevents MIME type sniffing    |
+| X-Frame-Options        | SAMEORIGIN                      | Prevents clickjacking          |
+| Referrer-Policy        | strict-origin-when-cross-origin | Controls referrer info leakage |
 
 ## Consequences
 - SPA can authenticate users via standard REST endpoints with JSON payloads.

@@ -1,8 +1,6 @@
 # ADR-0041: PII Masking in Log Output
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+***Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [ADR-0039](ADR-0039-phase5-security-observability.md),
 [ADR-0040](ADR-0040-request-tracing-and-logging.md),
@@ -27,13 +25,13 @@ The `PiiMaskingConverter` extends Logback's `MessageConverter` and applies regex
 
 **Pattern**: Matches 10-digit phone numbers in various formats.
 
-| Input Format | Example | Output |
-|--------------|---------|--------|
-| Raw digits | `6175551234` | `***-***-1234` |
-| Hyphenated | `617-555-1234` | `***-***-1234` |
-| Parentheses | `(617) 555-1234` | `***-***-1234` |
-| Dots | `617.555.1234` | `***-***-1234` |
-| Non-10-digit | `123456789` | `***-***-****` |
+| Input Format | Example          | Output         |
+|--------------|------------------|----------------|
+| Raw digits   | `6175551234`     | `***-***-1234` |
+| Hyphenated   | `617-555-1234`   | `***-***-1234` |
+| Parentheses  | `(617) 555-1234` | `***-***-1234` |
+| Dots         | `617.555.1234`   | `***-***-1234` |
+| Non-10-digit | `123456789`      | `***-***-****` |
 
 **Regex**: `\b(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b`
 
@@ -45,10 +43,10 @@ The `PiiMaskingConverter` extends Logback's `MessageConverter` and applies regex
 
 **Pattern**: Matches US street address formats with city, state, and optional ZIP.
 
-| Input | Output |
-|-------|--------|
+| Input                              | Output                  |
+|------------------------------------|-------------------------|
 | `123 Main St, Cambridge, MA 02139` | `*** Cambridge, MA ***` |
-| `456 Oak Avenue, Boston, MA` | `*** Boston, MA ***` |
+| `456 Oak Avenue, Boston, MA`       | `*** Boston, MA ***`    |
 
 **Preserved**: City and state (useful for geographic debugging)
 **Masked**: Street number/name and ZIP code (precise location data)
@@ -69,17 +67,17 @@ The `%pii` conversion word replaces the standard `%msg` to enable masking.
 
 ### 5. Profile-Specific Logging
 
-| Profile | Format | PII Masking |
-|---------|--------|-------------|
-| `default`, `dev` | Console (human-readable) | Enabled |
-| `prod`, `docker` | JSON (machine-parseable) | Enabled |
-| `test` | Console (minimal) | Disabled for test assertions |
+| Profile          | Format                   | PII Masking                  |
+|------------------|--------------------------|------------------------------|
+| `default`, `dev` | Console (human-readable) | Enabled                      |
+| `prod`, `docker` | JSON (machine-parseable) | Enabled                      |
+| `test`           | Console (minimal)        | Disabled for test assertions |
 
 ## Test Coverage
 
-| Class | Tests | Coverage Focus |
-|-------|-------|----------------|
-| `PiiMaskingConverterTest` | 8 | Phone formats, address patterns, edge cases, null handling |
+| Class                     | Tests | Coverage Focus                                             |
+|---------------------------|-------|------------------------------------------------------------|
+| `PiiMaskingConverterTest` | 8     | Phone formats, address patterns, edge cases, null handling |
 
 **Key Test Cases**:
 - 10-digit phone in various formats → last 4 shown

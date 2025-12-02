@@ -1,8 +1,7 @@
 # ADR-0008: CI Metrics Summary Script
 
-**Status**: Accepted  
-**Date**: 2025-11-19  
-**Owners**: Justin Guida  
+*Status**: Accepted | **Date**: 2025-11-19 | **Owners**: Justin Guida
+
 
 **Related**: [ci_metrics_summary.py](../../scripts/ci_metrics_summary.py), [README](../../README.md#qa-summary), [java-ci workflow](../../.github/workflows/java-ci.yml)
 

@@ -1,8 +1,6 @@
 # ADR-0037: User Entity Validation and Test Coverage
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [User.java](../../src/main/java/contactapp/security/User.java),
 [UserTest.java](../../src/test/java/contactapp/security/UserTest.java),

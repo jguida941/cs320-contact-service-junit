@@ -1,8 +1,7 @@
 # ADR-0045: Project/Task Tracker Evolution
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
+
 
 **Related**: [IMPLEMENTATION_PLAN_OPTION_C.md](../IMPLEMENTATION_PLAN_OPTION_C.md),
 [Task.java](../../src/main/java/contactapp/domain/Task.java),
@@ -23,7 +22,7 @@
 - ✅ Task assignment for team collaboration with access control
 
 **Deferred Features**:
-- ⏸️ Contact-project linking (stakeholder management via V13 junction table)
+- Contact-project linking (stakeholder management via V13 junction table)
 
 **Database Migrations**: V7 (projects), V8 (task status/dates), V10 (task-project FK), V11 (appointment links), V12 (task assignment)
 
@@ -431,32 +430,32 @@ erDiagram
 
 ## Validation Summary
 
-| Entity | Field | Constraint | Default |
-|--------|-------|------------|---------|
-| Project | projectId | 1-10 chars, immutable | - |
-| Project | name | 1-50 chars | - |
-| Project | description | 0-100 chars (optional) | null |
-| Project | status | ACTIVE/ON_HOLD/COMPLETED/ARCHIVED | ACTIVE |
-| Task | status | TODO/IN_PROGRESS/DONE | TODO |
-| Task | dueDate | Optional LocalDate | null |
-| Task | projectId | Optional FK, ON DELETE SET NULL | null |
-| Task | assignedToUserId | Optional FK, ON DELETE SET NULL | null |
-| Appointment | taskId | Optional FK, ON DELETE SET NULL | null |
-| Appointment | projectId | Optional FK, ON DELETE SET NULL | null |
+| Entity      | Field            | Constraint                        | Default |
+|-------------|------------------|-----------------------------------|---------|
+| Project     | projectId        | 1-10 chars, immutable             | -       |
+| Project     | name             | 1-50 chars                        | -       |
+| Project     | description      | 0-100 chars (optional)            | null    |
+| Project     | status           | ACTIVE/ON_HOLD/COMPLETED/ARCHIVED | ACTIVE  |
+| Task        | status           | TODO/IN_PROGRESS/DONE             | TODO    |
+| Task        | dueDate          | Optional LocalDate                | null    |
+| Task        | projectId        | Optional FK, ON DELETE SET NULL   | null    |
+| Task        | assignedToUserId | Optional FK, ON DELETE SET NULL   | null    |
+| Appointment | taskId           | Optional FK, ON DELETE SET NULL   | null    |
+| Appointment | projectId        | Optional FK, ON DELETE SET NULL   | null    |
 
 ## Migration Strategy
 
 All migrations use **additive-only changes**:
 
-| Migration | Description | Breaking? | Status |
-|-----------|-------------|-----------|--------|
-| V7 | CREATE projects table | No - new table | ✅ Complete |
-| V8 | ALTER tasks ADD status, due_date, timestamps | No - defaults provided | ✅ Complete |
-| V9 | (Reserved - migration numbering adjustment) | - | - |
-| V10 | ALTER tasks ADD project_id FK | No - nullable | ✅ Complete |
-| V11 | ALTER appointments ADD task_id, project_id FKs | No - nullable | ✅ Complete |
-| V12 | ALTER tasks ADD assigned_to_user_id FK | No - nullable | ✅ Complete |
-| V13 | CREATE project_contacts junction table | No - new table | Future |
+| Migration | Description                                    | Breaking?              | Status     |
+|-----------|------------------------------------------------|------------------------|------------|
+| V7        | CREATE projects table                          | No - new table         | ✅ Complete |
+| V8        | ALTER tasks ADD status, due_date, timestamps   | No - defaults provided | ✅ Complete |
+| V9        | (Reserved - migration numbering adjustment)    | -                      | -          |
+| V10       | ALTER tasks ADD project_id FK                  | No - nullable          | ✅ Complete |
+| V11       | ALTER appointments ADD task_id, project_id FKs | No - nullable          | ✅ Complete |
+| V12       | ALTER tasks ADD assigned_to_user_id FK         | No - nullable          | ✅ Complete |
+| V13       | CREATE project_contacts junction table         | No - new table         | Future     |
 
 **Key Points**:
 - All new columns are nullable or have sensible defaults (status='TODO', etc.)

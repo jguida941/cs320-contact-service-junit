@@ -1,8 +1,6 @@
 # ADR-0024: Persistence Implementation Strategy
 
-## Status
-
-Accepted – Phase 3.
+**Status:** Accepted, Phase 3 | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 

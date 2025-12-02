@@ -1,8 +1,7 @@
 # ADR-0003: Update Atomicity Strategy
 
-**Status**: Accepted  
-**Date**: 2025-11-19  
-**Owners**: Justin Guida  
+*Status**: Accepted | **Date**: 2025-11-19 | **Owners**: Justin Guida
+
 
 **Related**: [Contact.java](../../src/main/java/contactapp/domain/Contact.java), [ContactService.java](../../src/main/java/contactapp/service/ContactService.java), [CHANGELOG.md](../logs/CHANGELOG.md)
 

@@ -1,8 +1,6 @@
 # ADR-0034: Mapper Pattern for Entity-Domain Separation
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: ADR-0024, ADR-0032
 

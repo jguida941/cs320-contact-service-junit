@@ -1,8 +1,7 @@
 # ADR-0005: SpotBugs Runtime Support
 
-**Status**: Accepted  
-**Date**: 2025-11-19  
-**Owners**: Justin Guida  
+**Status**: Accepted | **Date**: 2025-11-20 | **Owners**: Justin Guida
+
 
 **Related**: [pom.xml](../../pom.xml) (spotbugs-maven-plugin), [README](../../README.md#spotbugs), [CI/CD plan](../ci-cd/ci_cd_plan.md)
 

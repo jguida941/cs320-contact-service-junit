@@ -1,8 +1,6 @@
 # ADR-0032: Two-Layer Validation Strategy
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: ADR-0001, ADR-0021
 

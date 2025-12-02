@@ -1,8 +1,7 @@
 # ADR-0010: Task Validation and Test Coverage
 
-**Status**: Accepted  
-**Date**: 2025-11-24  
-**Owners**: Justin Guida  
+**Status**: Accepted | **Date**: 2025-11-20 | **Owners**: Justin Guida
+
 
 **Related**: [Task.java](../../src/main/java/contactapp/domain/Task.java),
 [TaskTest.java](../../src/test/java/contactapp/domain/TaskTest.java),

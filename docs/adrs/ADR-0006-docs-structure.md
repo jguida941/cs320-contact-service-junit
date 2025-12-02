@@ -1,8 +1,7 @@
 # ADR-0006: Documentation Structure
 
-**Status**: Accepted  
-**Date**: 2025-11-19  
-**Owners**: Justin Guida  
+**Status**: Accepted | **Date**: 2025-11-20 | **Owners**: Justin Guida
+
 
 **Related**: [README](../../README.md), [docs/requirements/](../requirements/), [docs/architecture/](../architecture/), [docs/adrs/](../adrs/), [CHANGELOG.md](../logs/CHANGELOG.md)
 

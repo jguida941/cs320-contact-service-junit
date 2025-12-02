@@ -1,8 +1,6 @@
 # ADR-0026: Theme System and Design Tokens
 
-**Status**: Accepted
-**Date**: 2025-11-29
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [ADR-0025](ADR-0025-ui-component-library.md), [Tailwind CSS Theme Docs](https://tailwindcss.com/docs/theme)
 
@@ -13,14 +11,16 @@
 - Tailwind CSS v4 introduces the `@theme` directive for CSS-first design tokens.
 
 ## Decision
+
 - Implement a **CSS variable-based theme system** with 5 professional themes:
-  | Theme | Feel | Primary Color | Use Case |
-  |-------|------|---------------|----------|
-  | Slate | Clean, neutral | Slate blue | Default, professional |
-  | Ocean | Trust, stability | Deep blue | Fintech, B2B SaaS |
-  | Forest | Growth, balance | Emerald green | Productivity |
-  | Violet | Modern, creative | Purple | Tech startups |
-  | Zinc | Minimal, monochrome | Gray scale | Developer tools |
+- 
+  | Theme  | Feel                | Primary Color | Use Case              |
+  |--------|---------------------|---------------|-----------------------|
+  | Slate  | Clean, neutral      | Slate blue    | Default, professional |
+  | Ocean  | Trust, stability    | Deep blue     | Fintech, B2B SaaS     |
+  | Forest | Growth, balance     | Emerald green | Productivity          |
+  | Violet | Modern, creative    | Purple        | Tech startups         |
+  | Zinc   | Minimal, monochrome | Gray scale    | Developer tools       |
 
 - Each theme has **light and dark variants** controlled via `.dark` class on `<html>`.
 - **Token architecture**:
@@ -70,12 +70,12 @@ useEffect(() => {
 - CSS variable approach has near-universal browser support (97%+ per caniuse).
 
 ## Alternatives Considered
-| Approach | Pros | Cons | Decision |
-|----------|------|------|----------|
-| CSS-in-JS (Styled Components) | Scoped styles, JS theming | Runtime overhead, larger bundle | Rejected |
-| Tailwind `darkMode: 'class'` only | Simple light/dark | No multi-theme support | Rejected |
-| CSS Modules | Scoped, no runtime | Manual theming, verbose | Rejected |
-| Single theme only | Simplest | No customization, less professional | Rejected |
+| Approach                          | Pros                      | Cons                                | Decision |
+|-----------------------------------|---------------------------|-------------------------------------|----------|
+| CSS-in-JS (Styled Components)     | Scoped styles, JS theming | Runtime overhead, larger bundle     | Rejected |
+| Tailwind `darkMode: 'class'` only | Simple light/dark         | No multi-theme support              | Rejected |
+| CSS Modules                       | Scoped, no runtime        | Manual theming, verbose             | Rejected |
+| Single theme only                 | Simplest                  | No customization, less professional | Rejected |
 
 ## References
 - [shadcn/ui Themes](https://ui.shadcn.com/themes)

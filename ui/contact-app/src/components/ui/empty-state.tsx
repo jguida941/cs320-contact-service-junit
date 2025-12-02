@@ -1,6 +1,12 @@
+import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
+type EmptyStateActionConfig = {
+  label: string;
+  onClick: () => void;
+};
 
 interface EmptyStateProps {
   /**
@@ -16,12 +22,9 @@ interface EmptyStateProps {
    */
   description: string;
   /**
-   * Optional action button configuration
+   * Optional action button configuration or ReactNode
    */
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
+  action?: ReactNode | EmptyStateActionConfig;
   /**
    * Additional CSS classes
    */
@@ -52,6 +55,29 @@ export function EmptyState({
   action,
   className,
 }: EmptyStateProps) {
+  const renderAction = () => {
+    if (!action) {
+      return null;
+    }
+    if (
+      typeof action === 'object' &&
+      action !== null &&
+      'label' in action &&
+      'onClick' in action &&
+      typeof (action as { label?: unknown; onClick?: unknown }).label ===
+        'string' &&
+      typeof (action as { label?: unknown; onClick?: unknown }).onClick ===
+        'function'
+    ) {
+      return (
+        <Button onClick={action.onClick}>
+          {action.label}
+        </Button>
+      );
+    }
+    return <>{action}</>;
+  };
+
   return (
     <div
       className={cn(
@@ -66,11 +92,7 @@ export function EmptyState({
       <p className="text-sm text-muted-foreground mb-4 max-w-sm">
         {description}
       </p>
-      {action && (
-        <Button onClick={action.onClick}>
-          {action.label}
-        </Button>
-      )}
+      {renderAction()}
     </div>
   );
 }

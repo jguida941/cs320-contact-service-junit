@@ -28,65 +28,65 @@ The Contact Suite is a multi-tenant contact management application with:
 
 ## 2. Trust Boundaries
 
-| Boundary | Description | Controls |
-|----------|-------------|----------|
-| **Browser ↔ API** | Untrusted network; user-controlled client | TLS, CORS, CSRF tokens, JWT auth |
-| **API ↔ Database** | Internal network; trusted connection | Connection pooling, parameterized queries |
-| **User ↔ User Data** | Multi-tenant isolation | Per-user FK, service-level filtering |
+| Boundary             | Description                               | Controls                                  |
+|----------------------|-------------------------------------------|-------------------------------------------|
+| **Browser ↔ API**    | Untrusted network; user-controlled client | TLS, CORS, CSRF tokens, JWT auth          |
+| **API ↔ Database**   | Internal network; trusted connection      | Connection pooling, parameterized queries |
+| **User ↔ User Data** | Multi-tenant isolation                    | Per-user FK, service-level filtering      |
 
 ## 3. Threat Actors
 
-| Actor | Motivation | Capabilities |
-|-------|------------|--------------|
-| **Unauthenticated Attacker** | Account takeover, data theft | Network access, automated tools |
-| **Authenticated User** | Access other users' data | Valid JWT, API knowledge |
-| **Malicious Script** | XSS exploitation | JavaScript execution in victim's browser |
-| **Internal Attacker** | Data exfiltration | Database access, log access |
+| Actor                        | Motivation                   | Capabilities                             |
+|------------------------------|------------------------------|------------------------------------------|
+| **Unauthenticated Attacker** | Account takeover, data theft | Network access, automated tools          |
+| **Authenticated User**       | Access other users' data     | Valid JWT, API knowledge                 |
+| **Malicious Script**         | XSS exploitation             | JavaScript execution in victim's browser |
+| **Internal Attacker**        | Data exfiltration            | Database access, log access              |
 
 ## 4. Threats and Mitigations
 
 ### 4.1 Authentication Threats
 
-| Threat | STRIDE | Risk | Mitigation | Status |
-|--------|--------|------|------------|--------|
-| **Credential Stuffing** | Spoofing | High | Rate limiting: 5 login attempts/min per IP | Implemented |
-| **Brute Force** | Spoofing | High | Rate limiting + password strength (upper/lower/digit) | Implemented |
-| **Session Hijacking** | Spoofing | High | HttpOnly cookies, Secure flag, SameSite=Lax | Implemented |
-| **JWT Token Theft** | Spoofing | Medium | HttpOnly cookie storage (not localStorage) | Implemented |
-| **Weak Passwords** | Spoofing | Medium | Bean Validation regex requiring mixed characters | Implemented |
+| Threat                  | STRIDE   | Risk   | Mitigation                                            | Status      |
+|-------------------------|----------|--------|-------------------------------------------------------|-------------|
+| **Credential Stuffing** | Spoofing | High   | Rate limiting: 5 login attempts/min per IP            | Implemented |
+| **Brute Force**         | Spoofing | High   | Rate limiting + password strength (upper/lower/digit) | Implemented |
+| **Session Hijacking**   | Spoofing | High   | HttpOnly cookies, Secure flag, SameSite=Lax           | Implemented |
+| **JWT Token Theft**     | Spoofing | Medium | HttpOnly cookie storage (not localStorage)            | Implemented |
+| **Weak Passwords**      | Spoofing | Medium | Bean Validation regex requiring mixed characters      | Implemented |
 
 ### 4.2 Authorization Threats
 
-| Threat | STRIDE | Risk | Mitigation | Status |
-|--------|--------|------|------------|--------|
-| **Horizontal Privilege Escalation** | Elevation | Critical | Per-user FK on all data; service-level filtering | Implemented |
-| **Vertical Privilege Escalation** | Elevation | High | @PreAuthorize annotations; role checks | Implemented |
-| **IDOR (Insecure Direct Object Reference)** | Information Disclosure | High | User ID extracted from JWT, not request | Implemented |
+| Threat                                      | STRIDE                 | Risk     | Mitigation                                       | Status      |
+|---------------------------------------------|------------------------|----------|--------------------------------------------------|-------------|
+| **Horizontal Privilege Escalation**         | Elevation              | Critical | Per-user FK on all data; service-level filtering | Implemented |
+| **Vertical Privilege Escalation**           | Elevation              | High     | @PreAuthorize annotations; role checks           | Implemented |
+| **IDOR (Insecure Direct Object Reference)** | Information Disclosure | High     | User ID extracted from JWT, not request          | Implemented |
 
 ### 4.3 Cross-Site Attacks
 
-| Threat | STRIDE | Risk | Mitigation | Status |
-|--------|--------|------|------------|--------|
-| **Cross-Site Scripting (XSS)** | Tampering | High | CSP: `script-src 'self'`; React auto-escapes | Implemented |
-| **Cross-Site Request Forgery (CSRF)** | Tampering | High | CSRF tokens via CookieCsrfTokenRepository | Implemented |
-| **Clickjacking** | Tampering | Medium | X-Frame-Options: SAMEORIGIN; CSP frame-ancestors | Implemented |
+| Threat                                | STRIDE    | Risk   | Mitigation                                       | Status      |
+|---------------------------------------|-----------|--------|--------------------------------------------------|-------------|
+| **Cross-Site Scripting (XSS)**        | Tampering | High   | CSP: `script-src 'self'`; React auto-escapes     | Implemented |
+| **Cross-Site Request Forgery (CSRF)** | Tampering | High   | CSRF tokens via CookieCsrfTokenRepository        | Implemented |
+| **Clickjacking**                      | Tampering | Medium | X-Frame-Options: SAMEORIGIN; CSP frame-ancestors | Implemented |
 
 ### 4.4 Injection Threats
 
-| Threat | STRIDE | Risk | Mitigation | Status |
-|--------|--------|------|------------|--------|
-| **SQL Injection** | Tampering | Critical | JPA parameterized queries; no raw SQL | Implemented |
-| **NoSQL Injection** | Tampering | N/A | Not applicable (PostgreSQL only) | N/A |
-| **Command Injection** | Tampering | N/A | No shell execution in application | N/A |
-| **Log Injection** | Tampering | Low | User agent sanitization; structured logging | Implemented |
+| Threat                | STRIDE    | Risk     | Mitigation                                  | Status      |
+|-----------------------|-----------|----------|---------------------------------------------|-------------|
+| **SQL Injection**     | Tampering | Critical | JPA parameterized queries; no raw SQL       | Implemented |
+| **NoSQL Injection**   | Tampering | N/A      | Not applicable (PostgreSQL only)            | N/A         |
+| **Command Injection** | Tampering | N/A      | No shell execution in application           | N/A         |
+| **Log Injection**     | Tampering | Low      | User agent sanitization; structured logging | Implemented |
 
 ### 4.5 Information Disclosure
 
-| Threat | STRIDE | Risk | Mitigation | Status |
-|--------|--------|------|------------|--------|
-| **PII in Logs** | Information Disclosure | Medium | PiiMaskingConverter masks phone/address | Implemented |
-| **Error Message Leakage** | Information Disclosure | Low | Generic error messages; no stack traces in prod | Implemented |
-| **User Enumeration** | Information Disclosure | Low | Generic "invalid credentials" message | Implemented |
+| Threat                    | STRIDE                 | Risk   | Mitigation                                      | Status      |
+|---------------------------|------------------------|--------|-------------------------------------------------|-------------|
+| **PII in Logs**           | Information Disclosure | Medium | PiiMaskingConverter masks phone/address         | Implemented |
+| **Error Message Leakage** | Information Disclosure | Low    | Generic error messages; no stack traces in prod | Implemented |
+| **User Enumeration**      | Information Disclosure | Low    | Generic "invalid credentials" message           | Implemented |
 
 #### PII Retention and Masking Policy
 - **Scope**: Application logs flow through `PiiMaskingConverter` which currently masks phone numbers
@@ -112,11 +112,11 @@ After:  phone=***-***-5309, address=*** Portland, OR ***
 
 ### 4.6 Availability Threats
 
-| Threat | STRIDE | Risk | Mitigation | Status |
-|--------|--------|------|------------|--------|
-| **Denial of Service (API)** | Denial of Service | High | Rate limiting: 100 req/min per user | Implemented |
-| **Denial of Service (Auth)** | Denial of Service | High | Rate limiting: 5 login, 3 register per min | Implemented |
-| **Resource Exhaustion** | Denial of Service | Medium | Connection pooling; request size limits | Implemented |
+| Threat                       | STRIDE            | Risk   | Mitigation                                 | Status      |
+|------------------------------|-------------------|--------|--------------------------------------------|-------------|
+| **Denial of Service (API)**  | Denial of Service | High   | Rate limiting: 100 req/min per user        | Implemented |
+| **Denial of Service (Auth)** | Denial of Service | High   | Rate limiting: 5 login, 3 register per min | Implemented |
+| **Resource Exhaustion**      | Denial of Service | Medium | Connection pooling; request size limits    | Implemented |
 
 ## 5. CORS Security Model
 
@@ -153,12 +153,12 @@ maxAge: 3600 seconds
 ## 6. JWT Security Model
 
 ### Token Properties
-| Property | Value | Rationale |
-|----------|-------|-----------|
-| Algorithm | HMAC-SHA256 | Symmetric; no public key distribution needed |
-| Expiration | 30 minutes | Limits blast radius of stolen tokens; shorter idle windows |
-| Storage | HttpOnly cookie | Prevents XSS token theft |
-| Transmission | Cookie header | Automatic browser inclusion |
+| Property     | Value           | Rationale                                                  |
+|--------------|-----------------|------------------------------------------------------------|
+| Algorithm    | HMAC-SHA256     | Symmetric; no public key distribution needed               |
+| Expiration   | 30 minutes      | Limits blast radius of stolen tokens; shorter idle windows |
+| Storage      | HttpOnly cookie | Prevents XSS token theft                                   |
+| Transmission | Cookie header   | Automatic browser inclusion                                |
 
 ### Token Claims
 ```json
@@ -197,11 +197,11 @@ maxAge: 3600 seconds
 ## 7. Rate Limiting Strategy
 
 ### Endpoint Limits
-| Endpoint Pattern | Limit | Window | Key | Purpose |
-|------------------|-------|--------|-----|---------|
-| `/api/auth/login` | 5/username & 100/IP | 60s | Username + IP | Prevent credential stuffing |
-| `/api/auth/register` | 3 | 60s | IP | Prevent account spam |
-| `/api/v1/**` | 100 | 60s | Username | Fair resource allocation |
+| Endpoint Pattern     | Limit               | Window | Key           | Purpose                     |
+|----------------------|---------------------|--------|---------------|-----------------------------|
+| `/api/auth/login`    | 5/username & 100/IP | 60s    | Username + IP | Prevent credential stuffing |
+| `/api/auth/register` | 3                   | 60s    | IP            | Prevent account spam        |
+| `/api/v1/**`         | 100                 | 60s    | Username      | Fair resource allocation    |
 
 ### Implementation
 - Algorithm: Token bucket (bucket4j)
@@ -259,13 +259,13 @@ CREATE TABLE contacts (
 
 ## 9. Security Headers
 
-| Header | Value | Purpose |
-|--------|-------|---------|
-| Content-Security-Policy | `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'` | XSS mitigation |
-| Permissions-Policy | `geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()` | Feature restriction |
-| X-Content-Type-Options | `nosniff` | MIME sniffing prevention |
-| X-Frame-Options | `SAMEORIGIN` | Clickjacking prevention |
-| Referrer-Policy | `strict-origin-when-cross-origin` | Referrer leakage prevention |
+| Header                  | Value                                                                                                                                                                                                | Purpose                     |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------|
+| Content-Security-Policy | `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'` | XSS mitigation              |
+| Permissions-Policy      | `geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()`                                                                                      | Feature restriction         |
+| X-Content-Type-Options  | `nosniff`                                                                                                                                                                                            | MIME sniffing prevention    |
+| X-Frame-Options         | `SAMEORIGIN`                                                                                                                                                                                         | Clickjacking prevention     |
+| Referrer-Policy         | `strict-origin-when-cross-origin`                                                                                                                                                                    | Referrer leakage prevention |
 
 ## 10. Residual Risks
 

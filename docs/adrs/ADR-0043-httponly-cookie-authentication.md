@@ -1,12 +1,6 @@
 # ADR-0043: HttpOnly Cookie-Based Authentication
 
-## Status
-
-Accepted
-
-## Date
-
-2025-12-01
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 
@@ -25,28 +19,28 @@ Migrate from localStorage-based Bearer token authentication to HttpOnly cookie-b
 ### Backend Changes
 
 1. **AuthController.java**:
-   - Login/register endpoints now set HttpOnly cookies instead of returning tokens in response body
-   - Logout endpoint clears the auth cookie
-   - Cookie attributes: `HttpOnly`, `Secure` (in prod), `SameSite=Lax`, `Path=/`
+* Login/register endpoints now set HttpOnly cookies instead of returning tokens in response body
+* Logout endpoint clears the auth cookie
+* Cookie attributes: `HttpOnly`, `Secure` (in prod), `SameSite=Lax`, `Path=/`
 
 2. **JwtAuthenticationFilter.java**:
-   - Now extracts JWT from cookie first, falls back to Authorization header
-   - Maintains backward compatibility for API clients using Bearer tokens
+* Now extracts JWT from cookie first, falls back to Authorization header
+* Maintains backward compatibility for API clients using Bearer tokens
 
 3. **application.yml**:
-   - Added cookie security configuration
-   - `app.auth.cookie.secure` property (env: `APP_AUTH_COOKIE_SECURE`) controls the auth cookie Secure flag:
-     - **Dev/Test**: Defaults to `false` via `application.yml` so localhost HTTP flows keep working.
-     - **Prod**: Mandatory. Operators must set `APP_AUTH_COOKIE_SECURE=true` (or `COOKIE_SECURE=true`, which the prod profile maps to the same setting). There is no fallback in prod and rollout checklists treat a missing value as a deployment blocker.
+- Added cookie security configuration
+- `app.auth.cookie.secure` property (env: `APP_AUTH_COOKIE_SECURE`) controls the auth cookie Secure flag:
+- **Dev/Test**: Defaults to `false` via `application.yml` so localhost HTTP flows keep working.
+- **Prod**: Mandatory. Operators must set `APP_AUTH_COOKIE_SECURE=true` (or `COOKIE_SECURE=true`, which the prod profile maps to the same setting). There is no fallback in prod and rollout checklists treat a missing value as a deployment blocker.
 
 ### Frontend Changes
 
 1. **api.ts**:
-   - Removed localStorage token storage
-   - Added `credentials: 'include'` to all fetch calls
-   - User info stored in sessionStorage (typically clears on tab close; browser session-restore
-     and bfcache scenarios may delay cleanup)
-   - `isAuthenticated()` now checks for user session, not token
+- Removed localStorage token storage
+- Added `credentials: 'include'` to all fetch calls
+- User info stored in sessionStorage (typically clears on tab close; browser session-restore
+  and bfcache scenarios may delay cleanup)
+- `isAuthenticated()` now checks for user session, not token
 
 2. **useProfile.ts**: Changed from localStorage to sessionStorage
 
@@ -74,13 +68,13 @@ Access-Control-Expose-Headers: X-Request-ID, X-Trace-ID
 
 ## Cookie Attributes Rationale
 
-| Attribute | Value | Reason |
-|-----------|-------|--------|
-| HttpOnly | true | Prevents JavaScript access, blocks XSS token theft |
-| Secure | true (prod) | Ensures cookie only sent over HTTPS |
-| SameSite | Lax | Defense-in-depth (not sole CSRF protection) |
-| Path | / | Cookie available to all endpoints |
-| Max-Age | JWT expiration | Browser auto-clears expired cookies |
+| Attribute | Value          | Reason                                             |
+|-----------|----------------|----------------------------------------------------|
+| HttpOnly  | true           | Prevents JavaScript access, blocks XSS token theft |
+| Secure    | true (prod)    | Ensures cookie only sent over HTTPS                |
+| SameSite  | Lax            | Defense-in-depth (not sole CSRF protection)        |
+| Path      | /              | Cookie available to all endpoints                  |
+| Max-Age   | JWT expiration | Browser auto-clears expired cookies                |
 
 ## CSRF Protection
 

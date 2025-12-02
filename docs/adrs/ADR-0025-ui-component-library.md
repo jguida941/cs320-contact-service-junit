@@ -1,8 +1,6 @@
 # ADR-0025: UI Component Library Selection
 
-**Status**: Accepted
-**Date**: 2025-11-29
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [ADR-0017](ADR-0017-frontend-stack-and-application-shell.md), [REQUIREMENTS.md](../REQUIREMENTS.md), [Plan File](../../.claude/plans/robust-roaming-brooks.md)
 
@@ -35,13 +33,13 @@
 - shadcn CLI (`npx shadcn@latest add <component>`) streamlines component installation.
 
 ## Alternatives Considered
-| Library | Pros | Cons | Decision |
-|---------|------|------|----------|
-| Material UI (MUI) | Enterprise-ready, 95k GitHub stars | Large bundle (~200KB), opinionated Material Design | Rejected: too heavy, less customizable |
-| Chakra UI | Excellent accessibility, style props | Medium bundle, less flexible theming | Rejected: shadcn offers more control |
-| Mantine | Rich hooks, form library built-in | Larger bundle, design less neutral | Rejected: form library overlaps with react-hook-form |
-| Ant Design | Enterprise-grade, rich components | Very large bundle, distinct visual style | Rejected: doesn't match modern SaaS aesthetic |
-| Plain CSS | Zero dependencies | No component primitives, accessibility manual | Rejected: too much effort for CRUD app |
+| Library           | Pros                                 | Cons                                               | Decision                                             |
+|-------------------|--------------------------------------|----------------------------------------------------|------------------------------------------------------|
+| Material UI (MUI) | Enterprise-ready, 95k GitHub stars   | Large bundle (~200KB), opinionated Material Design | Rejected: too heavy, less customizable               |
+| Chakra UI         | Excellent accessibility, style props | Medium bundle, less flexible theming               | Rejected: shadcn offers more control                 |
+| Mantine           | Rich hooks, form library built-in    | Larger bundle, design less neutral                 | Rejected: form library overlaps with react-hook-form |
+| Ant Design        | Enterprise-grade, rich components    | Very large bundle, distinct visual style           | Rejected: doesn't match modern SaaS aesthetic        |
+| Plain CSS         | Zero dependencies                    | No component primitives, accessibility manual      | Rejected: too much effort for CRUD app               |
 
 ## References
 - [shadcn/ui Documentation](https://ui.shadcn.com/)

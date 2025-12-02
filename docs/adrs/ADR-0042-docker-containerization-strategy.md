@@ -1,8 +1,6 @@
 # ADR-0042: Docker Containerization Strategy
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [ADR-0019](ADR-0019-deployment-and-packaging.md),
 [ADR-0039](ADR-0039-phase5-security-observability.md),

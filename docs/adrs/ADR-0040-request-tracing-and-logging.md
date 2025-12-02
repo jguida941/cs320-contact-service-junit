@@ -1,8 +1,6 @@
 # ADR-0040: Request Tracing and Logging Infrastructure
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [ADR-0039](ADR-0039-phase5-security-observability.md),
 [CorrelationIdFilter.java](../../src/main/java/contactapp/config/CorrelationIdFilter.java),
@@ -29,10 +27,12 @@ The filter extracts the `X-Correlation-ID` header from incoming requests or gene
 - Cleaned up after request completion to prevent thread pollution
 
 **Validation Rules**:
-| Rule | Value | Rationale |
-|------|-------|-----------|
-| Max length | 64 characters | UUIDs are 36 chars; allows flexibility while preventing DoS via oversized headers |
-| Character set | `[a-zA-Z0-9\-_]+` | Alphanumeric plus hyphens/underscores; prevents log injection attacks |
+
+| Rule          | Value             | Rationale                                                                             |
+|---------------|-------------------|---------------------------------------------------------------------------------------|
+| Max length    | 64 characters     | UUIDs are 36 chars; allows flexibility while preventing<br> DoS via oversized headers |
+| Character set | `[a-zA-Z0-9\-_]+` | Alphanumeric plus hyphens/underscores; prevents log <br> injection attacks            |
+        
 
 **Rejected IDs**: Invalid correlation IDs (too long, invalid characters, empty) trigger UUID generation rather than error responses. This ensures tracing always works even with malformed client headers.
 
@@ -43,15 +43,17 @@ The filter extracts the `X-Correlation-ID` header from incoming requests or gene
 The filter logs HTTP request/response metadata when enabled via `logging.request.enabled=true`.
 
 **Logged Fields**:
-| Field | Source | Sanitization |
-|-------|--------|--------------|
-| Method | `request.getMethod()` | None |
-| URI | `request.getRequestURI()` | None |
-| Query string | `request.getQueryString()` | Sensitive params masked |
-| Client IP | `RequestUtils.getClientIp()` | Last octet masked |
-| User agent | Header `User-Agent` | Control characters stripped |
-| Status | `response.getStatus()` | None |
-| Duration | Calculated | Milliseconds |
+
+| Field        | Source                       | Sanitation                  |
+|--------------|------------------------------|-----------------------------|
+| Method       | `request.getMethod()`        | None                        |
+| URI          | `request.getRequestURI()`    | None                        |
+| Query String | `request.getQueryString()`   | Sensitive params masked     |
+| Client IP    | `RequestUtils.getClientIp()` | Last octet masked           |
+| User Agent   | Header `User-Agent`          | Control characters stripped |
+| Status       | `response.getStatus()`       | None                        |
+| Duration     | Calculated                   | Milliseconds                |
+
 
 **Sensitive Query Parameters** (automatically masked with `***`):
 - `token`, `access_token`, `refresh_token`
@@ -107,19 +109,21 @@ logging:
 ```
 
 **Environment Recommendations**:
-| Environment | `logging.request.enabled` |
-|-------------|---------------------------|
-| Development | `true` - verbose debugging |
-| Staging | `true` - validate production behavior |
-| Production | `false` or rate-limited - performance and log volume |
+
+| Environment | `logging.request.enabled`                           |
+|-------------|-----------------------------------------------------|
+| Development | `true` - verbose debugging                          |
+| Staging     | `true` - validate production behavior               |
+| Production  | false` or rate-limited - performance and log volume |
+
 
 ## Test Coverage
 
-| Class | Tests | Coverage Focus |
-|-------|-------|----------------|
-| `CorrelationIdFilterTest` | 7 | UUID generation, header propagation, MDC lifecycle, boundary validation (64 vs 65 chars) |
-| `RequestLoggingFilterTest` | 8 | Enabled/disabled modes, query string sanitization, IP masking, duration logging |
-| `RequestUtilsTest` | 6 | Header priority, comma-separated IPs, null handling, "unknown" values |
+| Class                      | Tests | Coverage Focus                                                                           |
+|----------------------------|-------|------------------------------------------------------------------------------------------|
+| `CorrelationIdFilterTest`  | 7     | UUID generation, header propagation, MDC lifecycle, boundary validation (64 vs 65 chars) |
+| `RequestLoggingFilterTest` | 8     | Enabled/disabled modes, query string sanitization, IP masking, duration logging          |
+| `RequestUtilsTest`         | 6     | Header priority, comma-separated IPs, null handling, "unknown" values                    |
 
 ## Consequences
 

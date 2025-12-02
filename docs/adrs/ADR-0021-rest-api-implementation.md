@@ -1,7 +1,6 @@
 # ADR-0021: REST API Implementation
 
-## Status
-Accepted
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 Phase 2 of the roadmap calls for implementing REST API endpoints for the contact service. Following the API contract defined in ADR-0016, we need to:
@@ -45,9 +44,9 @@ HTTP Request → Bean Validation (DTO + @PathVariable) → Domain Constructor �
 ### Global Exception Handler
 `GlobalExceptionHandler` with `@RestControllerAdvice` maps exceptions to HTTP responses:
 - `MethodArgumentNotValidException` → 400 Bad Request (Bean Validation failures)
-- `IllegalArgumentException` → 400 Bad Request (domain validation failures)
-- `ResourceNotFoundException` → 404 Not Found
-- `DuplicateResourceException` → 409 Conflict
+- `IllegalArgumentException`        → 400 Bad Request (domain validation failures)
+- `ResourceNotFoundException`       → 404 Not Found
+- `DuplicateResourceException`      → 409 Conflict
 - `HttpMessageNotReadableException` → 400 Bad Request (malformed JSON)
 
 All errors return consistent JSON: `{ "message": "..." }`
@@ -76,7 +75,8 @@ Test isolation uses reflection to access package-private `clearAll*()` methods.
 - Bean Validation provides user-friendly error messages at HTTP boundary
 - Domain validation remains source of truth (no rule duplication)
 - Swagger UI enables API exploration and testing
-- 76 controller/handler tests (30 Contact + 21 Task + 20 Appointment + 5 GlobalExceptionHandler) provide comprehensive coverage
+- 76 controller/handler tests (30 Contact + 21 Task + 20 Appointment + 5 <br>
+  GlobalExceptionHandler) provide comprehensive coverage
 
 ### Negative
 - Controller tests require reflection hack for test isolation

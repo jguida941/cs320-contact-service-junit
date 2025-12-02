@@ -2,7 +2,7 @@
 Status: Implemented  
 Owner: Justin Guida  
 Implemented: 2025-11-24  
-Links: [requirements/appointment-requirements/requirements.md](../requirements/appointment-requirements/requirements.md), [ADR-0012](../adrs/ADR-0012-appointment-validation-and-tests.md), [ADR-0013](../adrs/ADR-0013-appointmentservice-singleton-and-crud-tests.md)
+Links: [requirements/appointment-requirements/requirements.md](../requirements/appointment-requirements/requirements.md), [ADR-0012](../adrs/ADR-0012-appointment-validation-and-tests.md), [ADR-0013](../adrs/ADR-0013-appointmentservice-singleton-and-crud-tests.md)<br>
 Summary: Implements Appointment (id, date, description) with date-not-past validation and an AppointmentService singleton for add/delete/update.
 
 ## Implementation Plan Overview

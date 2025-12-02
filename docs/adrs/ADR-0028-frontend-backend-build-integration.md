@@ -1,8 +1,6 @@
 # ADR-0028: Frontend-Backend Build Integration
 
-**Status**: Accepted
-**Date**: 2025-11-29
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: [ADR-0017](ADR-0017-frontend-stack-and-application-shell.md), [ADR-0019](ADR-0019-deployment-and-packaging.md)
 
@@ -83,9 +81,9 @@
          ▼                       ▼
 ┌─────────────────────────────────────────┐
 │           mvn package                   │
-│  ┌─────────────┐  ┌─────────────┐      │
-│  │ npm ci      │  │ npm build   │      │
-│  └─────────────┘  └─────────────┘      │
+│  ┌─────────────┐  ┌─────────────┐       │
+│  │   npm ci    │  │ npm build   │       │
+│  └─────────────┘  └─────────────┘       │
 │         │                │              │
 │         └────────┬───────┘              │
 │                  ▼                      │
@@ -120,12 +118,12 @@ server: {
 - CI artifacts contain everything needed for deployment.
 
 ## Alternatives Considered
-| Approach | Pros | Cons | Decision |
-|----------|------|------|----------|
+| Approach                                  | Pros                | Cons                             | Decision         |
+|-------------------------------------------|---------------------|----------------------------------|------------------|
 | Separate deployments (UI on GitHub Pages) | Independent scaling | CORS config, two hosts to manage | Rejected for MVP |
-| Docker multi-stage build | Clean isolation | More complex CI, requires Docker | Future option |
-| Gradle instead of Maven | Modern tooling | Project already uses Maven | Rejected |
-| Manual npm build before Maven | Simple | Easy to forget, not reproducible | Rejected |
+| Docker multi-stage build                  | Clean isolation     | More complex CI, requires Docker | Future option    |
+| Gradle instead of Maven                   | Modern tooling      | Project already uses Maven       | Rejected         |
+| Manual npm build before Maven             | Simple              | Easy to forget, not reproducible | Rejected         |
 
 ## Future Considerations
 - If the app grows, consider splitting to separate deployments with:

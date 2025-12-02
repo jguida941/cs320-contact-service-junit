@@ -1,12 +1,6 @@
 # ADR-0023: API Fuzzing Findings and Schema Compliance
 
-## Status
-
-Accepted – Phase 2.5
-
-## Date
-
-2025-11-29
+**Status:** Accepted-Phase 2.5 | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 

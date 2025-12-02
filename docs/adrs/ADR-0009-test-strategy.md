@@ -1,8 +1,6 @@
 # ADR-0009: Test Strategy and Tooling
 
-**Status**: Accepted  
-**Date**: 2025-11-20  
-**Owners**: Justin Guida  
+**Status:** Accepted | **Date**: 2025-11-20 | **Owners**: Justin Guida 
 
 **Related**: [src/test/java/contactapp](../../src/test/java/contactapp), [test-design-notes.md](../design-notes/notes/test-design-notes.md), [CHANGELOG.md](../logs/CHANGELOG.md)
 

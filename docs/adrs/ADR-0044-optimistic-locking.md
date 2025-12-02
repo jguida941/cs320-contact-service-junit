@@ -1,12 +1,6 @@
 # ADR-0044: Optimistic Locking for Concurrent Updates
 
-## Status
-
-Accepted
-
-## Date
-
-2025-12-01
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 

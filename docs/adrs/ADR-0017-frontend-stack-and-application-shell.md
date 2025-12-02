@@ -1,8 +1,6 @@
 # ADR-0017: Frontend Stack and Application Shell
 
-**Status**: Accepted  
-**Date**: 2025-11-29  
-**Owners**: Justin Guida  
+**Status**: Accepted | **Date**: 2025-11-29 | **Owners**: Justin Guida
 
 **Related**: ADR-0016, [REQUIREMENTS.md](../REQUIREMENTS.md)
 

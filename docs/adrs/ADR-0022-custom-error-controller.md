@@ -1,7 +1,6 @@
 # ADR-0022: Custom Error Controller for JSON Error Responses
 
-## Status
-Accepted
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 API fuzzing with Schemathesis revealed that some error responses return `text/html` instead of `application/json`, causing the `content_type_conformance` check to fail. This occurs when:
@@ -112,25 +111,26 @@ When Schemathesis sends URLs containing control characters (`\x1f`, etc.):
 
 **The fix implements five safeguards:**
 
-| Safeguard | Implementation | Purpose |
-|-----------|---------------|---------|
-| 1. Committed check | `response.isCommitted()` | Prevents appending bytes mid-chunk |
-| 2. Buffer reset | `response.resetBuffer()` | Clears partial response data |
-| 3. Bailout on exception | Catch `IllegalStateException` | Graceful handling of edge cases |
+| Safeguard                  | Implementation                            | Purpose                                  |
+|----------------------------|-------------------------------------------|------------------------------------------|
+| 1. Committed check         | `response.isCommitted()`                  | Prevents appending bytes mid-chunk       |
+| 2. Buffer reset            | `response.resetBuffer()`                  | Clears partial response data             |
+| 3. Bailout on exception    | Catch `IllegalStateException`             | Graceful handling of edge cases          |
 | 4. Explicit Content-Length | `response.setContentLength(bytes.length)` | Forces fixed-length encoding (no chunks) |
-| 5. Binary write | `OutputStream.write(bytes)` | Writes exact byte count declared |
+| 5. Binary write            | `OutputStream.write(bytes)`               | Writes exact byte count declared         |
 
 This is the standard pattern Tomcat and Spring Boot error handlers use: **guard → reset → set headers → write bytes → flush**.
 
 ### Error Message Strategy
 The controller provides user-friendly messages based on HTTP status:
-| Status | Default Message |
-|--------|-----------------|
-| 400 | Bad request |
-| 404 | Resource not found |
-| 405 | Method not allowed |
-| 415 | Unsupported media type |
-| 500 | Internal server error |
+
+| Status | Default Message        |
+|--------|------------------------|
+| 400    | Bad request            |
+| 404    | Resource not found     |
+| 405    | Method not allowed     |
+| 415    | Unsupported media type |
+| 500    | Internal server error  |
 
 If the container provides a specific error message, it's used instead.
 

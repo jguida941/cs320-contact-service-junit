@@ -1,8 +1,6 @@
 # ADR-0014: Backend Framework and Persistence Stack
 
-**Status**: Accepted  
-**Date**: 2025-11-29  
-**Owners**: Justin Guida  
+**Status**: Accepted | **Date**: 2025-11-29 | **Owners**: Justin Guida
 
 **Related**: [REQUIREMENTS.md](../REQUIREMENTS.md), ADR-0015, ADR-0016, ADR-0018, ADR-0019
 

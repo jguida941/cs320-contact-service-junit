@@ -1,8 +1,6 @@
 # ADR-0031: Mutation Testing to Validate Test Strength
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 - Code coverage (JaCoCo) shows what lines execute, not whether tests actually catch bugs.

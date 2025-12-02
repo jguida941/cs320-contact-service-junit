@@ -224,7 +224,9 @@ export function ProjectsPage() {
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select
             value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'ALL')}
+            onValueChange={(value: string) =>
+              setStatusFilter(value as ProjectStatus | 'ALL')
+            }
           >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Filter by status" />

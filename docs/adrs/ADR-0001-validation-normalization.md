@@ -1,8 +1,7 @@
 # ADR-0001: Validation Normalization Policy
 
-**Status**: Accepted  
-**Date**: 2025-11-19  
-**Owners**: Justin Guida  
+**Status**: Accepted | **Date**: 2025-11-20 | **Owners**: Justin Guida
+
 
 **Related**: [Contact.java](../../src/main/java/contactapp/domain/Contact.java), [Validation.java](../../src/main/java/contactapp/domain/Validation.java), [CHANGELOG.md](../logs/CHANGELOG.md)
 

@@ -2,8 +2,7 @@
 
 > **Note**: This ADR describes the legacy in-memory implementation. See [ADR-0024](ADR-0024-persistence-implementation.md) for the current JPA persistence architecture.
 
-## Status
-Accepted
+**Status:** Accepted | **Date:** 2025-11-30 | **Owners:** Justin Guida
 
 ## Context
 Phase 1 of the roadmap calls for converting the in-memory contact service library into a Spring Boot application. The existing codebase has:

@@ -1,8 +1,6 @@
 # ADR-0033: Transaction Management with @Transactional
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 **Related**: ADR-0024
 
@@ -69,13 +67,13 @@ public List<Contact> getAllContacts() {
 
 ## When We Use It
 
-| Method Type | @Transactional | Why |
-|-------------|----------------|-----|
-| `addContact()` | Yes | Check + save must be atomic |
-| `updateContact()` | Yes | Find + update must be atomic |
-| `deleteContact()` | Yes | Consistency with other writes |
+| Method Type        | @Transactional | Why                            |
+|--------------------|----------------|--------------------------------|
+| `addContact()`     | Yes            | Check + save must be atomic    |
+| `updateContact()`  | Yes            | Find + update must be atomic   |
+| `deleteContact()`  | Yes            | Consistency with other writes  |
 | `getAllContacts()` | Yes (readOnly) | Optimization, consistent reads |
-| `getContactById()` | Yes (readOnly) | Optimization |
+| `getContactById()` | Yes (readOnly) | Optimization                   |
 
 ## Consequences
 - **Positive**: Data stays consistent even when operations fail

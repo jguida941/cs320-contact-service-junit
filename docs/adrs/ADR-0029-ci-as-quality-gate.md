@@ -1,8 +1,6 @@
 # ADR-0029: CI as Quality Gate Philosophy
 
-**Status**: Accepted
-**Date**: 2025-12-01
-**Owners**: Justin Guida
+**Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 ## Context
 - As a junior developer, I needed confidence that changes wouldn't break existing functionality.

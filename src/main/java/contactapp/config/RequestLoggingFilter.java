@@ -127,27 +127,35 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
      * @param request the HTTP request wrapper
      */
     private void logRequest(final ContentCachingRequestWrapper request) {
-        final String method = getSafeLogValue(request.getMethod(), "UNKNOWN");
-        final String uri = getSafeLogValue(request.getRequestURI(), "unknown");
+        // Inline sanitization for CodeQL - strip CR/LF to prevent log injection
+        final String method = sanitizeForLog(request.getMethod(), "UNKNOWN");
+        final String uri = sanitizeForLog(request.getRequestURI(), "unknown");
         final String rawQueryString = sanitizeQueryString(request.getQueryString());
-        final String queryString = getSafeLogValue(rawQueryString, null);
-        final String clientIp = maskClientIp(getSafeLogValue(RequestUtils.getClientIp(request), "unknown"));
+        final String queryString = sanitizeForLog(rawQueryString, null);
+        final String clientIp = maskClientIp(sanitizeForLog(RequestUtils.getClientIp(request), "unknown"));
         final String userAgent = getSafeUserAgent(request.getHeader("User-Agent"));
 
-        // Log with inline-validated values only
+        // Log with inline-sanitized values
         if (queryString != null && !queryString.isBlank()) {
             logger.info("HTTP Request: method={} uri={} query={} clientIp={} userAgent={}",
-                    method, uri, queryString, clientIp, userAgent);
+                    method.replace("\r", "").replace("\n", ""),
+                    uri.replace("\r", "").replace("\n", ""),
+                    queryString.replace("\r", "").replace("\n", ""),
+                    clientIp.replace("\r", "").replace("\n", ""),
+                    userAgent.replace("\r", "").replace("\n", ""));
         } else {
             logger.info("HTTP Request: method={} uri={} clientIp={} userAgent={}",
-                    method, uri, clientIp, userAgent);
+                    method.replace("\r", "").replace("\n", ""),
+                    uri.replace("\r", "").replace("\n", ""),
+                    clientIp.replace("\r", "").replace("\n", ""),
+                    userAgent.replace("\r", "").replace("\n", ""));
         }
     }
 
     /**
-     * Returns a safe string for logging with inline validation for CodeQL.
+     * Returns a safe string for logging with inline sanitization for CodeQL.
      */
-    private String getSafeLogValue(final String value, final String defaultValue) {
+    private String sanitizeForLog(final String value, final String defaultValue) {
         if (value == null) {
             return defaultValue;
         }
@@ -160,17 +168,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
      * Returns a safe user agent string for logging with inline validation.
      */
     private String getSafeUserAgent(final String userAgent) {
-        if (userAgent == null || userAgent.isBlank()) {
-            return "unknown";
-        }
-        // Strip control characters and limit length
-        final String sanitized = userAgent.replaceAll("[\\x00-\\x1F\\x7F]", "").trim();
-        if (sanitized.isEmpty()) {
-            return "unknown";
-        }
-        return sanitized.length() > MAX_USER_AGENT_LENGTH
-                ? sanitized.substring(0, MAX_USER_AGENT_LENGTH) + "..."
-                : sanitized;
+        return sanitizeUserAgent(userAgent);
     }
 
     /**
@@ -228,19 +226,20 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     }
 
     private String sanitizeUserAgent(final String userAgent) {
-        return sanitizeLogValue(userAgent, "unknown");
-    }
-
-    private String sanitizeLogValue(final String value, final String defaultValue) {
-        final String sanitized = sanitizeLogValue(value);
-        return sanitized != null ? sanitized : defaultValue;
+        final String sanitized = sanitizeLogValue(userAgent);
+        if (sanitized == null || sanitized.isBlank()) {
+            return "unknown";
+        }
+        return sanitized.length() > MAX_USER_AGENT_LENGTH
+                ? sanitized.substring(0, MAX_USER_AGENT_LENGTH) + "..."
+                : sanitized;
     }
 
     private String sanitizeLogValue(final String value) {
         if (value == null) {
             return null;
         }
-        final String sanitized = value.replaceAll("[\\r\\n]", "").trim();
+        final String sanitized = value.replaceAll("[\\x00-\\x1F\\x7F\\r\\n]", "").trim();
         return sanitized.isEmpty() ? null : sanitized;
     }
 }

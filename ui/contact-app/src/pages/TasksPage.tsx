@@ -231,15 +231,17 @@ export function TasksPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => openEditSheet(task)}
+                        aria-label={`Edit task ${task.name}`}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setDeleteTarget(task)}
+                        aria-label={`Delete task ${task.name}`}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-4 w-4 text-destructive" aria-hidden="true" />
                       </Button>
                     </div>
                   </TableCell>

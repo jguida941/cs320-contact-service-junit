@@ -267,8 +267,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     /**
      * Logs a value at DEBUG level only if it passes safety validation.
      *
-     * <p>This method performs inline validation so CodeQL can trace the data flow
-     * and recognize that only safe values reach the logger.
+     * <p>Inline sanitization ensures CodeQL can trace the data flow.
      *
      * @param message the log message format (must contain exactly one {} placeholder)
      * @param value the potentially untrusted input
@@ -278,35 +277,38 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             logger.debug(message, "[null]");
             return;
         }
-        final String trimmed = value.trim();
-        if (trimmed.isEmpty()) {
+        // Inline sanitization for CodeQL - strip CR/LF to prevent log injection
+        final String sanitized = value.replace("\r", "").replace("\n", "").trim();
+        if (sanitized.isEmpty()) {
             logger.debug(message, "[empty]");
             return;
         }
-        if (!SAFE_LOG_PATTERN.matcher(trimmed).matches()) {
+        if (!SAFE_LOG_PATTERN.matcher(sanitized).matches()) {
             logger.debug(message, "[unsafe-value]");
             return;
         }
-        if (trimmed.length() > MAX_LOG_LENGTH) {
-            logger.debug(message, trimmed.substring(0, MAX_LOG_LENGTH) + "...");
+        if (sanitized.length() > MAX_LOG_LENGTH) {
+            logger.debug(message, sanitized.substring(0, MAX_LOG_LENGTH) + "...");
             return;
         }
         // Value passed all validation checks - safe to log
-        logger.debug(message, trimmed);
+        logger.debug(message, sanitized);
     }
 
     /**
      * Logs rate limit exceeded warning with sanitized key and path.
      *
-     * <p>This method performs inline validation so CodeQL can trace the data flow
-     * and recognize that only safe values reach the logger.
+     * <p>Sanitization is inlined so CodeQL can trace the data flow.
      *
      * @param key the rate limit key (IP or username)
      * @param path the request path
      */
     private void logRateLimitExceeded(final String key, final String path) {
-        final String safeKey = getSafeLogValue(key);
-        final String safePath = getSafeLogValue(path);
+        // Inline sanitization for CodeQL recognition - strip CR/LF to prevent log injection
+        final String safeKey = (key == null) ? "[null]"
+                : key.replace("\r", "").replace("\n", "").trim();
+        final String safePath = (path == null) ? "[null]"
+                : path.replace("\r", "").replace("\n", "").trim();
         logger.warn("Rate limit exceeded for key: {} on path: {}", safeKey, safePath);
     }
 

@@ -22,6 +22,7 @@ All notable changes to this project will be documented here. Follow the
   - Updated TaskMapper.toDomain() to pass entity timestamps to domain
   - Added timestamp setters to TaskEntity for testing
   - Total tests now at **951**.
+- **Legacy Singleton Tests Stabilized (2025-12-02)**: Annotated the contact/task/appointment service suites (legacy + Spring-booted + singleton bridge) with JUnit's `@Isolated` so Surefire's class-level parallelism no longer shares the same static `getInstance()` store across threads. This eliminates the flaky `DuplicateResourceException` bursts seen when multiple suites added the same legacy IDs concurrently.
 
 ### Added
 - **E2E Tests for Phase 2 Task Fields (2025-12-01)**: Two new end-to-end tests

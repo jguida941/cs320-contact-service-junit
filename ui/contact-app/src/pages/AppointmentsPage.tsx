@@ -245,15 +245,17 @@ export function AppointmentsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => openEditSheet(appointment)}
+                        aria-label={`Edit appointment ${appointment.description}`}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setDeleteTarget(appointment)}
+                        aria-label={`Delete appointment ${appointment.description}`}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-4 w-4 text-destructive" aria-hidden="true" />
                       </Button>
                     </div>
                   </TableCell>

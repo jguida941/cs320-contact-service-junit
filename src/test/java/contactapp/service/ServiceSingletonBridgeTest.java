@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * once it is available, ensuring legacy callers receive the DI-managed proxy instead of
  * spinning up isolated in-memory stores.
  */
+@Isolated
 class ServiceSingletonBridgeTest {
 
     private ApplicationContext originalContext;

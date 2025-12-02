@@ -100,6 +100,20 @@ server:
         secure: ${COOKIE_SECURE:true}
         same-site: lax
         http-only: true
+  # Graceful shutdown waits for active requests to complete
+  shutdown: graceful
+  # Response compression for better performance
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+    min-response-size: 1024
+
+# Graceful shutdown timeout
+spring.lifecycle.timeout-per-shutdown-phase: 30s
+
+# Content Security Policy - relaxed for dev (Vite HMR), strict for production
+csp:
+  relaxed: false
 
 app:
   auth:
@@ -200,6 +214,10 @@ app:
     cookie:
       secure: false
 
+# Relax CSP for Vite HMR in dev mode
+csp:
+  relaxed: true
+
 ---
 # =============================================================================
 # Test Profile
@@ -276,6 +294,12 @@ server:
       cookie:
         # Production must use secure cookies - explicit true fallback
         secure: ${COOKIE_SECURE:true}
+  # Trust X-Forwarded-* headers from reverse proxy (required for HTTPS behind load balancer)
+  forward-headers-strategy: native
+
+# Enable HTTPS requirement in production (redirects HTTP to HTTPS)
+security:
+  require-ssl: ${REQUIRE_SSL:true}
 
 # Production JWT secret - REQUIRED, no default (fails fast if not set)
 jwt:

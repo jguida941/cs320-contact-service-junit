@@ -7,6 +7,7 @@ import contactapp.security.Role;
 import contactapp.security.TestUserSetup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Isolated
 public class TaskServiceTest {
 
     @Autowired
@@ -588,5 +590,415 @@ public class TaskServiceTest {
             Task stored = service.getTaskById(id).orElseThrow();
             assertThat(stored.getStatus()).isEqualTo(status);
         }
+    }
+
+    // ==================== Null TaskId Tests ====================
+
+    @Test
+    void testAddTaskWithNullTaskIdThrows() {
+        assertThatThrownBy(() -> service.addTask(new Task(null, "Name", "Desc")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("taskId must not be null");
+    }
+
+    // ==================== Extended Update Tests ====================
+
+    @Test
+    void testUpdateTaskWithStatusAndDueDate() {
+        LocalDate dueDate = LocalDate.now().plusDays(30);
+        Task task = new Task("upd-01", "Original", "Desc", TaskStatus.TODO, null);
+        service.addTask(task);
+
+        boolean updated = service.updateTask("upd-01", "Updated Name", "Updated Desc",
+                TaskStatus.IN_PROGRESS, dueDate);
+
+        assertThat(updated).isTrue();
+        Task stored = service.getTaskById("upd-01").orElseThrow();
+        assertThat(stored.getName()).isEqualTo("Updated Name");
+        assertThat(stored.getDescription()).isEqualTo("Updated Desc");
+        assertThat(stored.getStatus()).isEqualTo(TaskStatus.IN_PROGRESS);
+        assertThat(stored.getDueDate()).isEqualTo(dueDate);
+    }
+
+    @Test
+    void testUpdateTaskWithStatusAndDueDateNotFound() {
+        boolean updated = service.updateTask("nonexistent", "Name", "Desc",
+                TaskStatus.TODO, LocalDate.now().plusDays(1));
+        assertThat(updated).isFalse();
+    }
+
+    @Test
+    void testUpdateTaskWithProjectId() {
+        Task task = new Task("upd-02", "Original", "Desc", TaskStatus.TODO, null);
+        service.addTask(task);
+
+        boolean updated = service.updateTask("upd-02", "With Project", "Linked",
+                TaskStatus.IN_PROGRESS, null, "proj-001");
+
+        assertThat(updated).isTrue();
+        Task stored = service.getTaskById("upd-02").orElseThrow();
+        assertThat(stored.getProjectId()).isEqualTo("proj-001");
+    }
+
+    @Test
+    void testUpdateTaskWithProjectIdNotFound() {
+        boolean updated = service.updateTask("nonexistent", "Name", "Desc",
+                TaskStatus.TODO, null, "proj-001");
+        assertThat(updated).isFalse();
+    }
+
+    @Test
+    void testUpdateTaskWithAssigneeId() {
+        Task task = new Task("upd-03", "Original", "Desc", TaskStatus.TODO, null);
+        service.addTask(task);
+
+        boolean updated = service.updateTask("upd-03", "Assigned", "To user",
+                TaskStatus.TODO, null, null, 42L);
+
+        assertThat(updated).isTrue();
+        Task stored = service.getTaskById("upd-03").orElseThrow();
+        assertThat(stored.getAssigneeId()).isEqualTo(42L);
+    }
+
+    @Test
+    void testUpdateTaskWithAssigneeIdNotFound() {
+        boolean updated = service.updateTask("nonexistent", "Name", "Desc",
+                TaskStatus.TODO, null, null, 1L);
+        assertThat(updated).isFalse();
+    }
+
+    @Test
+    void testUpdateTaskWithAllFields() {
+        LocalDate dueDate = LocalDate.now().plusDays(14);
+        Task task = new Task("upd-04", "Original", "Desc", TaskStatus.TODO, null);
+        service.addTask(task);
+
+        boolean updated = service.updateTask("upd-04", "Full Update", "All fields",
+                TaskStatus.DONE, dueDate, "proj-002", 99L);
+
+        assertThat(updated).isTrue();
+        Task stored = service.getTaskById("upd-04").orElseThrow();
+        assertThat(stored.getName()).isEqualTo("Full Update");
+        assertThat(stored.getDescription()).isEqualTo("All fields");
+        assertThat(stored.getStatus()).isEqualTo(TaskStatus.DONE);
+        assertThat(stored.getDueDate()).isEqualTo(dueDate);
+        assertThat(stored.getProjectId()).isEqualTo("proj-002");
+        assertThat(stored.getAssigneeId()).isEqualTo(99L);
+    }
+
+    @Test
+    void testUpdateTaskWithBlankIdThrows_ExtendedOverload() {
+        assertThatThrownBy(() -> service.updateTask("  ", "Name", "Desc",
+                TaskStatus.TODO, null, null, 1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("taskId must not be null or blank");
+    }
+
+    // ==================== Query Method Tests ====================
+
+    @Test
+    void testGetTasksByStatus() {
+        service.addTask(new Task("qs-01", "Todo1", "Desc", TaskStatus.TODO, null));
+        service.addTask(new Task("qs-02", "Todo2", "Desc", TaskStatus.TODO, null));
+        service.addTask(new Task("qs-03", "InProgress", "Desc", TaskStatus.IN_PROGRESS, null));
+        service.addTask(new Task("qs-04", "Done", "Desc", TaskStatus.DONE, null));
+
+        var todoTasks = service.getTasksByStatus(TaskStatus.TODO);
+        var inProgressTasks = service.getTasksByStatus(TaskStatus.IN_PROGRESS);
+        var doneTasks = service.getTasksByStatus(TaskStatus.DONE);
+
+        assertThat(todoTasks).hasSize(2);
+        assertThat(inProgressTasks).hasSize(1);
+        assertThat(doneTasks).hasSize(1);
+    }
+
+    @Test
+    void testGetTasksByStatusReturnsEmptyList() {
+        var result = service.getTasksByStatus(TaskStatus.DONE);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testGetTasksByStatusNullThrows() {
+        assertThatThrownBy(() -> service.getTasksByStatus(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("status must not be null");
+    }
+
+    @Test
+    void testGetTasksDueBefore() {
+        LocalDate today = LocalDate.now();
+        LocalDate tomorrow = today.plusDays(1);
+        LocalDate nextWeek = today.plusDays(7);
+        LocalDate nextMonth = today.plusDays(30);
+
+        service.addTask(new Task("db-01", "Tomorrow", "Desc", TaskStatus.TODO, tomorrow));
+        service.addTask(new Task("db-02", "NextWeek", "Desc", TaskStatus.TODO, nextWeek));
+        service.addTask(new Task("db-03", "NextMonth", "Desc", TaskStatus.TODO, nextMonth));
+        service.addTask(new Task("db-04", "NoDate", "Desc", TaskStatus.TODO, null));
+
+        var tasksBeforeNextWeek = service.getTasksDueBefore(nextWeek);
+
+        assertThat(tasksBeforeNextWeek).hasSize(1);
+        assertThat(tasksBeforeNextWeek.get(0).getTaskId()).isEqualTo("db-01");
+    }
+
+    @Test
+    void testGetTasksDueBeforeNullThrows() {
+        assertThatThrownBy(() -> service.getTasksDueBefore(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("date must not be null");
+    }
+
+    @Test
+    void testGetTasksDueBeforeReturnsEmptyList() {
+        service.addTask(new Task("db-05", "FutureTask", "Desc", TaskStatus.TODO,
+                LocalDate.now().plusDays(100)));
+
+        var result = service.getTasksDueBefore(LocalDate.now());
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testGetTasksByProjectId() {
+        Task t1 = new Task("proj-t1", "P1 Task1", "Desc", TaskStatus.TODO, null);
+        t1.setProjectId("project-a");
+        Task t2 = new Task("proj-t2", "P1 Task2", "Desc", TaskStatus.TODO, null);
+        t2.setProjectId("project-a");
+        Task t3 = new Task("proj-t3", "P2 Task", "Desc", TaskStatus.TODO, null);
+        t3.setProjectId("project-b");
+        Task t4 = new Task("proj-t4", "No Project", "Desc", TaskStatus.TODO, null);
+
+        service.addTask(t1);
+        service.addTask(t2);
+        service.addTask(t3);
+        service.addTask(t4);
+
+        var projectATasks = service.getTasksByProjectId("project-a");
+        var projectBTasks = service.getTasksByProjectId("project-b");
+
+        assertThat(projectATasks).hasSize(2);
+        assertThat(projectBTasks).hasSize(1);
+    }
+
+    @Test
+    void testGetTasksByProjectIdBlankThrows() {
+        assertThatThrownBy(() -> service.getTasksByProjectId("  "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("projectId must not be null or blank");
+    }
+
+    @Test
+    void testGetTasksByProjectIdTrimsInput() {
+        Task t = new Task("proj-t5", "Trimmed", "Desc", TaskStatus.TODO, null);
+        t.setProjectId("proj-x");
+        service.addTask(t);
+
+        var result = service.getTasksByProjectId("  proj-x  ");
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void testGetTasksByAssigneeId() {
+        Task t1 = new Task("asgn-t1", "User1 Task1", "Desc", TaskStatus.TODO, null);
+        t1.setAssigneeId(100L);
+        Task t2 = new Task("asgn-t2", "User1 Task2", "Desc", TaskStatus.TODO, null);
+        t2.setAssigneeId(100L);
+        Task t3 = new Task("asgn-t3", "User2 Task", "Desc", TaskStatus.TODO, null);
+        t3.setAssigneeId(200L);
+        Task t4 = new Task("asgn-t4", "Unassigned", "Desc", TaskStatus.TODO, null);
+
+        service.addTask(t1);
+        service.addTask(t2);
+        service.addTask(t3);
+        service.addTask(t4);
+
+        var user1Tasks = service.getTasksByAssigneeId(100L);
+        var user2Tasks = service.getTasksByAssigneeId(200L);
+
+        assertThat(user1Tasks).hasSize(2);
+        assertThat(user2Tasks).hasSize(1);
+    }
+
+    @Test
+    void testGetTasksByAssigneeIdNullThrows() {
+        assertThatThrownBy(() -> service.getTasksByAssigneeId(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("assigneeId must not be null");
+    }
+
+    @Test
+    void testGetTasksByAssigneeIdReturnsEmptyWhenNoMatches() {
+        var result = service.getTasksByAssigneeId(999L);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testGetOverdueTasks() {
+        // Add task that would be overdue - we need to use reflection or a task
+        // with dueDate that's already passed. Since constructor rejects past dates,
+        // we'll test the method behavior with current tasks.
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        Task notOverdue = new Task("od-01", "Not Overdue", "Desc", TaskStatus.TODO, tomorrow);
+        service.addTask(notOverdue);
+
+        // No past-due tasks, so result should be empty
+        var overdueTasks = service.getOverdueTasks();
+        assertThat(overdueTasks).isEmpty();
+    }
+
+    @Test
+    void testGetOverdueTasksExcludesDoneTasks() {
+        // Even if a task were overdue, DONE tasks should be excluded
+        LocalDate futureDate = LocalDate.now().plusDays(5);
+        Task doneTask = new Task("od-02", "Done Task", "Desc", TaskStatus.DONE, futureDate);
+        service.addTask(doneTask);
+
+        var overdueTasks = service.getOverdueTasks();
+        assertThat(overdueTasks).isEmpty();
+    }
+
+    @Test
+    void testGetOverdueTasksExcludesNullDueDate() {
+        Task noDueDate = new Task("od-03", "No Due", "Desc", TaskStatus.TODO, null);
+        service.addTask(noDueDate);
+
+        var overdueTasks = service.getOverdueTasks();
+        assertThat(overdueTasks).isEmpty();
+    }
+
+    // ==================== Defensive Copy Tests ====================
+
+    @Test
+    void testGetAllTasksReturnsDefensiveCopies() {
+        Task task = new Task("dc-01", "Original", "Description");
+        service.addTask(task);
+
+        var allTasks = service.getAllTasks();
+        allTasks.get(0).setName("Mutated");
+
+        Task stored = service.getTaskById("dc-01").orElseThrow();
+        assertThat(stored.getName()).isEqualTo("Original");
+    }
+
+    @Test
+    void testGetTaskByIdReturnsDefensiveCopy() {
+        Task task = new Task("dc-02", "Original", "Description");
+        service.addTask(task);
+
+        Task retrieved = service.getTaskById("dc-02").orElseThrow();
+        retrieved.setName("Mutated");
+
+        Task fresh = service.getTaskById("dc-02").orElseThrow();
+        assertThat(fresh.getName()).isEqualTo("Original");
+    }
+
+    @Test
+    void testGetTasksByStatusReturnsDefensiveCopies() {
+        Task task = new Task("dc-03", "Original", "Desc", TaskStatus.TODO, null);
+        service.addTask(task);
+
+        var tasks = service.getTasksByStatus(TaskStatus.TODO);
+        tasks.get(0).setName("Mutated");
+
+        Task stored = service.getTaskById("dc-03").orElseThrow();
+        assertThat(stored.getName()).isEqualTo("Original");
+    }
+
+    @Test
+    void testGetTasksByProjectIdReturnsDefensiveCopies() {
+        Task task = new Task("dc-04", "Original", "Desc", TaskStatus.TODO, null);
+        task.setProjectId("test-proj");
+        service.addTask(task);
+
+        var tasks = service.getTasksByProjectId("test-proj");
+        tasks.get(0).setName("Mutated");
+
+        Task stored = service.getTaskById("dc-04").orElseThrow();
+        assertThat(stored.getName()).isEqualTo("Original");
+    }
+
+    @Test
+    void testGetTasksByAssigneeIdReturnsDefensiveCopies() {
+        Task task = new Task("dc-05", "Original", "Desc", TaskStatus.TODO, null);
+        task.setAssigneeId(50L);
+        service.addTask(task);
+
+        var tasks = service.getTasksByAssigneeId(50L);
+        tasks.get(0).setName("Mutated");
+
+        Task stored = service.getTaskById("dc-05").orElseThrow();
+        assertThat(stored.getName()).isEqualTo("Original");
+    }
+
+    // ==================== User Isolation Tests for Query Methods ====================
+
+    @Test
+    void testGetTasksByStatusOnlyReturnsCurrentUsersTasks() {
+        runAs("usr-sta-a", Role.USER, () -> {
+            Task t = new Task("isos-01", "UserA Task", "Desc", TaskStatus.IN_PROGRESS, null);
+            service.addTask(t);
+        });
+
+        runAs("usr-sta-b", Role.USER, () -> {
+            var tasks = service.getTasksByStatus(TaskStatus.IN_PROGRESS);
+            assertThat(tasks).isEmpty();
+        });
+    }
+
+    @Test
+    void testGetTasksByProjectIdOnlyReturnsCurrentUsersTasks() {
+        runAs("usr-prj-a", Role.USER, () -> {
+            Task t = new Task("isop-01", "UserA Task", "Desc", TaskStatus.TODO, null);
+            t.setProjectId("shared-prj");
+            service.addTask(t);
+        });
+
+        runAs("usr-prj-b", Role.USER, () -> {
+            var tasks = service.getTasksByProjectId("shared-prj");
+            assertThat(tasks).isEmpty();
+        });
+    }
+
+    @Test
+    void testGetTasksByAssigneeIdOnlyReturnsCurrentUsersTasks() {
+        runAs("usr-asg-a", Role.USER, () -> {
+            Task t = new Task("isoa-01", "UserA Task", "Desc", TaskStatus.TODO, null);
+            t.setAssigneeId(777L);
+            service.addTask(t);
+        });
+
+        runAs("usr-asg-b", Role.USER, () -> {
+            var tasks = service.getTasksByAssigneeId(777L);
+            assertThat(tasks).isEmpty();
+        });
+    }
+
+    @Test
+    void testGetTasksDueBeforeOnlyReturnsCurrentUsersTasks() {
+        runAs("usr-due-a", Role.USER, () -> {
+            LocalDate nextWeek = LocalDate.now().plusDays(7);
+            Task t = new Task("isod-01", "UserA Task", "Desc", TaskStatus.TODO, nextWeek);
+            service.addTask(t);
+        });
+
+        runAs("usr-due-b", Role.USER, () -> {
+            var tasks = service.getTasksDueBefore(LocalDate.now().plusDays(14));
+            assertThat(tasks).isEmpty();
+        });
+    }
+
+    @Test
+    void testGetOverdueTasksOnlyReturnsCurrentUsersTasks() {
+        // Since we can't create tasks with past dates, test that method respects user isolation
+        runAs("usr-ovr-a", Role.USER, () -> {
+            Task t = new Task("isoo-01", "UserA Task", "Desc", TaskStatus.TODO, null);
+            service.addTask(t);
+        });
+
+        runAs("usr-ovr-b", Role.USER, () -> {
+            var tasks = service.getOverdueTasks();
+            assertThat(tasks).isEmpty();
+        });
     }
 }

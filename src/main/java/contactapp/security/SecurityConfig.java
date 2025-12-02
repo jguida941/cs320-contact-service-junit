@@ -108,6 +108,10 @@ public class SecurityConfig {
     private String allowedOrigins;
     @Value("${server.servlet.session.cookie.secure:true}")
     private boolean secureSessionCookie;
+    @Value("${csp.relaxed:false}")
+    private boolean relaxedCsp;
+    @Value("${security.require-ssl:false}")
+    private boolean requireSsl;
 
     @SuppressFBWarnings(
             value = "EI_EXPOSE_REP2",
@@ -122,64 +126,65 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
-        final CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        csrfTokenRepository.setCookieCustomizer(cookie -> cookie
-                .sameSite("Lax")
-                .secure(secureSessionCookie));
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http) {
+        try {
+            final CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+            csrfTokenRepository.setCookieCustomizer(cookie -> cookie
+                    .sameSite("Lax")
+                    .secure(secureSessionCookie));
 
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(CSRF_IGNORED_MATCHERS)
-                        .csrfTokenRepository(csrfTokenRepository))
-                .headers(headers -> {
-                    headers.contentSecurityPolicy(csp -> csp
-                            .policyDirectives(
-                                    "default-src 'self'; "
-                                    + "script-src 'self'; "
-                                    + "style-src 'self'; "
-                                    + "img-src 'self' data:; "
-                                    + "font-src 'self'; "
-                                    + "connect-src 'self'; "
-                                    + "frame-ancestors 'self'; "
-                                    + "form-action 'self'; "
-                                    + "base-uri 'self'; "
-                                    + "object-src 'none'"));
-                    headers.permissionsPolicyHeader(permissions -> permissions
-                            .policy("geolocation=(), microphone=(), camera=(), "
-                                    + "payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"));
-                    headers.contentTypeOptions(contentType -> { });
-                    headers.frameOptions(frame -> frame.sameOrigin());
-                    headers.referrerPolicy(referrer -> referrer
-                            .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
-                })
-                .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - authentication
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // Public endpoints - health/monitoring
-                        .requestMatchers(ACTUATOR_PUBLIC_ENDPOINTS).permitAll()
-                        // Public endpoints - API documentation
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                        // Public endpoints - static resources (SPA)
-                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
-                        // Protected endpoints - all API CRUD operations require authentication
-                        .requestMatchers("/api/v1/**").authenticated()
-                        // Public SPA routes (React router) - allow GET so the bundle can load even without JWT
-                        .requestMatchers(SPA_GET_MATCHER).permitAll()
-                        .requestMatchers("/error").permitAll()
-                        // Any other request also requires authentication
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                // Rate limiting filter runs AFTER JWT auth so SecurityContext is populated
-                .addFilterAfter(rateLimitingFilter, JwtAuthenticationFilter.class);
+            http
+                    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                    .csrf(csrf -> csrf
+                            .ignoringRequestMatchers(CSRF_IGNORED_MATCHERS)
+                            .csrfTokenRepository(csrfTokenRepository))
+                    .headers(headers -> {
+                        headers.contentSecurityPolicy(csp -> csp
+                                .policyDirectives(buildCspPolicy()));
+                        headers.permissionsPolicyHeader(permissions -> permissions
+                                .policy("geolocation=(), microphone=(), camera=(), "
+                                        + "payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"));
+                        headers.contentTypeOptions(contentType -> { });
+                        headers.frameOptions(frame -> frame.sameOrigin());
+                        headers.referrerPolicy(referrer -> referrer
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
+                    })
+                    .authorizeHttpRequests(auth -> auth
+                            // Public endpoints - authentication
+                            .requestMatchers("/api/auth/**").permitAll()
+                            // Public endpoints - health/monitoring
+                            .requestMatchers(ACTUATOR_PUBLIC_ENDPOINTS).permitAll()
+                            // Public endpoints - API documentation
+                            .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                            // Public endpoints - static resources (SPA)
+                            .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
+                            // Protected endpoints - all API CRUD operations require authentication
+                            .requestMatchers("/api/v1/**").authenticated()
+                            // Public SPA routes (React router) - allow GET so the bundle can load even without JWT
+                            .requestMatchers(SPA_GET_MATCHER).permitAll()
+                            .requestMatchers("/error").permitAll()
+                            // Any other request also requires authentication
+                            .anyRequest().authenticated()
+                    );
 
-        return http.build();
+            // Require HTTPS in production when configured
+            if (requireSsl) {
+                http.requiresChannel(channel -> channel.anyRequest().requiresSecure());
+            }
+
+            http
+                    .sessionManagement(session -> session
+                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    )
+                    .authenticationProvider(authenticationProvider())
+                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                    // Rate limiting filter runs AFTER JWT auth so SecurityContext is populated
+                    .addFilterAfter(rateLimitingFilter, JwtAuthenticationFilter.class);
+
+            return http.build();
+        } catch (final Exception ex) {
+            throw new IllegalStateException("Failed to configure security filter chain", ex);
+        }
     }
 
     /**
@@ -228,7 +233,47 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(final AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(final AuthenticationConfiguration config) {
+        try {
+            return config.getAuthenticationManager();
+        } catch (final Exception ex) {
+            throw new IllegalStateException("Failed to obtain authentication manager", ex);
+        }
+    }
+
+    /**
+     * Builds the Content Security Policy based on the csp.relaxed configuration.
+     *
+     * <p>In development mode (csp.relaxed=true), allows 'unsafe-inline' for styles
+     * to support Vite's hot module replacement and CSS injection. In production
+     * (csp.relaxed=false), uses a strict CSP policy.
+     *
+     * @return the CSP policy string
+     */
+    private String buildCspPolicy() {
+        if (relaxedCsp) {
+            // Relaxed CSP for development with Vite HMR support
+            return "default-src 'self'; "
+                    + "script-src 'self' 'unsafe-inline'; "
+                    + "style-src 'self' 'unsafe-inline'; "
+                    + "img-src 'self' data: blob:; "
+                    + "font-src 'self' data:; "
+                    + "connect-src 'self' ws: wss:; "
+                    + "frame-ancestors 'self'; "
+                    + "form-action 'self'; "
+                    + "base-uri 'self'; "
+                    + "object-src 'none'";
+        }
+        // Strict CSP for production
+        return "default-src 'self'; "
+                + "script-src 'self'; "
+                + "style-src 'self' 'unsafe-inline'; "
+                + "img-src 'self' data:; "
+                + "font-src 'self'; "
+                + "connect-src 'self'; "
+                + "frame-ancestors 'self'; "
+                + "form-action 'self'; "
+                + "base-uri 'self'; "
+                + "object-src 'none'";
     }
 }

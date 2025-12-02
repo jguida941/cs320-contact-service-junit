@@ -340,25 +340,25 @@ export function ProjectsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleViewDetails(project)}
-                        title="View details"
+                        aria-label={`View details for project ${project.name}`}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4 w-4" aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => openEditSheet(project)}
-                        title="Edit project"
+                        aria-label={`Edit project ${project.name}`}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setDeleteTarget(project)}
-                        title="Delete project"
+                        aria-label={`Delete project ${project.name}`}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-4 w-4 text-destructive" aria-hidden="true" />
                       </Button>
                     </div>
                   </TableCell>

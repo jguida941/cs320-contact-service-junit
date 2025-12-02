@@ -63,6 +63,9 @@ public class ProjectContactEntity {
         // JPA only
     }
 
+    @SuppressFBWarnings(
+            value = "CT_CONSTRUCTOR_THROW",
+            justification = "Constructor performs validation and intentionally throws before persisting invalid state")
     public ProjectContactEntity(
             final ProjectEntity project,
             final ContactEntity contact,

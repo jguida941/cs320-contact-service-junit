@@ -14,7 +14,7 @@
 - **Overview**: Full-stack contact, task, appointment, and project tracker built with Spring Boot 4.0.0 and React 19.
 - **Architecture highlights**: PostgreSQL + JPA with 13 Flyway migrations, JWT authentication with RBAC, per-user data isolation, token-bucket rate limiting, structured logging with PII masking, Prometheus metrics, Docker packaging, Kubernetes-ready health probes, and 6 GitHub Actions workflows (CI/CD, CodeQL, ZAP DAST, API fuzzing, Dependabot).
 - **My role**: Designed the schema (13 migrations), built 6 domain aggregates with services and controllers, wired the JWT security and observability stack, created a React 19 SPA using TanStack Query, packaged everything with Docker + Compose, and automated the stack via a Makefile (30+ targets) and CI/CD pipelines.
-- **Quality bar**: 901 test executions on the full Linux matrix run, ~89.9% line coverage (JaCoCo), ~83.1% mutation score (PITest), and 5 CI quality gates (JaCoCo, PITest, SpotBugs, Checkstyle, OWASP Dependency-Check).
+- **Quality bar**: 920 test executions on the full Linux matrix run, ~89.9% line coverage (JaCoCo), ~83.1% mutation score (PITest), and 5 CI quality gates (JaCoCo, PITest, SpotBugs, Checkstyle, OWASP Dependency-Check).
   - Linux CI runs the full suite with Testcontainers/Postgres and enforces coverage/mutation gates; Windows CI uses the `skip-testcontainers` profile on H2 with a **reduced JaCoCo gate** that excludes container-only code paths while still running PITest. Legacy `getInstance()` suites are tagged `legacy-singleton` and can be run separately via `mvn test -Plegacy-singleton` without touching the main pipeline.
 
 ---

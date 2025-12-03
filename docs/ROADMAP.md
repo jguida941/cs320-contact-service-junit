@@ -34,7 +34,7 @@ Test fixtures now reset stale SecurityContext entries and recreate the seed user
 - **Phase 5 (Task Assignment)**: Team collaboration with task assignment and access control, migration V12
 - **Phase 6 (Contact-Project Linking)**: Deferred to future (stakeholder management via V13 junction table)
 
-Total test count: 904, PIT mutation ~83%, store coverage 96%+, mapper coverage 95%+.
+Total test count: 930, PIT mutation ~83%, store coverage 96%+, mapper coverage 95%+.
 
 CI note: Linux job runs the full suite with Testcontainers/Postgres; Windows job uses the `skip-testcontainers` profile to exercise service/controller suites on H2 (no Docker) while still reporting JaCoCo. Legacy `getInstance()` suites are tagged `legacy-singleton` and can be run separately via `mvn test -Plegacy-singleton`.
 

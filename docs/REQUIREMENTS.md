@@ -44,16 +44,16 @@
 - Global exception handler (`GlobalExceptionHandler`) maps exceptions to JSON error responses (400, 401, 403, 404, 409 including optimistic locking conflicts).
 - Custom error controller (`CustomErrorController`) ensures ALL errors return JSON, including container-level errors, and `RequestLoggingFilter` logs masked IP/query data + user agents whenever request logging is enabled.
 - Persistence implemented via Spring Data repositories + mapper components; schema managed by Flyway migrations targeting Postgres (dev/prod) and Postgres Testcontainers (SpringBootTests) with H2 reserved for targeted slices. The default (no profile) run uses in-memory H2 in PostgreSQL compatibility mode so `mvn spring-boot:run` works out of the box; `dev`/`integration`/`prod` profiles point at Postgres. Shared migrations now live under `db/migration/common`, with profile-specific overrides under `db/migration/h2` and `db/migration/postgresql`.
-- Testcontainers-based integration suites cover Contact/Task/Appointment services against real Postgres, while new JWT/config/filter/unit tests bring the total to 904 test executions.
+- Testcontainers-based integration suites cover Contact/Task/Appointment services against real Postgres, while new JWT/config/filter/unit tests bring the total to 930 test executions.
 - Additional unit coverage for composite keys (ProjectContactId) and controller/filter DTOs.
 - Mapper/unit suites now include null-guard coverage plus JPA entity accessor tests to keep persistence mutation-safe even when Hibernate instantiates proxies through the protected constructors.
 - OpenAPI/Swagger UI available at `/swagger-ui.html` and `/v3/api-docs` (springdoc-openapi).
 - Health/info actuator endpoints available; other actuator endpoints locked down.
-- Latest CI: 904 tests passing (unit + slice + Testcontainers + security + filter + config + Project/Task/Appointment enhancement tests), ~83% mutation score, 96%+ line coverage on stores, 95%+ on mappers, SpotBugs clean.
+- Latest CI: 930 tests passing (unit + slice + Testcontainers + security + filter + config + Project/Task/Appointment enhancement tests), ~83% mutation score, 96%+ line coverage on stores, 95%+ on mappers, SpotBugs clean.
 - Test execution strategy: Linux CI runs the full suite with Testcontainers/Postgres; Windows CI uses the `skip-testcontainers` profile to run the same service/controller suites on H2 (no Docker) while still reporting JaCoCo; legacy `getInstance()` suites are tagged `legacy-singleton` and can be run separately via `mvn test -Plegacy-singleton` to avoid interfering with the main pipeline.
 - Testcontainers-backed Postgres integration tests run automatically in CI (Ubuntu jobs pass `-DskipITs=false`) while local `mvn verify` runs set `skipITs=true` by default; enable them locally with `mvn verify -DskipITs=false` once Docker Desktop/Colima is running.
-- Controller tests (71 tests): ContactControllerTest (30), TaskControllerTest (21), AppointmentControllerTest (20).
-- Exception handler tests (5 tests): GlobalExceptionHandlerTest validates direct handler coverage (including ConstraintViolationException for path variable validation).
+- Controller tests (75 tests): ContactControllerTest (21), TaskControllerTest (35), AppointmentControllerTest (19).
+- Exception handler tests (7 tests): GlobalExceptionHandlerTest validates direct handler coverage (including ConstraintViolationException for path variable validation).
 - Error controller tests (34 tests): CustomErrorControllerTest (17) + JsonErrorReportValveTest (17) validate container-level error handling.
 - Service tests include lookup method coverage: getAllContacts/getContactById, getAllTasks/getTaskById, getAllAppointments/getAppointmentById, plus mapper/repository slices and legacy singleton tests.
 - `ui/qa-dashboard` is a sample Vite/React metrics console, not a product UI.
@@ -144,7 +144,7 @@ Implementation details:
   - `DuplicateResourceException` → 409 Conflict
   - `HttpMessageNotReadableException` → 400 Bad Request (malformed JSON)
 - Added springdoc-openapi dependency; Swagger UI at `/swagger-ui.html`, OpenAPI spec at `/v3/api-docs`.
-- Added 71 controller tests (30 Contact + 21 Task + 20 Appointment) covering:
+- Added 75 controller tests (21 Contact + 35 Task + 19 Appointment) covering:
   - Happy path CRUD operations
   - Bean Validation boundary tests (exact max, one-over-max)
   - 404 Not Found scenarios
@@ -350,7 +350,7 @@ Implementation details:
 - [x] DTOs with Bean Validation mapped to domain objects
 - [x] Global JSON error handler in place
 - [x] OpenAPI/Swagger UI published via springdoc-openapi
-- [x] Controller tests added (71 tests: 30 Contact + 21 Task + 20 Appointment)
+- [x] Controller tests added (75 tests: 21 Contact + 35 Task + 19 Appointment)
 
 ### Phase 2.5: API Security Testing Foundation ✅
 - [x] OpenAPI spec generated automatically from controllers

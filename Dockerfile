@@ -84,6 +84,10 @@ RUN useradd -r -u 1001 -s /bin/false appuser
 # Set working directory
 WORKDIR /app
 
+# Create logs directory for Logback file appender
+# Must be created before switching to non-root user
+RUN mkdir -p /app/logs && chown appuser:appuser /app/logs
+
 # Copy extracted JAR layers from builder stage.
 # Order matters: copy least-frequently-changed layers first.
 COPY --from=builder --chown=appuser:appuser /build/target/extracted/dependencies/ ./

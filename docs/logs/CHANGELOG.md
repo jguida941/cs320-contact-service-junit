@@ -421,7 +421,7 @@ All notable changes to this project will be documented here. Follow the
   - Added `GlobalExceptionHandler` with `@RestControllerAdvice` mapping exceptions to HTTP responses (400, 404, 409).
   - Added custom exceptions: `ResourceNotFoundException`, `DuplicateResourceException`.
   - Added springdoc-openapi dependency; Swagger UI at `/swagger-ui.html`, OpenAPI spec at `/v3/api-docs`.
-  - Added 71 controller tests (30 Contact + 21 Task + 20 Appointment) covering:
+  - Added 75 controller tests (21 Contact + 35 Task + 19 Appointment) covering:
     - Happy path CRUD operations
     - Bean Validation boundary tests (exact max, one-over-max)
     - 404 Not Found scenarios

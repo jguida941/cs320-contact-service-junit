@@ -75,7 +75,7 @@ Test isolation uses reflection to access package-private `clearAll*()` methods.
 - Bean Validation provides user-friendly error messages at HTTP boundary
 - Domain validation remains source of truth (no rule duplication)
 - Swagger UI enables API exploration and testing
-- 76 controller/handler tests (30 Contact + 21 Task + 20 Appointment + 5 <br>
+- 82 controller/handler tests (21 Contact + 35 Task + 19 Appointment + 7 <br>
   GlobalExceptionHandler) provide comprehensive coverage
 
 ### Negative

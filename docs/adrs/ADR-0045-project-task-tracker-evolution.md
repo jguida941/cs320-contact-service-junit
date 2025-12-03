@@ -148,7 +148,7 @@ private Instant updatedAt;           // Auto-populated on update
 public static LocalDate validateDueDateNotPast(LocalDate date, String label, Clock clock)
 ```
 
-**Migration V8**: `V8__enhance_tasks_with_status_and_duedate.sql`
+**Migration V9**: `V9__enhance_tasks_with_status_and_duedate.sql`
 ```sql
 ALTER TABLE tasks ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'TODO';
 ALTER TABLE tasks ADD COLUMN due_date DATE;

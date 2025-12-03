@@ -12,9 +12,9 @@
 ## Executive Summary
 
 - **Overview**: Full-stack contact, task, appointment, and project tracker built with Spring Boot 4.0.0 and React 19.
-- **Architecture highlights**: PostgreSQL + JPA with 11 Flyway migrations (V1-V4, V7-V13), JWT authentication with RBAC, per-user data isolation, token-bucket rate limiting, structured logging with PII masking, Prometheus metrics, Docker packaging, Kubernetes-ready health probes, and 6 GitHub Actions workflows (CI/CD, CodeQL, ZAP DAST, API fuzzing, Dependabot).
-- **My role**: Designed the schema (11 migrations), built 6 domain aggregates with services and controllers, wired the JWT security and observability stack, created a React 19 SPA using TanStack Query, packaged everything with Docker + Compose, and automated the stack via a Makefile (55 targets) and CI/CD pipelines.
-- **Quality bar**: 930 test executions on the full Linux matrix run, ~89.9% line coverage (JaCoCo), ~83.1% mutation score (PITest), and 5 CI quality gates (JaCoCo, PITest, SpotBugs, Checkstyle, OWASP Dependency-Check).
+- **Architecture highlights**: PostgreSQL + JPA with 13 Flyway migrations (V1-V13), JWT authentication with RBAC, per-user data isolation, token-bucket rate limiting, structured logging with PII masking, Prometheus metrics, Docker packaging, Kubernetes-ready health probes, and 6 GitHub Actions workflows (CI/CD, CodeQL, ZAP DAST, API fuzzing, Dependabot).
+- **My role**: Designed the schema (13 migrations), built 6 domain aggregates with services and controllers, wired the JWT security and observability stack, created a React 19 SPA using TanStack Query, packaged everything with Docker + Compose, and automated the stack via a Makefile (55 targets) and CI/CD pipelines.
+- **Quality bar**: 930 test executions on the full Linux matrix run, ~90% line coverage (JaCoCo), ~84% mutation score (PITest), and 5 CI quality gates (JaCoCo, PITest, SpotBugs, Checkstyle, OWASP Dependency-Check).
   - Linux CI runs the full suite with Testcontainers/Postgres and enforces coverage/mutation gates; Windows CI uses the `skip-testcontainers` profile on H2 with a **reduced JaCoCo gate** that excludes container-only code paths while still running PITest. Legacy `getInstance()` suites are tagged `legacy-singleton` and can be run separately via `mvn test -Plegacy-singleton` without touching the main pipeline.
 
 ---
@@ -132,7 +132,7 @@ Flyway automatically creates the schema on first run. Stop the database with `do
    - Windows/`-DskipTestcontainersTests=true`: runs the same service/controller suites against in-memory H2 (no Docker) while still reporting JaCoCo.
    - Legacy singleton coverage: `mvn test -Plegacy-singleton` runs only the legacy `getInstance()` suites tagged `legacy-singleton` against H2 to avoid interfering with the main pipeline.
 6. Open the folder in IntelliJ/VS Code if you want IDE assistance—the Maven project model is auto-detected.
-7. Planning note: Phases 0-7 complete (Spring Boot scaffold, REST API + DTOs, API fuzzing, persistence layer, React UI, security & observability, DAST, packaging/CI, UX polish). **904 tests** (Linux full suite) cover the JPA path, legacy singleton fallbacks, JWT auth components, User entity validation, Project CRUD, and the validation helpers including the new `validateNotNull` enum helper (PIT mutation coverage ~83.1% with ~89.9% line coverage on the full suite). +84 mutation-focused tests added targeting boundary conditions, comparison operators, copy semantics, and helper adapters. ADR-0014..0046 capture the selected stack plus validation/Project evolution decisions. See [Phase Roadmap & Highlights](#phase-roadmap--highlights) for the consolidated deliverables list.
+7. Planning note: Phases 0-7 complete (Spring Boot scaffold, REST API + DTOs, API fuzzing, persistence layer, React UI, security & observability, DAST, packaging/CI, UX polish). **930 tests** (Linux full suite) cover the JPA path, legacy singleton fallbacks, JWT auth components, User entity validation, Project CRUD, and the validation helpers including the new `validateNotNull` enum helper (PIT mutation coverage ~84% with ~90% line coverage on the full suite). +84 mutation-focused tests added targeting boundary conditions, comparison operators, copy semantics, and helper adapters. ADR-0014..0046 capture the selected stack plus validation/Project evolution decisions. See [Phase Roadmap & Highlights](#phase-roadmap--highlights) for the consolidated deliverables list.
 
 ## Phase Roadmap & Highlights
 
@@ -186,28 +186,9 @@ The phased plan in [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) governs scope.
 
 **Database Schema**: 7 new migrations (V7-V13) add optimistic locking (V7), projects table (V8), task status/due dates (V9), task-project relationships (V10), appointment-task/project relationships (V11), task assignment (V12), and project-contact junction table (V13) with proper foreign keys and indexes.
 
-**Test Coverage**: 904 total test executions on the full Linux run with comprehensive coverage across domain validation, persistence layers, service operations, and REST API endpoints for all implemented phases (700 execute on the Windows H2 lane via `-DskipTestcontainersTests=true`).
+**Test Coverage**: 930 total test executions on the full Linux run with comprehensive coverage across domain validation, persistence layers, service operations, and REST API endpoints for all implemented phases (700 execute on the Windows H2 lane via `-DskipTestcontainersTests=true`).
 
 **Phase 6 Implementation**: Contact-Project Linking is fully implemented via V13 junction table with API endpoints for adding/removing contacts to projects (`POST /api/v1/projects/{id}/contacts`, `DELETE /api/v1/projects/{id}/contacts/{contactId}`) and retrieving project contacts (`GET /api/v1/projects/{id}/contacts`). See ADR-0045 for details.
-
-## React UI Highlights
-- Built with **Vite + React 19 + TypeScript + Tailwind CSS v4** plus shadcn/ui components for a professional look.
-- Full CRUD pages for **Contacts, Tasks, and Appointments** with React Hook Form + Zod validation that mirrors the backend rules (length limits, date-not-past, etc.).
-- Global theme system (Slate, Ocean, Forest, Violet, Zinc; each with light/dark) and instant theme switching via the top bar.
-- Settings page (profile + appearance) and Help page (getting started steps, resource links, keyboard shortcuts).
-- TanStack Query handles caching/revalidation, so edits in one tab immediately flow through the rest of the UI.
-- Authentication-aware routing (`/login`, `RequireAuth`, `PublicOnlyRoute`) forces users through the JWT login screen before any `/api/v1/**` call runs; the auth helpers sync profile data with the backend and clear cached queries on logout.
-- Build artifacts are bundled into the Spring Boot JAR (via `frontend-maven-plugin`), so `java -jar target/*.jar` serves the API and SPA from the same origin.
-
-### Frontend Architecture (ADR-0025, ADR-0026)
-
-**Component Library**: shadcn/ui with copy-paste architecture (not npm dependencies). Components are copied into `ui/contact-app/src/components/ui/` for full source control, preventing upstream breaking changes and eliminating vendor lock-in. Built on Radix UI primitives for WCAG 2.1 AA accessibility (4.5:1 contrast ratios verified).
-
-**Theme System**: CSS variable-based with 5 professional themes (Slate, Ocean, Forest, Violet, Zinc), each with light/dark variants via `.dark` class toggle. Runtime theme switching without page reload. All theme variables defined in `app.css` with fallback chains.
-
-**State Management**: TanStack Query v5 for server state (caching, revalidation, optimistic updates); React Hook Form + Zod for form state (mirrors backend Bean Validation rules). No Redux/Context needed for this scale.
-
-**Build Integration**: `frontend-maven-plugin` installs Node.js 22.11.0 + npm 10.9.0, runs `npm ci`, executes Vitest tests (22 passing), builds production bundle via `npm run build`, and copies `dist/` into `target/classes/static/` for JAR packaging. Single-command deployment: `mvn clean package && java -jar target/*.jar`.
 
 ## Branches & History
 - `master` (this branch) - the Spring Boot + React suite with persistence, CI, and the full UI.
@@ -331,7 +312,6 @@ We tag releases from both branches so GitHub’s “Releases” view exposes the
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)                                                                                       | **Master document**: scope, architecture, phased plan, checklist, and code examples.                                              |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md)                                                                                                 | Quick phase overview (points to REQUIREMENTS.md for details).                                                                     |
 | [`docs/INDEX.md`](docs/INDEX.md)                                                                                                     | Full file/folder navigation for the repository.                                                                                   |
-| [`agents.md`](agents.md)                                                                                                             | AI assistant entry point with constraints and stack decisions.                                                                    |
 | [`pom.xml`](pom.xml)                                                                                                                 | Maven build file (dependencies, plugins, compiler config).                                                                        |
 | [`config/checkstyle`](config/checkstyle)                                                                                             | Checkstyle configuration used by Maven/CI quality gates.                                                                          |
 | [`config/owasp-suppressions.xml`](config/owasp-suppressions.xml)                                                                     | Placeholder suppression list for OWASP Dependency-Check.                                                                          |
@@ -604,7 +584,7 @@ graph TD
 - Mapper tests (`ContactMapperTest`, `TaskMapperTest`, `AppointmentMapperTest`) now assert the null-input short-circuit paths so PIT can mutate those guards without leaving uncovered lines.
 - New JPA entity tests (`ContactEntityTest`, `TaskEntityTest`, `AppointmentEntityTest`) exercise the protected constructors and setters to prove Hibernate proxies can hydrate every column even when instantiated via reflection.
 - Legacy `InMemory*Store` suites assert the `Optional.empty` branch of `findById` so both success and miss paths copy data defensively.
-- Combined with the existing controller/service suites and the security additions above, this brings the repo to **904 tests** on the full suite with **~83.1% mutation kills** and **~89.9% line coverage** (higher on stores/mappers; container-dependent coverage enforced on Linux only).
+- Combined with the existing controller/service suites and the security additions above, this brings the repo to **930 tests** on the full suite with **~84% mutation kills** and **~90% line coverage** (higher on stores/mappers; container-dependent coverage enforced on Linux only).
 
 #### Mutation-Focused Test Additions (+71 Tests)
 
@@ -1321,9 +1301,10 @@ void setUp() throws Exception {
 - **React 19 + Vite + TypeScript** powers the frontend with fast HMR and type safety.
 - **Tailwind CSS v4** provides utility-first styling via the `@theme` directive for CSS-native design tokens.
 - **shadcn/ui** components (Button, Card, Table, Sheet, Dialog, etc.) offer accessible, copy-paste primitives built on Radix UI.
-- **TanStack Query** handles server state with automatic caching, refetching, and error handling.
-- **React Router v7** manages client-side navigation with a nested route structure.
+- **TanStack Query** handles server state with automatic caching, refetching, and error handling; auth helpers sync profile data with the backend and clear cached queries on logout.
+- **React Router v7** manages client-side navigation with a nested route structure and authentication-aware routing (`/login`, `RequireAuth`, `PublicOnlyRoute`).
 - **Zod schemas** mirror backend `Validation.java` constants for consistent client-side validation.
+- **Settings page** (profile + appearance) and **Help page** (getting started steps, resource links, keyboard shortcuts) provide user customization.
 
 ### Stack Architecture
 ```mermaid
@@ -1639,27 +1620,9 @@ static {
 Each layer runs automatically in CI, so local `mvn verify` mirrors the hosted pipelines.
 - Dependabot runs every Monday at 15:30 ET against the Maven ecosystem and automatically opens PRs for available dependency upgrades.
 
-### Testcontainers Strategy (ADR-0048)
-
-Tests use a **single static PostgreSQL container** for the entire test suite. Spring Boot caches the ApplicationContext (and its HikariCP connection pool) across test classes with identical `@SpringBootTest` configuration. Per-class containers would create new containers on different ports, but the cached connection pool would still point to the first container's port, causing connection timeouts. Static singleton container uses the same port throughout the test suite.
-
-**Pattern** (`PostgresContainerSupport.java`):
-```java
-@ServiceConnection
-protected static final PostgreSQLContainer<?> postgres;
-static {
-    postgres = new PostgreSQLContainer<>("postgres:16-alpine");
-    postgres.start();
-}
-```
-
-**Result**: Aligns container lifecycle with Spring Boot test context caching to prevent connection pool port mismatches.
-
 ## Mutation Testing & Quality Gates
 
 **Why mutation testing matters**: Line coverage (JaCoCo) shows what code executes, not whether tests catch bugs. A test that runs code but never asserts anything still counts as "covered". Mutation testing proves tests actually work by injecting faults and verifying tests fail.
-
-**Value for AI-assisted development**: When using AI tools to generate tests, mutation testing validates the AI didn't just write tests that execute code without meaningful assertions. ~83% mutation score means tests catch 83% of injected bugs.
 
 **Enforcement**: PITest runs in `mvn verify` with 70% threshold. Mutations that survive indicate missing or weak assertions.
 
@@ -1868,9 +1831,9 @@ graph TD
 Each GitHub Actions matrix job writes a QA table (tests, coverage, mutation score, Dependency-Check status) to the run summary. The table now includes colored icons, ASCII bars, and severity breakdowns so drift stands out immediately. Open any workflow's "Summary" tab and look for the "QA Metrics" section for the latest numbers.
 
 **Current Test Metrics (full Linux matrix):**
-- 904 test executions (parameterized) with +44 TaskService tests covering query methods, user isolation, and defensive copies
+- 930 test executions (parameterized) with +44 TaskService tests covering query methods, user isolation, and defensive copies
 - +71 mutation-focused tests targeting boundary conditions and comparison operators
-- ~83.1% mutation kill rate (PIT) and ~89.9% line coverage overall (higher on stores/mappers)
+- ~84% mutation kill rate (PIT) and ~90% line coverage overall (higher on stores/mappers)
 - All domain entities have comprehensive boundary testing
 - Test fixtures use centralized `TestCleanupUtility` to reset the SecurityContext, reseed test users, and reset singleton instances via reflection, ensuring complete test isolation and eliminating DuplicateResource exceptions
 - Windows matrix executes 700 tests under `-DskipTestcontainersTests=true` (H2), with a reduced JaCoCo gate that excludes container-only code paths; full coverage/mutation gates are enforced on the Linux Testcontainers lanes.

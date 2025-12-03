@@ -369,6 +369,10 @@ jobs:
                 DB_PASSWORD: ${POSTGRES_PASSWORD}
                 JWT_SECRET: ${JWT_SECRET}
                 ENVIRONMENT: ci-test
+                # Disable SSL/HTTPS requirements for CI (no TLS terminator)
+                REQUIRE_SSL: "false"
+                COOKIE_SECURE: "false"
+                APP_AUTH_COOKIE_SECURE: "false"
             postgres:
               image: postgres:16-alpine
               environment:

@@ -264,7 +264,7 @@ Implementation details:
   - All documentation/test update checklists apply per feature slice
 
 ### CI/CD Security Stages (Phases 8-10)
-> See `docs/ci-cd/ci_cd_plan.md` for details. These align with implementation phases:
+> See `docs/CI-CD/ci_cd_plan.md` for details. These align with implementation phases:
 > - CI Phase 8 (ZAP) → Implementation Phase 5.5
 > - CI Phase 9 (API fuzzing) → Implementation Phase 2.5
 > - CI Phase 10 (auth tests) → Implementation Phase 5.5
@@ -603,7 +603,7 @@ export function useCreateContact() {
 | Document | Path | Purpose |
 |----------|------|---------|
 | ADR Index | `docs/adrs/README.md` | Architecture decisions (ADR-0001–0022) |
-| CI/CD Plan | `docs/ci-cd/ci_cd_plan.md` | Pipeline phases including security testing |
+| CI/CD Plan | `docs/CI-CD/ci_cd_plan.md` | Pipeline phases including security testing |
 | Backlog | `docs/logs/backlog.md` | Deferred decisions (UI kit, OAuth2/SSO, WAF) |
 | Agent Guide | `agents.md` | AI assistant entry point |
 | Repository Index | `docs/INDEX.md` | Full file/folder navigation |
@@ -615,5 +615,5 @@ export function useCreateContact() {
 
 When all phases are complete:
 1. All checklist items above are checked
-2. Mark `docs/ci-cd/ci_cd_plan.md` phases 8-10 as complete
+2. Mark `docs/CI-CD/ci_cd_plan.md` phases 8-10 as complete
 3. Add summary to `docs/logs/CHANGELOG.md`

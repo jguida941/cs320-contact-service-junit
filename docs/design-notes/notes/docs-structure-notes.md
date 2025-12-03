@@ -7,7 +7,7 @@ File: docs/design-notes/notes/docs-structure-notes.md
 ## Layout overview
 - `docs/adrs/` - Architecture Decision Records (one ADR per major decision).
 - `docs/architecture/` - feature design briefs/plans (e.g., the Task plan).
-- `docs/ci-cd/` - CI/CD notes and pipeline plans.
+- `docs/CI-CD/` - CI/CD notes and pipeline plans.
 - `docs/logs/` - changelog/backlog history.
 - `docs/requirements/` - assignment/spec documents and checklists.
 - `docs/design-notes/` - personal explanations (non-graded notes, like this file).

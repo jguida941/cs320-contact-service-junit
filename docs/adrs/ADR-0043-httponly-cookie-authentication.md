@@ -144,7 +144,7 @@ All other `/api/**` endpoints require valid CSRF token.
   with `401 LegacyTokenDisabled`. Backend logging verifies 0 requests per hour before closing the
   window.
 - Implementation steps, manual test scripts, and on-call alerts are tracked in
-  `docs/ci-cd/ci_cd_plan.md#phase-5-5-cookie-rollout`.
+  `docs/CI-CD/ci_cd_plan.md#phase-5-5-cookie-rollout`.
 
 ### 4. Rollback and Contingency Plan
 If 401 `LegacyTokenDisabled` errors spike unexpectedly:

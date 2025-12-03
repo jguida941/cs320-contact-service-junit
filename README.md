@@ -34,7 +34,6 @@ Everything is packaged under `contactapp` with layered sub-packages (`domain`, `
 ## Table of Contents
 - [Getting Started](#getting-started)
 - [Phase Roadmap & Highlights](#phase-roadmap--highlights)
-- [React UI Highlights](#react-ui-highlights)
 - [Branches & History](#branches--history)
 - [Folder Highlights](#folder-highlights)
 - [Design Decisions & Highlights](#design-decisions--highlights)
@@ -151,44 +150,10 @@ The phased plan in [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) governs scope.
 | 6 | Complete | Packaging + CI | Makefile (30+ targets), CI docker-build job, GHCR push, health checks |
 | 7 | Complete | UX polish + Project Tracker (ADR-0045 Phases 1-5) | Search/pagination/sorting, toasts, empty states, admin dashboard; Project CRUD with status tracking, task status/due dates/project linking, appointment linking, task assignment with access control |
 
-### Phase 5 Security & Observability Summary
-- **Per-user data isolation**: `user_id` foreign keys on contacts, tasks, and appointments enforce multi-tenancy while services scope queries to the authenticated user.
-- **Rate limiting**: Bucket4j with bounded Caffeine caches enforces login safeguards (5 attempts/min per IP address), register (3/min/IP), and API (100/min per authenticated user) limits. Exceeding limits returns HTTP 429 Too Many Requests.
-- **Admin override safety**: Bulk export requests now flow through `POST /api/v1/admin/query` with CSRF tokens, JSON body flags, and `X-Admin-Override` headers plus immutable audit logging; legacy `?all=true` query strings remain temporarily for backward compatibility but are scheduled for removal after **2026-02-01**.
-- **CSRF double-submit tokens**: `/api/v1/**` endpoints now require `X-XSRF-TOKEN` headers generated via `CookieCsrfTokenRepository` and `/api/auth/csrf-token`, keeping the HttpOnly cookie flow resistant to cross-site requests. The `XSRF-TOKEN` cookie explicitly sets `SameSite=Lax` and reuses `server.servlet.session.cookie.secure` (defaults to `true`; dev/test profiles override to `false` for localhost) so OWASP ZAP stops flagging missing attributes.
-- **Sanitized request logging**: `RequestLoggingFilter` records method/URI/status plus masked query strings, redacted sensitive parameters, obfuscated client IPs, and normalized user agents for safe audit trails.
-- **JWT authentication**: Spring Security + `JwtAuthenticationFilter` issues HttpOnly `auth_token` cookies (SameSite=Lax, Secure) with a 30-minute default TTL (`jwt.expiration`) and a dedicated `app.auth.cookie.secure` flag so cookie security stays explicit per environment while still honoring `Authorization: Bearer` headers for API clients.
-- **Credentialed CORS**: Reverse proxy + Spring `CorsRegistry` ship with explicit origin lists, `Access-Control-Allow-Credentials: true`, and exposed `Authorization` header so `fetch(..., { credentials: 'include' })` succeeds without resorting to wildcards.
-- **Structured logging**: Correlation IDs (`X-Correlation-ID`) flow through MDC for distributed tracing; `PiiMaskingConverter` redacts sensitive patterns in log output.
-- **Prometheus metrics**: `/actuator/prometheus` exposes Micrometer metrics with custom timers for API endpoints; liveness/readiness probes remain on `/actuator/health`.
-- **Production-ready Docker packaging**: Multi-stage build (Eclipse Temurin 17, non-root user, layered JAR extraction) keeps runtime images lean; detailed steps live in [`Dockerfile`](Dockerfile).
+### Key Capabilities
 
-### Project/Task Tracker Evolution Summary (ADR-0045 Phases 1-5)
-
-**Completed Features** (2025-12-01):
-- **Phase 1 - Project Entity**: Full CRUD operations at `/api/v1/projects` with status tracking (ACTIVE, ON_HOLD, COMPLETED, ARCHIVED), per-user data isolation, migration V8
-- **Phase 2 - Task Status/Due Date**: Enhanced Task with status enum (TODO, IN_PROGRESS, DONE), optional due dates, createdAt/updatedAt timestamps, migration V9
-- **Phase 3 - Task-Project Linking**: Tasks can be assigned to projects for organization via nullable projectId FK, query parameters `?projectId={id}` and `?projectId=none`, migration V10
-- **Phase 4 - Appointment Linking**: Appointments can reference tasks and/or projects for calendar context via nullable taskId/projectId FKs, query parameters `?taskId={id}` and `?projectId={id}`, migration V11
-- **Phase 5 - Task Assignment**: Tasks can be assigned to team members via assigneeId FK, access control ensures users see tasks they own or are assigned to (plus project owners see all project tasks, admins see everything), query parameter `?assigneeId={userId}`, migration V12
-
-**API Enhancements**:
-- `POST /api/v1/projects` - Create project
-- `GET /api/v1/projects` - List projects (with optional `?status=ACTIVE` filter)
-- `GET /api/v1/projects/{id}` - Get project by ID
-- `PUT /api/v1/projects/{id}` - Update project
-- `DELETE /api/v1/projects/{id}` - Delete project
-- `GET /api/v1/tasks?projectId={id}` - Filter tasks by project
-- `GET /api/v1/tasks?status=TODO` - Filter tasks by status
-- `GET /api/v1/tasks?assigneeId={userId}` - Filter tasks by assignee
-- `GET /api/v1/appointments?taskId={id}` - Filter appointments by task
-- `GET /api/v1/appointments?projectId={id}` - Filter appointments by project
-
-**Database Schema**: 7 new migrations (V7-V13) add optimistic locking (V7), projects table (V8), task status/due dates (V9), task-project relationships (V10), appointment-task/project relationships (V11), task assignment (V12), and project-contact junction table (V13) with proper foreign keys and indexes.
-
-**Test Coverage**: 930 total test executions on the full Linux run with comprehensive coverage across domain validation, persistence layers, service operations, and REST API endpoints for all implemented phases (700 execute on the Windows H2 lane via `-DskipTestcontainersTests=true`).
-
-**Phase 6 Implementation**: Contact-Project Linking is fully implemented via V13 junction table with API endpoints for adding/removing contacts to projects (`POST /api/v1/projects/{id}/contacts`, `DELETE /api/v1/projects/{id}/contacts/{contactId}`) and retrieving project contacts (`GET /api/v1/projects/{id}/contacts`). See ADR-0045 for details.
+- **Security & Observability** (Phase 5): JWT auth, per-user data isolation, rate limiting, CSRF protection, structured logging with correlation IDs, Prometheus metrics. See [Security Infrastructure](#security-infrastructure) and [Observability Infrastructure](#observability-infrastructure) sections below.
+- **Project/Task Tracker** (ADR-0045 Phases 1-5): Project CRUD with status tracking, task status/due dates/assignment, task-project linking, appointment-task/project linking. See [Backend Domain & Services](#backend-domain--services) and [ADR-0045](docs/adrs/ADR-0045-project-task-tracker-evolution.md) for details.
 
 ## Branches & History
 - `master` (this branch) - the Spring Boot + React suite with persistence, CI, and the full UI.
@@ -307,7 +272,7 @@ We tag releases from both branches so GitHub’s “Releases” view exposes the
 | [`Dockerfile`](Dockerfile)                                                                                                           | Multi-stage production Docker image (Eclipse Temurin 17, non-root user, layered JAR).                                             |
 | [`docker-compose.yml`](docker-compose.yml)                                                                                           | Production-like stack (Postgres + App + optional pgAdmin) with health checks.                                                     |
 | [`docs/operations/`](docs/operations/)                                                                                               | Operations docs: Docker setup guide, Actuator endpoints reference, deployment guides.                                             |
-| [`docs/ci-cd/`](docs/ci-cd/)                                                                                                         | CI/CD design notes (pipeline plan + badge automation).                                                                            |
+| [`docs/CI-CD/`](docs/CI-CD/)                                                                                                         | CI/CD design notes (pipeline plan + badge automation).                                                                            |
 | [`docs/design-notes/`](docs/design-notes/)                                                                                           | Informal design notes hub; individual write-ups live under `docs/design-notes/notes/`.                                            |
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)                                                                                       | **Master document**: scope, architecture, phased plan, checklist, and code examples.                                              |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md)                                                                                                 | Quick phase overview (points to REQUIREMENTS.md for details).                                                                     |

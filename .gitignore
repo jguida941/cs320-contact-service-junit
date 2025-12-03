@@ -62,5 +62,3 @@ agents.md
 .env.local
 .env.*.local
 
-# Local project summary (generated)
-PROJECT_SUMMARY.md

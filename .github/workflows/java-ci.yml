@@ -368,9 +368,6 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Start application with docker compose
-        env:
-          JWT_SECRET: ${{ env.JWT_SECRET }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: |
           # Debug: verify env vars are set (don't print actual values)
           echo "JWT_SECRET length: ${#JWT_SECRET}"

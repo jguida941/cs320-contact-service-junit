@@ -282,6 +282,7 @@ spring:
       on-profile: prod
   datasource:
     url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:

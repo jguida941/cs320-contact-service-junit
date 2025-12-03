@@ -234,6 +234,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache Maven repository for container
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: container-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            container-maven-
+            ${{ runner.os }}-maven-
+
       - name: Run Maven verify inside container (H2 / no Testcontainers)
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
@@ -251,9 +261,10 @@ jobs:
             CONTAINER_CMD="mvn -B -DnvdApiKey=\"${NVD_API_KEY}\" -DnvdApiDelay=5000 -Ddependency.check.skip=false -Dpit.skip=false ${TEST_OPTS} verify"
           fi
 
-          if ! docker run --rm -e NVD_API_KEY="$NVD_API_KEY" -e MAVEN_OPTS="$MAVEN_OPTS_VALUE" -v "${{ github.workspace }}":/workspace -w /workspace maven:3.9.9-eclipse-temurin-17 bash -c "$CONTAINER_CMD"; then
+          # Mount the host Maven cache into the container for faster builds and resilience against Maven Central outages
+          if ! docker run --rm -e NVD_API_KEY="$NVD_API_KEY" -e MAVEN_OPTS="$MAVEN_OPTS_VALUE" -v ~/.m2/repository:/root/.m2/repository -v "${{ github.workspace }}":/workspace -w /workspace maven:3.9.9-eclipse-temurin-17 bash -c "$CONTAINER_CMD"; then
             echo "Re-running inside container with quality gates skipped"
-            docker run --rm -e MAVEN_OPTS="$MAVEN_OPTS_VALUE" -v "${{ github.workspace }}":/workspace -w /workspace maven:3.9.9-eclipse-temurin-17 mvn -B -Ddependency.check.skip=true -Dpit.skip=true ${TEST_OPTS} verify
+            docker run --rm -e MAVEN_OPTS="$MAVEN_OPTS_VALUE" -v ~/.m2/repository:/root/.m2/repository -v "${{ github.workspace }}":/workspace -w /workspace maven:3.9.9-eclipse-temurin-17 mvn -B -Ddependency.check.skip=true -Dpit.skip=true ${TEST_OPTS} verify
           fi
 
   mutation-test:

@@ -317,9 +317,16 @@ jobs:
       contents: read
       packages: write
     env:
-      POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD || 'ci-test-password-not-for-prod' }}
+      POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
       JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}
     steps:
+      - name: Ensure CI_POSTGRES_PASSWORD is configured
+        run: |
+          if [ -z "${POSTGRES_PASSWORD}" ]; then
+            echo "::error::CI_POSTGRES_PASSWORD secret is not configured"
+            exit 1
+          fi
+
       - name: Generate fallback JWT secret if not configured
         run: |
           if [ -z "${JWT_SECRET}" ]; then
@@ -361,9 +368,17 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Start application with docker compose
+        env:
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: |
+          # Debug: verify env vars are set (don't print actual values)
+          echo "JWT_SECRET length: ${#JWT_SECRET}"
+          echo "POSTGRES_PASSWORD length: ${#POSTGRES_PASSWORD}"
+
           # Create a minimal docker-compose override for testing
-          cat > docker-compose.test.yml << 'EOF'
+          # Note: Using unquoted EOF so shell expands variables
+          cat > docker-compose.test.yml << EOF
           version: "3.9"
           services:
             app:
@@ -372,8 +387,8 @@ jobs:
                 SPRING_PROFILES_ACTIVE: prod
                 DATABASE_URL: jdbc:postgresql://postgres:5432/contactapp
                 DB_USERNAME: contactapp
-                DB_PASSWORD: ${POSTGRES_PASSWORD}
-                JWT_SECRET: ${JWT_SECRET}
+                DB_PASSWORD: "${POSTGRES_PASSWORD}"
+                JWT_SECRET: "${JWT_SECRET}"
                 ENVIRONMENT: ci-test
                 # Disable SSL/HTTPS requirements for CI (no TLS terminator)
                 REQUIRE_SSL: "false"
@@ -384,7 +399,7 @@ jobs:
               environment:
                 POSTGRES_DB: contactapp
                 POSTGRES_USER: contactapp
-                POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+                POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
           EOF
 
           # Start the stack

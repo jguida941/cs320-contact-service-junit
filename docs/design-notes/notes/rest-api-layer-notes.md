@@ -134,6 +134,6 @@ This is the standard Tomcat pattern: guard → reset → set headers → write b
 
 ## Related ADRs
 
-- [ADR-0012](../../adrs/ADR-0012-rest-api-design.md) - REST API Design
-- [ADR-0021](../../adrs/ADR-0021-global-exception-handling.md) - Global Exception Handling
-- [ADR-0022](../../adrs/ADR-0022-json-error-report-valve.md) - JSON Error Report Valve
+- [ADR-0012](../../adrs/ADR-0012-appointment-validation-and-tests.md) - Appointment Validation and Tests
+- [ADR-0021](../../adrs/ADR-0021-rest-api-implementation.md) - REST API Implementation
+- [ADR-0022](../../adrs/ADR-0022-custom-error-controller.md) - Custom Error Controller

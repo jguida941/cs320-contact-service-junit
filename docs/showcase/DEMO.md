@@ -1,0 +1,178 @@
+# Demo Cheat Sheet
+
+Quick reference for showcasing the project to recruiters.
+
+---
+
+## Quick Start
+
+```bash
+# Start everything (backend + frontend)
+python scripts/dev_stack.py
+
+# Access points:
+# - API: http://localhost:8080
+# - Swagger UI: http://localhost:8080/swagger-ui.html
+# - React UI: http://localhost:5173
+```
+
+---
+
+## Show Quality Reports
+
+```bash
+# Run full build with all quality gates
+mvn verify
+
+# View coverage report (90%+ coverage)
+open target/site/jacoco/index.html
+
+# View mutation report (84% mutation score)
+open target/pit-reports/index.html
+
+# View SpotBugs report
+open target/spotbugs.html
+
+# Launch QA Dashboard (React app)
+python scripts/serve_quality_dashboard.py
+```
+
+---
+
+## Show Testing
+
+```bash
+# Run all unit tests (930+ tests)
+mvn test
+
+# Run integration tests with real PostgreSQL
+mvn verify -DskipITs=false
+
+# Run mutation testing (proves test effectiveness)
+mvn pitest:mutationCoverage
+
+# Run API fuzzing (30,000+ generated requests)
+python scripts/api_fuzzing.py --start-app
+```
+
+---
+
+## Show Security Features
+
+```bash
+# 1. Rate Limiting Demo (login endpoint: 5 req/min)
+for i in {1..7}; do
+  echo "Attempt $i:"
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    -X POST http://localhost:8080/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"username":"test","password":"test"}'
+done
+# First 5: 401 (bad credentials)
+# 6-7: 429 (rate limited)
+
+# 2. JWT Cookie Demo
+curl -c cookies.txt -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"demo","password":"demo123"}'
+cat cookies.txt  # Shows httpOnly auth_token
+
+# 3. CSRF Token Demo
+curl -s http://localhost:8080/api/auth/csrf-token | jq
+```
+
+---
+
+## Show Docker Deployment
+
+```bash
+# Build and start full stack
+docker-compose up -d
+
+# Check status
+docker-compose ps
+
+# View logs
+docker-compose logs -f app
+
+# Access pgAdmin (admin@contactapp.local / admin)
+open http://localhost:5050
+
+# Cleanup
+docker-compose down -v
+```
+
+---
+
+## Show CI/CD (GitHub Actions)
+
+```bash
+# Push to trigger pipeline
+git push origin main
+
+# Watch in browser:
+# 1. GitHub repo → Actions tab
+# 2. Shows matrix: Ubuntu/Windows × Java 17/21
+# 3. Quality gates: JaCoCo, PITest, SpotBugs, Checkstyle
+# 4. API fuzzing workflow runs after
+```
+
+---
+
+## Key Metrics to Mention
+
+| Metric | Value |
+|--------|-------|
+| Test Classes | 89 |
+| Test Executions | 930+ |
+| Line Coverage | ~90% (80% enforced) |
+| Mutation Coverage | ~84% (70% enforced) |
+| ADRs | 49 |
+| Flyway Migrations | 11 |
+| Quality Gates | 7 enforced |
+
+---
+
+## Key Files to Show
+
+| What | File |
+|------|------|
+| Architecture Decisions | `docs/adrs/` (49 files) |
+| Security Config | `src/main/java/contactapp/security/SecurityConfig.java` |
+| Rate Limiting | `src/main/java/contactapp/config/RateLimitingFilter.java` |
+| Domain Validation | `src/main/java/contactapp/domain/Validation.java` |
+| CI Pipeline | `.github/workflows/java-ci.yml` |
+| API Fuzzing | `.github/workflows/api-fuzzing.yml` |
+| QA Dashboard | `ui/qa-dashboard/src/App.jsx` |
+
+---
+
+## Talking Points
+
+### "What makes this project enterprise-grade?"
+
+1. **Layered Architecture** - Clear separation between API, Service, Domain, Persistence
+2. **Two-Layer Validation** - Bean validation at API, constructor validation in domain
+3. **Mutation Testing** - Proves tests catch bugs, not just execute code
+4. **Multi-tenant Security** - Per-user data isolation, JWT in httpOnly cookies
+5. **49 ADRs** - Every major decision documented with rationale
+6. **7 Quality Gates** - Enforced in CI, no exceptions
+
+### "What security measures are implemented?"
+
+1. JWT tokens in HttpOnly cookies (prevents XSS token theft)
+2. BCrypt password hashing
+3. Rate limiting (Bucket4j) - login, register, API
+4. CSRF protection with Spring Security 7 SPA pattern
+5. CSP headers, X-Frame-Options, etc.
+6. OWASP Dependency-Check in CI
+7. PII masking in logs
+
+### "How do you ensure code quality?"
+
+1. 90% line coverage (JaCoCo, 80% enforced)
+2. 84% mutation score (PITest, 70% enforced)
+3. SpotBugs static analysis (zero findings)
+4. Checkstyle (zero violations)
+5. API fuzzing with 30,000+ requests
+6. Matrix CI (2 OS × 2 Java versions)

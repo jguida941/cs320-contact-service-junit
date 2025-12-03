@@ -7,8 +7,9 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 | Path | Purpose |
 |------|---------|
 | [`REQUIREMENTS.md`](REQUIREMENTS.md) | **Master document**: scope, architecture, phases, checklist, code examples |
-| [`ROADMAP.md`](ROADMAP.md) | Quick phase overview (points to REQUIREMENTS.md) |
-| [`../agents.md`](../agents.md) | AI assistant entry point with constraints and stack decisions |
+| [`roadmaps/ROADMAP.md`](roadmaps/ROADMAP.md) | Quick phase overview (points to REQUIREMENTS.md) |
+| [`roadmaps/FUTURE_ROADMAP.md`](roadmaps/FUTURE_ROADMAP.md) | Future roadmap: evolving into a Jira-like project management platform |
+| [`roadmaps/README.md`](roadmaps/README.md) | Roadmap directory index with archived implementation plans |
 
 ## Folders
 
@@ -17,14 +18,14 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 | [`../src/`](../src/) | Java source tree. `src/main/java/contactapp` contains application code; `src/test/java/contactapp` contains tests. |
 | [`../ui/contact-app/`](../ui/contact-app/) | React UI (Vite + React 19 + TypeScript + Tailwind CSS v4 + shadcn/ui). |
 | [`ci-cd/`](ci-cd/) | CI/CD design notes (pipeline plan plus `badges.md` for the badge helper). |
-| [`requirements/contact-requirements/`](requirements/contact-requirements/) | Contact assignment requirements (milestone spec). |
-| [`requirements/appointment-requirements/`](requirements/appointment-requirements/) | Appointment assignment requirements (object/service specs + checklist). |
-| [`requirements/task-requirements/`](requirements/task-requirements/) | Task assignment requirements (task object/service specs + checklist). |
+| [`cs320-requirements/`](cs320-requirements/) | Original CS320 assignment requirements (contact, task, appointment specs). |
+| [`showcase/`](showcase/) | Project showcase materials for recruiters and portfolio. |
 | [`architecture/`](architecture/) | Feature design briefs (e.g., Task entity/service plan with Definition of Done). |
-| [`adrs/`](adrs/) | Architecture Decision Records index plus individual ADR files (ADR-0001..0048). |
+| [`adrs/`](adrs/) | Architecture Decision Records: CS320 Foundation (ADR-0001-0049) + Jira Evolution (ADR-0050+). |
 | [`design-notes/`](design-notes/) | Personal design note hub with supporting explanations under `design-notes/notes/`. |
 | [`logs/`](logs/) | Changelog and backlog. |
 | [`operations/`](operations/) | Operations documentation (Docker setup, Actuator endpoints, deployment guides). |
+| [`security-reviews/`](security-reviews/) | Security audit reports and vulnerability assessments. |
 
 ## Key Files
 
@@ -312,7 +313,7 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 | [`architecture/2025-11-19-task-entity-and-service.md`](architecture/2025-11-19-task-entity-and-service.md) | Task entity/service plan with Definition of Done and phase breakdown. |
 | [`architecture/2025-11-24-appointment-entity-and-service.md`](architecture/2025-11-24-appointment-entity-and-service.md) | Appointment entity/service implementation record. |
 | [`architecture/threat-model.md`](architecture/threat-model.md) | End-to-end threat model (assets, trust zones, mitigations, residual risks). |
-| [`adrs/README.md`](adrs/README.md) | ADR index (ADR-0001..0048 covering validation, persistence, API, UI, security, observability, test coverage, test isolation). |
+| [`adrs/README.md`](adrs/README.md) | ADR index: CS320 Foundation (ADR-0001-0049) complete + Jira Evolution (ADR-0050+) planned phases. |
 | [`design-notes/README.md`](design-notes/README.md) | Landing page for informal design notes (individual topics in `design-notes/notes/`). |
 | [`logs/backlog.md`](logs/backlog.md) | Backlog for reporting and domain enhancements. |
 | [`logs/CHANGELOG.md`](logs/CHANGELOG.md) | Project changelog. |
@@ -333,9 +334,7 @@ Index for easy navigation of the CS320 Milestone 1 codebase.
 
 | Path | Description |
 |------|-------------|
-| [`requirements/contact-requirements/requirements.md`](requirements/contact-requirements/requirements.md) | Contact assignment requirements. |
-| [`requirements/contact-requirements/requirements_checklist.md`](requirements/contact-requirements/requirements_checklist.md) | Contact requirements checklist. |
-| [`requirements/appointment-requirements/requirements.md`](requirements/appointment-requirements/requirements.md) | Appointment assignment requirements. |
-| [`requirements/appointment-requirements/requirements_checklist.md`](requirements/appointment-requirements/requirements_checklist.md) | Appointment requirements checklist. |
-| [`requirements/task-requirements/requirements.md`](requirements/task-requirements/requirements.md) | Task assignment requirements (task object/service). |
-| [`requirements/task-requirements/requirements_checklist.md`](requirements/task-requirements/requirements_checklist.md) | Task requirements checklist. |
+| [`cs320-requirements/contact-requirements/`](cs320-requirements/contact-requirements/) | Original Contact class specification and checklist. |
+| [`cs320-requirements/task-requirements/`](cs320-requirements/task-requirements/) | Original Task class specification and checklist. |
+| [`cs320-requirements/appointment-requirements/`](cs320-requirements/appointment-requirements/) | Original Appointment class specification and checklist. |
+| [`showcase/PROJECT_SHOWCASE.md`](showcase/PROJECT_SHOWCASE.md) | Comprehensive recruiter-focused project guide with demos. |

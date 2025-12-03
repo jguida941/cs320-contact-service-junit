@@ -6,7 +6,7 @@
 [UserTest.java](../../src/test/java/contactapp/security/UserTest.java),
 [Validation.java](../../src/main/java/contactapp/domain/Validation.java),
 [ADR-0018](ADR-0018-authentication-and-authorization-model.md),
-[V4__create_users_table.sql](../../src/main/resources/db/migration/V4__create_users_table.sql)
+[V4__create_users_table.sql](../../src/main/resources/db/migration/common/V4__create_users_table.sql)
 
 ## Context
 - Phase 5 (Security + Observability) requires user authentication per ADR-0018.

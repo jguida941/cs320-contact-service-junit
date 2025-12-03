@@ -7,7 +7,7 @@
 **Related**: [TaskService.java](../../src/main/java/contactapp/service/TaskService.java),
 [TaskServiceTest.java](../../src/test/java/contactapp/service/TaskServiceTest.java),
 [Task.java](../../src/main/java/contactapp/domain/Task.java),
-[Task requirements](../requirements/task-requirements/requirements.md)
+[Task requirements](../cs320-requirements/task-requirements/requirements.md)
 
 ## Context
 - Task operations (add, delete, update) must enforce unique ids and reuse Task

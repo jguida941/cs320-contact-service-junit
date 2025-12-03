@@ -135,9 +135,9 @@ cors:
 
 ## Related ADRs
 
-- [ADR-0018](../../../docs/adrs/ADR-0018-authentication-and-authorization-model.md) - Authentication and Authorization Model
-- [ADR-0038](../../../docs/adrs/ADR-0038-authentication-implementation.md) - Authentication Implementation
-- [ADR-0039](../../../docs/adrs/ADR-0039-phase5-security-observability.md) - Phase 5 Security and Observability
-- [ADR-0040](../../../docs/adrs/ADR-0040-request-tracing-and-logging.md) - Request Tracing and Logging
-- [ADR-0041](../../../docs/adrs/ADR-0041-pii-masking-in-logs.md) - PII Masking in Log Output
-- [ADR-0043](../../../docs/adrs/ADR-0043-httponly-cookie-authentication.md) - HttpOnly Cookie Authentication
+- [ADR-0018](../../adrs/ADR-0018-authentication-and-authorization-model.md) - Authentication and Authorization Model
+- [ADR-0038](../../adrs/ADR-0038-authentication-implementation.md) - Authentication Implementation
+- [ADR-0039](../../adrs/ADR-0039-phase5-security-observability.md) - Phase 5 Security and Observability
+- [ADR-0040](../../adrs/ADR-0040-request-tracing-and-logging.md) - Request Tracing and Logging
+- [ADR-0041](../../adrs/ADR-0041-pii-masking-in-logs.md) - PII Masking in Log Output
+- [ADR-0043](../../adrs/ADR-0043-httponly-cookie-authentication.md) - HttpOnly Cookie Authentication

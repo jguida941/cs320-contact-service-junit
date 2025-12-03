@@ -15,6 +15,8 @@
 7. [Master Checklist](#master-checklist)
 8. [Code Examples](#code-examples)
 9. [Related Documents](#related-documents)
+10. [Completion Status](#completion-status)
+11. [Future Development](#future-development)
 
 ---
 
@@ -602,18 +604,41 @@ export function useCreateContact() {
 
 | Document | Path | Purpose |
 |----------|------|---------|
-| ADR Index | `docs/adrs/README.md` | Architecture decisions (ADR-0001–0022) |
-| CI/CD Plan | `docs/CI-CD/ci_cd_plan.md` | Pipeline phases including security testing |
-| Backlog | `docs/logs/backlog.md` | Deferred decisions (UI kit, OAuth2/SSO, WAF) |
-| Agent Guide | `agents.md` | AI assistant entry point |
-| Repository Index | `docs/INDEX.md` | Full file/folder navigation |
-| Original Requirements | `docs/requirements/` | Contact/Task/Appointment milestone specs |
+| ADR Index | [`docs/adrs/README.md`](adrs/README.md) | Architecture decisions (ADR-0001–0049) |
+| Roadmap | [`docs/roadmaps/ROADMAP.md`](roadmaps/ROADMAP.md) | Phase overview and completion status |
+| Future Roadmap | [`docs/roadmaps/FUTURE_ROADMAP.md`](roadmaps/FUTURE_ROADMAP.md) | Jira-like evolution (Phases 8-17) |
+| CI/CD Plan | [`docs/ci-cd/ci_cd_plan.md`](ci-cd/ci_cd_plan.md) | Pipeline phases including security testing |
+| Backlog | [`docs/logs/backlog.md`](logs/backlog.md) | Deferred decisions (UI kit, OAuth2/SSO, WAF) |
+| Repository Index | [`docs/INDEX.md`](INDEX.md) | Full file/folder navigation |
+| Original CS320 Requirements | [`docs/cs320-requirements/`](cs320-requirements/) | Contact/Task/Appointment milestone specs |
+| Project Showcase | [`docs/showcase/`](showcase/) | Recruiter-focused project guide with demos |
 
 ---
 
-## Completion Criteria
+## Completion Status
 
-When all phases are complete:
-1. All checklist items above are checked
-2. Mark `docs/CI-CD/ci_cd_plan.md` phases 8-10 as complete
-3. Add summary to `docs/logs/CHANGELOG.md`
+**CS320 Foundation: COMPLETE** ✅
+
+All original phases (0-10) have been implemented:
+- Phases 0-7: Core application with Spring Boot, React UI, JWT auth, persistence
+- Phases 8-10: CI/CD security stages (CodeQL, ZAP, API fuzzing)
+- ADR-0045: Project/Task Tracker Evolution (Phases 1-6)
+
+---
+
+## Future Development
+
+The CS320 foundation is complete. See **[FUTURE_ROADMAP.md](roadmaps/FUTURE_ROADMAP.md)** for the evolution into a full Jira-like project management platform:
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 8 | Task Enhancements (types, priority, story points, labels) | Planned |
+| 9 | Sprint Management | Planned |
+| 10 | Activity & Comments | Planned |
+| 11 | Kanban Board UI | Planned |
+| 12 | Reporting & Analytics | Planned |
+| 13 | Notifications & Real-time | Planned |
+| 14 | Epic & Roadmap View | Planned |
+| 15 | Custom Workflows | Planned |
+| 16 | Integrations (GitHub, Slack) | Planned |
+| 17 | Teams & Permissions | Planned |

@@ -3,7 +3,7 @@
 **Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
 
-**Related**: [IMPLEMENTATION_PLAN_OPTION_C.md](../IMPLEMENTATION_PLAN_OPTION_C.md),
+**Related**: [IMPLEMENTATION_PLAN_OPTION_C.md](../roadmaps/archived/IMPLEMENTATION_PLAN_OPTION_C.md),
 [Task.java](../../src/main/java/contactapp/domain/Task.java),
 [Appointment.java](../../src/main/java/contactapp/domain/Appointment.java),
 [Validation.java](../../src/main/java/contactapp/domain/Validation.java),
@@ -636,7 +636,7 @@ Phase 6: Contact-Project Linking           [✅ Complete 2025-12-02]
 
 ## References
 
-- [IMPLEMENTATION_PLAN_OPTION_C.md](../IMPLEMENTATION_PLAN_OPTION_C.md) - Complete implementation plan
+- [IMPLEMENTATION_PLAN_OPTION_C.md](../roadmaps/archived/IMPLEMENTATION_PLAN_OPTION_C.md) - Complete implementation plan
 - [ADR-0024](ADR-0024-persistence-implementation.md) - Persistence patterns
 - [ADR-0037](ADR-0037-user-entity-validation-and-tests.md) - User entity and validation
 - [ADR-0044](ADR-0044-optimistic-locking.md) - Optimistic locking with @Version

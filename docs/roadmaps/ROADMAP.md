@@ -1,6 +1,6 @@
 # Roadmap
 
-> For full details, checklist, and code examples, see **[REQUIREMENTS.md](REQUIREMENTS.md)**.
+> For full details, checklist, and code examples, see **[REQUIREMENTS.md](../REQUIREMENTS.md)**.
 
 ## Implementation Order
 
@@ -26,13 +26,13 @@ Phase 3 note: legacy `getInstance()` access now reuses the Spring-managed proxie
 Phase 5 focus: End-to-end authentication/authorization, per-tenant data isolation, Docker/compose deployment with health probes, structured logging/metrics, rate limiting, threat modeling, and a documented ZAP baseline scan. See `docs/REQUIREMENTS.md` for the full checklist (JWT login, SPA-only CORS, security headers, bucket4j throttling, Prometheus/Actuator exposure, CI health checks, and runbook updates). The most recent hardening explicitly sets `SameSite=Lax` (plus inherits the secure-cookie flag) on the SPA-visible `XSRF-TOKEN` cookie so ZAP rule 10054 no longer fails.
 Test fixtures now reset stale SecurityContext entries and recreate the seed user when missing to prevent FK/unique collisions during singleton-sharing service tests.
 
-**Project/Task Tracker Evolution (Phases 1-5 Complete - 2025-12-01).** ADR-0045 documents the evolution plan. Phases 1-5 are complete and production-ready:
+**Project/Task Tracker Evolution (Phases 1-6 Complete - 2025-12-02).** ADR-0045 documents the evolution plan. All phases are complete and production-ready:
 - **Phase 1 (Project Entity)**: Full CRUD operations, status tracking, migration V8
 - **Phase 2 (Task Status/Due Date)**: Task workflow management with status/due dates, migration V9
 - **Phase 3 (Task-Project Linking)**: Organize tasks within projects, migration V10
 - **Phase 4 (Appointment Linking)**: Link appointments to tasks/projects for context, migration V11
 - **Phase 5 (Task Assignment)**: Team collaboration with task assignment and access control, migration V12
-- **Phase 6 (Contact-Project Linking)**: Deferred to future (stakeholder management via V13 junction table)
+- **Phase 6 (Contact-Project Linking)**: ✅ Stakeholder management via V13 junction table (complete 2025-12-02)
 
 Total test count: 930, PIT mutation ~83%, store coverage 96%+, mapper coverage 95%+.
 
@@ -51,12 +51,29 @@ CI note: Linux job runs the full suite with Testcontainers/Postgres; Windows job
 ```
 Phase 8  ✅ ZAP in CI
 Phase 9  ✅ API fuzzing in CI
-Phase 10 → Auth/role tests in CI
+Phase 10 ✅ Auth/role tests in CI (AuthControllerTest, role-based access tests)
 Phase 11 ✅ Docker packaging in CI
 ```
 
+---
+
+## Future Development
+
+The core application is complete. See **[FUTURE_ROADMAP.md](FUTURE_ROADMAP.md)** for the next chapter: evolving this into a full Jira-like project management platform.
+
+**Planned Phases:**
+- Phase 8: Task Enhancements (types, priority, story points, labels)
+- Phase 9: Sprint Management (sprints, backlog, velocity)
+- Phase 10: Activity & Comments (collaboration, @mentions)
+- Phase 11: Kanban Board UI (drag-and-drop columns)
+- Phase 12: Reporting & Analytics (burndown charts)
+- Phase 13-17: Notifications, Epics, Workflows, Integrations, Teams
+
+---
+
 ## Quick Links
 
-- **Master Document**: [REQUIREMENTS.md](REQUIREMENTS.md)
-- **ADR Index**: [adrs/README.md](adrs/README.md)
-- **CI/CD Plan**: [ci-cd/ci_cd_plan.md](ci-cd/ci_cd_plan.md)
+- **Master Document**: [REQUIREMENTS.md](../REQUIREMENTS.md)
+- **ADR Index**: [adrs/README.md](../adrs/README.md)
+- **CI/CD Plan**: [ci-cd/ci_cd_plan.md](../ci-cd/ci_cd_plan.md)
+- **Future Roadmap**: [FUTURE_ROADMAP.md](FUTURE_ROADMAP.md)

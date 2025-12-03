@@ -3,7 +3,7 @@
 **Status**: Accepted | **Date**: 2025-11-20 | **Owners**: Justin Guida
 
 
-**Related**: [README](../../README.md), [docs/requirements/](../requirements/), [docs/architecture/](../architecture/), [docs/adrs/](../adrs/), [CHANGELOG.md](../logs/CHANGELOG.md)
+**Related**: [README](../../README.md), [docs/cs320-requirements/](../cs320-requirements/), [docs/architecture/](../architecture/), [docs/adrs/](../adrs/), [CHANGELOG.md](../logs/CHANGELOG.md)
 
 ## Context
 - Documentation started as a monolithic README, which quickly became unwieldy once requirements, CI notes, and design plans accumulated.

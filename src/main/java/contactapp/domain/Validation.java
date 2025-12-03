@@ -28,7 +28,7 @@ public final class Validation {
 
     // ==================== Field Length Constants ====================
     // NOTE: These bounds follow the CS320 Milestone 1 assignment spec, not real-world limits.
-    // See docs/requirements/contact-requirements/requirements.md for the original constraints.
+    // See docs/cs320-requirements/contact-requirements/requirements.md for the original constraints.
 
     /** Maximum length for ID fields (Contact, Task, Appointment). */
     public static final int MAX_ID_LENGTH = 10;

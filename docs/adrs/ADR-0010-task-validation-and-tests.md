@@ -6,7 +6,7 @@
 **Related**: [Task.java](../../src/main/java/contactapp/domain/Task.java),
 [TaskTest.java](../../src/test/java/contactapp/domain/TaskTest.java),
 [Validation.java](../../src/main/java/contactapp/domain/Validation.java),
-[Task requirements](../requirements/task-requirements/requirements.md)
+[Task requirements](../cs320-requirements/task-requirements/requirements.md)
 
 ## Context
 - Task requirements impose max lengths and non-null constraints on id, name, and

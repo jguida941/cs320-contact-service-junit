@@ -31,13 +31,12 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
 # OWASP Dependency Check cache
 .owasp-cache/
-# Local interview notes
-interview.md
+
 # Local AI scratch/config
 .claude/
-leftoff.md
 
 # Frontend build artifacts
 **/node_modules/
@@ -49,27 +48,18 @@ ui/contact-app/test-results/
 ui/contact-app/playwright-report/
 ui/contact-app/coverage/
 
-# Claude audit files
-claudeaudit.md
-claudeaudittoday.md
-chatgptaudit.md
-
-# Agent docs
-agents.md
-
 # Environment files (contain secrets - NEVER commit)
 .env
 .env.local
 .env.*.local
 
-# Local documentation drafts
-docs/DEMO.md
-docs/PROJECT_SHOWCASE.md
-docs/IMPLEMENTATION_PLAN_OPTION_C.md
+# Personal notes (not for public repo)
+interview.md
+leftoff.md
+*audit*.md
 
-# Security review reports (may contain sensitive vulnerability details)
-docs/security-reviews/
+# Security review reports (only ignore if they contain sensitive vulnerability details)
+# docs/security-reviews/
 
-
-# Test artifacts
+# Test artifacts from curl commands
 cookies.txt

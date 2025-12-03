@@ -365,7 +365,7 @@ Security hardening introduced specialized test utilities:
 
 - [ADR-0001](../../adrs/ADR-0001-validation-normalization.md) - Validation and Normalization
 - [ADR-0003](../../adrs/ADR-0003-update-atomicity.md) - Update Atomicity
-- [ADR-0010](../../adrs/ADR-0010-task-entity.md) - Task Entity
-- [ADR-0011](../../adrs/ADR-0011-appointment-entity.md) - Appointment Entity
+- [ADR-0010](../../adrs/ADR-0010-task-validation-and-tests.md) - Task Validation and Tests
+- [ADR-0011](../../adrs/ADR-0011-taskservice-singleton-and-crud-tests.md) - TaskService Singleton and CRUD Tests
 - [ADR-0024](../../adrs/ADR-0024-persistence-implementation.md) - Persistence Implementation
 - [ADR-0046](../../adrs/ADR-0046-test-coverage-improvements.md) - Test Coverage Improvements

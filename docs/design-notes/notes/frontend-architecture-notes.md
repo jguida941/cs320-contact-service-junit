@@ -190,8 +190,8 @@ npm run dev
 
 ## Related ADRs
 
-- [ADR-0017](../../../docs/adrs/ADR-0017-frontend-stack-and-application-shell.md) - Frontend Stack and Application Shell
-- [ADR-0025](../../../docs/adrs/ADR-0025-ui-component-library.md) - UI Component Library Selection
-- [ADR-0026](../../../docs/adrs/ADR-0026-theme-system-and-design-tokens.md) - Theme System and Design Tokens
-- [ADR-0027](../../../docs/adrs/ADR-0027-application-shell-layout.md) - Application Shell Layout Pattern
-- [ADR-0028](../../../docs/adrs/ADR-0028-frontend-backend-build-integration.md) - Frontend-Backend Build Integration
+- [ADR-0017](../../adrs/ADR-0017-frontend-stack-and-application-shell.md) - Frontend Stack and Application Shell
+- [ADR-0025](../../adrs/ADR-0025-ui-component-library.md) - UI Component Library Selection
+- [ADR-0026](../../adrs/ADR-0026-theme-system-and-design-tokens.md) - Theme System and Design Tokens
+- [ADR-0027](../../adrs/ADR-0027-application-shell-layout.md) - Application Shell Layout Pattern
+- [ADR-0028](../../adrs/ADR-0028-frontend-backend-build-integration.md) - Frontend-Backend Build Integration

@@ -5,7 +5,7 @@
 **Related**: [Appointment.java](../../src/main/java/contactapp/domain/Appointment.java),
 [AppointmentTest.java](../../src/test/java/contactapp/domain/AppointmentTest.java),
 [Validation.java](../../src/main/java/contactapp/domain/Validation.java),
-[Appointment requirements](../requirements/appointment-requirements/requirements.md)
+[Appointment requirements](../cs320-requirements/appointment-requirements/requirements.md)
 
 ## Context
 - Appointment requirements demand an immutable ID (≤10 chars), a description (≤50 chars),

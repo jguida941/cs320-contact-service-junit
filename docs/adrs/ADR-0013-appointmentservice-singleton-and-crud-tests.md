@@ -7,7 +7,7 @@
 **Related**: [AppointmentService.java](../../src/main/java/contactapp/service/AppointmentService.java),
 [AppointmentServiceTest.java](../../src/test/java/contactapp/service/AppointmentServiceTest.java),
 [Appointment.java](../../src/main/java/contactapp/domain/Appointment.java),
-[Appointment requirements](../requirements/appointment-requirements/requirements.md)
+[Appointment requirements](../cs320-requirements/appointment-requirements/requirements.md)
 
 ## Context
 - Appointment storage must enforce unique IDs, reuse appointment validation, and allow add/delete/update.

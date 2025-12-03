@@ -99,7 +99,7 @@ src/main/java/contactapp/
 |----------|----------|
 | README | [README.md](README.md) |
 | Requirements | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) |
-| Roadmap | [docs/ROADMAP.md](docs/ROADMAP.md) |
+| Roadmap | [docs/roadmaps/ROADMAP.md](docs/roadmaps/ROADMAP.md) |
 | ADR Index | [docs/adrs/README.md](docs/adrs/README.md) |
 | Design Notes | [docs/design-notes/notes/](docs/design-notes/notes/) |
 | CI/CD Operations | [docs/design-notes/notes/ci-cd-operations-notes.md](docs/design-notes/notes/ci-cd-operations-notes.md) |

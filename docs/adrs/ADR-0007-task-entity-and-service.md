@@ -4,7 +4,7 @@
 
 *Status**: Accepted | **Date**: 2025-11-19 | **Owners**: Justin Guida
 
-**Related**: [Task plan](../architecture/2025-11-19-task-entity-and-service.md), [Task requirements](../requirements/task-requirements/requirements.md)
+**Related**: [Task plan](../architecture/2025-11-19-task-entity-and-service.md), [Task requirements](../cs320-requirements/task-requirements/requirements.md)
 
 ## Summary
 Implements Task (id, name, description) and TaskService with a singleton store and atomic updates.

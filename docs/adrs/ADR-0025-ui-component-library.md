@@ -2,7 +2,7 @@
 
 **Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
-**Related**: [ADR-0017](ADR-0017-frontend-stack-and-application-shell.md), [REQUIREMENTS.md](../REQUIREMENTS.md), [Plan File](../../.claude/plans/robust-roaming-brooks.md)
+**Related**: [ADR-0017](ADR-0017-frontend-stack-and-application-shell.md), [REQUIREMENTS.md](../REQUIREMENTS.md)
 
 ## Context
 - ADR-0017 established React + Vite + TypeScript but left "decisions on UI kit still open."

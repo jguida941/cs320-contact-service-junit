@@ -80,7 +80,7 @@ static {
 - Return value mutations: ensuring correct object returns from `copy()`
 - Conditional removals: verifying validation is actually called
 
-See [ADR-0031](../../../docs/adrs/ADR-0031-mutation-testing-for-test-quality.md) for the full rationale.
+See [ADR-0031](../../adrs/ADR-0031-mutation-testing-for-test-quality.md) for the full rationale.
 
 ## Checkstyle Rules
 
@@ -112,9 +112,9 @@ mvn test -Plegacy-singleton
 
 ## Related ADRs
 
-- [ADR-0009](../../../docs/adrs/ADR-0009-test-strategy.md) - Test Strategy & Full Range Coverage
-- [ADR-0029](../../../docs/adrs/ADR-0029-ci-as-quality-gate.md) - CI as Quality Gate Philosophy
-- [ADR-0031](../../../docs/adrs/ADR-0031-mutation-testing-for-test-quality.md) - Mutation Testing to Validate Test Strength
-- [ADR-0046](../../../docs/adrs/ADR-0046-test-coverage-improvements.md) - Test Coverage Improvements
-- [ADR-0047](../../../docs/adrs/ADR-0047-test-isolation-cleanup-utility.md) - Test Isolation Cleanup Utility
-- [ADR-0048](../../../docs/adrs/ADR-0048-testcontainers-single-container-lifecycle.md) - Testcontainers Single Container Lifecycle
+- [ADR-0009](../../adrs/ADR-0009-test-strategy.md) - Test Strategy & Full Range Coverage
+- [ADR-0029](../../adrs/ADR-0029-ci-as-quality-gate.md) - CI as Quality Gate Philosophy
+- [ADR-0031](../../adrs/ADR-0031-mutation-testing-for-test-quality.md) - Mutation Testing to Validate Test Strength
+- [ADR-0046](../../adrs/ADR-0046-test-coverage-improvements.md) - Test Coverage Improvements
+- [ADR-0047](../../adrs/ADR-0047-test-isolation-cleanup-utility.md) - Test Isolation Cleanup Utility
+- [ADR-0048](../../adrs/ADR-0048-testcontainers-single-container-lifecycle.md) - Testcontainers Single Container Lifecycle

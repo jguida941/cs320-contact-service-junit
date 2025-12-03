@@ -21,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
@@ -127,6 +128,10 @@ public class SecurityConfig {
     @SuppressWarnings("deprecation") // requiresChannel deprecated in Spring Security 6.1; kept for SSL config
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) {
         try {
+            // Spring Security 7+ .spa() method handles SPA CSRF automatically:
+            // - Uses CookieCsrfTokenRepository with HttpOnly=false
+            // - Properly resolves raw tokens from X-XSRF-TOKEN header
+            // - Handles BREACH protection correctly for SPAs
             final CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
             csrfTokenRepository.setCookieCustomizer(cookie -> cookie
                     .sameSite("Lax")
@@ -137,7 +142,7 @@ public class SecurityConfig {
                     .csrf(csrf -> csrf
                             .ignoringRequestMatchers(CSRF_IGNORED_MATCHERS)
                             .csrfTokenRepository(csrfTokenRepository)
-                            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+                            .spa())
                     .headers(headers -> {
                         headers.contentSecurityPolicy(csp -> csp
                                 .policyDirectives(buildCspPolicy()));
@@ -177,6 +182,9 @@ public class SecurityConfig {
                             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     )
                     .authenticationProvider(authenticationProvider())
+                    // CSRF cookie filter - eagerly loads CSRF token so SPA can read XSRF-TOKEN cookie
+                    // Required for Spring Security 6+ which defers token loading by default
+                    .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                     .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                     // Rate limiting filter runs AFTER JWT auth so SecurityContext is populated
                     .addFilterAfter(rateLimitingFilter, JwtAuthenticationFilter.class);

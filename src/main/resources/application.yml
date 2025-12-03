@@ -118,7 +118,7 @@ csp:
 app:
   auth:
     cookie:
-      # Dedicated flag for auth cookies; defaults to session cookie secure flag (true in prod)
+      # Secure by default; use dev profile for local HTTP testing
       secure: ${APP_AUTH_COOKIE_SECURE:${COOKIE_SECURE:true}}
 
 # -----------------------------------------------------------------------------

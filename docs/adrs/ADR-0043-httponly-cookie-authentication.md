@@ -2,6 +2,8 @@
 
 **Status:** Accepted | **Date:** 2025-12-01 | **Owners:** Justin Guida
 
+**Related:** [ADR-0049 Spring Security 7 SPA CSRF](ADR-0049-spring-security-7-spa-csrf.md) (CSRF implementation details for Spring Boot 4.0+)
+
 ## Context
 
 The CODEBASE_AUDIT.md identified a critical security vulnerability (FRONTEND-SEC-01): JWT tokens were stored in localStorage, making them accessible to any JavaScript code including potential XSS attacks. Additionally, user profile data was also stored in localStorage (FRONTEND-SEC-03).

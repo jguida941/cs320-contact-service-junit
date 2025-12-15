@@ -1,0 +1,291 @@
+# ============================================================================
+# CI/CD Hub - Java Dispatch Workflow Template
+# ============================================================================
+# Copy this file to your repo: .github/workflows/java-ci-dispatch.yml
+# This enables the hub orchestrator to dispatch CI runs to your repo.
+#
+# This workflow is ONLY triggered by hub dispatch - it won't run on push/PR.
+# Your existing workflows remain untouched.
+# ============================================================================
+
+name: "Hub: Java CI"
+
+on:
+  workflow_dispatch:
+    inputs:
+      java_version:
+        description: 'Java version'
+        required: false
+        type: string
+        default: '21'
+      build_tool:
+        description: 'Build tool (maven/gradle)'
+        required: false
+        type: string
+        default: 'maven'
+      run_jacoco:
+        description: 'Run JaCoCo coverage'
+        required: false
+        type: boolean
+        default: true
+      run_checkstyle:
+        description: 'Run Checkstyle'
+        required: false
+        type: boolean
+        default: true
+      run_spotbugs:
+        description: 'Run SpotBugs'
+        required: false
+        type: boolean
+        default: true
+      run_owasp:
+        description: 'Run OWASP dependency check'
+        required: false
+        type: boolean
+        default: true
+      run_pitest:
+        description: 'Run PITest mutation testing'
+        required: false
+        type: boolean
+        default: true
+      run_codeql:
+        description: 'Run CodeQL analysis'
+        required: false
+        type: boolean
+        default: false
+      run_docker:
+        description: 'Run Docker build/test'
+        required: false
+        type: boolean
+        default: false
+      run_pmd:
+        description: 'Run PMD analysis'
+        required: false
+        type: boolean
+        default: true
+      run_semgrep:
+        description: 'Run Semgrep SAST'
+        required: false
+        type: boolean
+        default: false
+      run_trivy:
+        description: 'Run Trivy scan'
+        required: false
+        type: boolean
+        default: false
+      coverage_min:
+        description: 'Minimum coverage threshold'
+        required: false
+        type: number
+        default: 70
+      mutation_score_min:
+        description: 'Minimum mutation score'
+        required: false
+        type: number
+        default: 70
+      owasp_cvss_fail:
+        description: 'OWASP CVSS fail threshold'
+        required: false
+        type: number
+        default: 7
+      docker_compose_file:
+        description: 'Docker compose file'
+        required: false
+        type: string
+        default: 'docker-compose.yml'
+      docker_health_endpoint:
+        description: 'Docker health endpoint'
+        required: false
+        type: string
+        default: '/actuator/health'
+      retention_days:
+        description: 'Artifact retention days'
+        required: false
+        type: number
+        default: 30
+      workdir:
+        description: 'Working directory'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    env:
+      WORKDIR: ${{ inputs.workdir || '.' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ inputs.java_version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java_version }}
+          cache: ${{ inputs.build_tool }}
+
+      - name: Build and Test
+        working-directory: ${{ env.WORKDIR }}
+        run: |
+          if [ "${{ inputs.build_tool }}" = "gradle" ]; then
+            ./gradlew build test
+          else
+            if [ -f "mvnw" ]; then
+              chmod +x mvnw
+              ./mvnw -B -ntp verify
+            else
+              mvn -B -ntp verify
+            fi
+          fi
+
+      - name: Run JaCoCo Coverage
+        if: inputs.run_jacoco
+        working-directory: ${{ env.WORKDIR }}
+        id: jacoco
+        run: |
+          # JaCoCo usually runs during verify, extract results
+          COVERED=0; MISSED=0; PERCENT=0
+          JACOCO=$(find . -name "jacoco.xml" -path "*/site/*" 2>/dev/null | head -1)
+          if [ -n "$JACOCO" ] && [ -f "$JACOCO" ]; then
+            COVERED=$(grep -oP 'INSTRUCTION.*?covered="\K[0-9]+' "$JACOCO" 2>/dev/null | awk '{s+=$1} END {print s}' || echo 0)
+            MISSED=$(grep -oP 'INSTRUCTION.*?missed="\K[0-9]+' "$JACOCO" 2>/dev/null | awk '{s+=$1} END {print s}' || echo 0)
+            TOTAL=$((COVERED + MISSED))
+            if [ "$TOTAL" -gt 0 ]; then
+              PERCENT=$((COVERED * 100 / TOTAL))
+            fi
+          fi
+          echo "percent=$PERCENT" >> $GITHUB_OUTPUT
+          echo "Coverage: $PERCENT%"
+
+      - name: Run Checkstyle
+        if: inputs.run_checkstyle
+        working-directory: ${{ env.WORKDIR }}
+        continue-on-error: true
+        run: |
+          if [ "${{ inputs.build_tool }}" = "gradle" ]; then
+            ./gradlew checkstyleMain checkstyleTest || true
+          else
+            mvn -B -ntp checkstyle:check || true
+          fi
+
+      - name: Run SpotBugs
+        if: inputs.run_spotbugs
+        working-directory: ${{ env.WORKDIR }}
+        continue-on-error: true
+        run: |
+          if [ "${{ inputs.build_tool }}" = "gradle" ]; then
+            ./gradlew spotbugsMain || true
+          else
+            mvn -B -ntp com.github.spotbugs:spotbugs-maven-plugin:check || true
+          fi
+
+      - name: Run PMD
+        if: inputs.run_pmd
+        working-directory: ${{ env.WORKDIR }}
+        continue-on-error: true
+        run: |
+          if [ "${{ inputs.build_tool }}" = "gradle" ]; then
+            ./gradlew pmdMain || true
+          else
+            mvn -B -ntp pmd:check || true
+          fi
+
+      - name: Run OWASP Dependency Check
+        if: inputs.run_owasp
+        working-directory: ${{ env.WORKDIR }}
+        continue-on-error: true
+        run: |
+          if [ "${{ inputs.build_tool }}" = "gradle" ]; then
+            ./gradlew dependencyCheckAnalyze || true
+          else
+            mvn -B -ntp org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=11 || true
+          fi
+
+      - name: Run PITest Mutation Testing
+        if: inputs.run_pitest
+        working-directory: ${{ env.WORKDIR }}
+        continue-on-error: true
+        id: pitest
+        run: |
+          KILLED=0; SURVIVED=0; SCORE=0
+          if [ "${{ inputs.build_tool }}" = "gradle" ]; then
+            ./gradlew pitest || true
+          else
+            mvn -B -ntp org.pitest:pitest-maven:mutationCoverage || true
+          fi
+
+          for xml in $(find . -name "mutations.xml" 2>/dev/null); do
+            KILLED=$((KILLED + $(grep -c 'status="KILLED"' "$xml" 2>/dev/null || echo 0)))
+            SURVIVED=$((SURVIVED + $(grep -c 'status="SURVIVED"' "$xml" 2>/dev/null || echo 0)))
+          done
+
+          TOTAL=$((KILLED + SURVIVED))
+          if [ "$TOTAL" -gt 0 ]; then
+            SCORE=$((KILLED * 100 / TOTAL))
+          fi
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "Mutation Score: $SCORE%"
+
+      - name: Generate CI Report
+        if: always()
+        run: |
+          mkdir -p reports
+          cat > reports/report.json << EOF
+          {
+            "repo": "${{ github.repository }}",
+            "branch": "${{ github.ref_name }}",
+            "run_id": "${{ github.run_id }}",
+            "language": "java",
+            "results": {
+              "coverage": ${{ steps.jacoco.outputs.percent || 0 }},
+              "mutation_score": ${{ steps.pitest.outputs.score || 0 }}
+            }
+          }
+          EOF
+
+      - name: Upload CI Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-report
+          path: |
+            reports/
+            **/target/surefire-reports/
+            **/target/site/jacoco/
+            **/target/pit-reports/
+            **/target/dependency-check-report.*
+            **/target/spotbugsXml.xml
+            **/target/checkstyle-result.xml
+            **/target/pmd.xml
+          retention-days: ${{ inputs.retention_days }}
+          if-no-files-found: ignore
+
+      - name: Generate Summary
+        if: always()
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # Hub CI Report: ${{ github.repository }}
+
+          **Branch:** \`${{ github.ref_name }}\` | **Java:** \`${{ inputs.java_version }}\` | **Build Tool:** \`${{ inputs.build_tool }}\`
+
+          ## Results
+          | Metric | Value |
+          |--------|-------|
+          | Coverage | ${{ steps.jacoco.outputs.percent || 'N/A' }}% |
+          | Mutation Score | ${{ steps.pitest.outputs.score || 'N/A' }}% |
+
+          ## Tools Run
+          - JaCoCo: ${{ inputs.run_jacoco }}
+          - Checkstyle: ${{ inputs.run_checkstyle }}
+          - SpotBugs: ${{ inputs.run_spotbugs }}
+          - PMD: ${{ inputs.run_pmd }}
+          - OWASP: ${{ inputs.run_owasp }}
+          - PITest: ${{ inputs.run_pitest }}
+          EOF

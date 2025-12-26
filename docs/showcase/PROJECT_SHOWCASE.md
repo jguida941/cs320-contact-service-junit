@@ -20,8 +20,6 @@ This project is a **full-stack contact management application** built with enter
 
 ## Why This Project Matters
 
-**What you're looking at:** A production-grade full-stack application built with enterprise patterns, not a tutorial project.
-
 ### Quick Wins to Discuss
 | What | Proof | Why It Matters |
 |------|-------|----------------|

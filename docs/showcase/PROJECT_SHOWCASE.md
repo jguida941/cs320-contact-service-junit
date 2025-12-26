@@ -1,6 +1,6 @@
-# Contact Suite - Full-Stack Enterprise Application
+# Contact Suite - Full-Stack Application
 
-> **A production-grade contact management platform demonstrating professional software engineering practices**
+> **A contact management platform demonstrating professional software engineering practices**
 
 ---
 

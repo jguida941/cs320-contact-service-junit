@@ -30,7 +30,7 @@ This project is a **full-stack contact management application** built with enter
 
 ### The Story Behind This Project
 
-This started as a CS320 milestone requirement - a simple contact manager. But I asked: **"What if I built it like I was shipping to production?"**
+This started as a CS320 milestone requirement, a simple contact manager. But I wanted to turn it into more.
 
 The result:
 1. **Week 1-2**: Core domain with immutable objects and two-layer validation
@@ -354,7 +354,7 @@ push/PR to main
 ┌─────────────────────────────────────────────────────┐
 │  build-test (Matrix: Ubuntu/Windows × Java 17/21)   │
 │  • Checkout, setup JDK/Python/Node                  │
-│  • mvn verify (JaCoCo, PITest, SpotBugs, etc.)     │
+│  • mvn verify (JaCoCo, PITest, SpotBugs, etc.)      │
 │  • Upload artifacts to Codecov                      │
 └───────────────────────┬─────────────────────────────┘
                         │
